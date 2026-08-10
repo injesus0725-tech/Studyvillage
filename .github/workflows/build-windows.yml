@@ -21,10 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Install dependencies and rebuild native modules
         run: npm install
+
+      - name: Verify source syntax
+        run: npm run verify
 
       - name: Build portable EXE
         run: npm run dist:win
