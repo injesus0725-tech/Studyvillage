@@ -1,6 +1,7 @@
 import express from 'express';
 import Database from 'better-sqlite3';
 import crypto from 'node:crypto';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -109,7 +110,29 @@ app.get('/api/ranking', (_req, res) => {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, server: 'Studyvillage classroom server' }));
 
+function classroomUrls() {
+  const urls = [];
+  const nets = os.networkInterfaces();
+  for (const entries of Object.values(nets)) {
+    for (const net of entries || []) {
+      if (net.family === 'IPv4' && !net.internal) urls.push(`http://${net.address}:${PORT}`);
+    }
+  }
+  return urls;
+}
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Studyvillage classroom server running on port ${PORT}`);
-  console.log(`Teacher PC: http://localhost:${PORT}`);
+  console.log('');
+  console.log('=============================================');
+  console.log(' Studyvillage 교실 서버가 실행되었습니다.');
+  console.log('=============================================');
+  console.log(`선생님 컴퓨터: http://localhost:${PORT}`);
+  const urls = classroomUrls();
+  if (urls.length) {
+    console.log('학생 접속 주소:');
+    urls.forEach(url => console.log(`  ${url}`));
+  } else {
+    console.log('학생 접속 주소를 찾지 못했습니다. 네트워크 연결을 확인하세요.');
+  }
+  console.log('');
 });
