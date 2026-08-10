@@ -201,7 +201,7 @@ function correctScoreAlert(ledgerId,nextValue,reason=''){
     const row=db.prepare('SELECT * FROM score_ledger WHERE id=?').get(id);if(!row)return{ok:false,code:'not-found'};
     const review=db.prepare('SELECT status FROM score_alert_reviews WHERE ledger_id=?').get(id);if(review?.status!=='needs-correction')return{ok:false,code:'review-required'};
     const active=db.prepare('SELECT id FROM score_corrections WHERE ledger_id=? AND undone_at IS NULL ORDER BY id DESC LIMIT 1').get(id);if(active)return{ok:false,code:'already-corrected'};
-    const before=Number(valueForLedgerTarget(db,row));if(!Number.isFinite(before))return{ok:false,code:'target-not-found'};
+    const before=Number(valueForLedgerTarget(db,row));if(!Number.isFinite(before))return{ok:false,code:'target-not-found'};if(before!==Number(row.after_value))return{ok:false,code:'value-changed'};
     const transaction=db.transaction(()=>{
       const latest=Number(valueForLedgerTarget(db,row));if(latest!==before)throw Object.assign(new Error('stale-value'),{code:'stale-value'});
       const ledgerBefore=Number(db.prepare('SELECT COALESCE(MAX(id),0) AS id FROM score_ledger').get()?.id||0);
