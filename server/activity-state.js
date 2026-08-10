@@ -1,7 +1,8 @@
-/* v0.9.99 shared classroom routes.
+/* v0.9.991 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
-   Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly. */
+   Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
+   Pre-1.0 readiness is false whenever the latest restore integrity audit is missing or failed. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
@@ -13,6 +14,7 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     let saved=null;try{saved=JSON.parse(getSetting(key(id))||'null')}catch{}
     return{activityId:id,name:String(saved?.name||name).slice(0,80),open:saved?.open!==false,message:String(saved?.message||'').slice(0,240),updatedAt:saved?.updatedAt||null};
   };
+  const readRestoreAudit=()=>{try{return JSON.parse(getSetting('backup:last-restore-integrity')||'null')}catch{return null}};
 
   app.use('/api/admin/restore',requireAdmin,(req,res,next)=>{
     if(req.method!=='POST')return next();
@@ -50,6 +52,12 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     });
     res.once('close',()=>{if(!finished)release()});
     next();
+  });
+
+  app.get('/api/admin/release-readiness',requireAdmin,(_req,res)=>{
+    const audit=readRestoreAudit();
+    const wardrobeRestoreReady=!!audit?.ok;
+    res.json({ok:true,readyFor1_0:wardrobeRestoreReady,checks:{wardrobeRestoreIntegrity:wardrobeRestoreReady},lastRestoreIntegrity:audit||null,message:wardrobeRestoreReady?'현재 복원 무결성 검사가 통과되어 있습니다.':'1.0 전 옷장 복원 무결성 확인이 더 필요합니다.'});
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
