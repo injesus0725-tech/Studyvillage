@@ -1,4 +1,4 @@
-/* v0.4.0 data service. Default storage is the classroom Node + SQLite server. */
+/* v0.4.1 data service. Default storage is the classroom Node + SQLite server. */
 window.StudyVillageData = (() => {
   const prefix = 'studyvillage-player:';
   const emptyRecord = () => ({ totalScore: 0, attempts: 0, bestScore: 0, lastScore: 0, updatedAt: null });
@@ -11,7 +11,10 @@ window.StudyVillageData = (() => {
   async function loadPlayer(name) {
     if (await serverReady()) {
       try {
-        const r = await fetch(`/api/player/${encodeURIComponent(name)}`, { cache:'no-store' });
+        const r = await fetch('/api/player/me', {
+          cache:'no-store',
+          headers: window.StudyVillageAuth.authHeaders()
+        });
         if (r.ok) {
           const data = await r.json();
           return { ...emptyRecord(), ...(data.player || {}) };
@@ -33,8 +36,13 @@ window.StudyVillageData = (() => {
     };
     if (await serverReady()) {
       try {
-        const r = await fetch(`/api/player/${encodeURIComponent(name)}/record`, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        const r = await fetch('/api/player/me/record', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            ...window.StudyVillageAuth.authHeaders()
+          },
+          body:JSON.stringify(payload)
         });
         if (r.ok) {
           const data = await r.json();
