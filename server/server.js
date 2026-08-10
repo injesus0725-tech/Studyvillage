@@ -7,98 +7,45 @@ import path from 'node:path';
 import QRCode from 'qrcode';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
-const dataDir = process.env.STUDYVILLAGE_DATA_DIR || __dirname;
-fs.mkdirSync(dataDir, { recursive: true });
-const dbPath = path.join(dataDir, 'studyvillage.db');
-const db = new Database(dbPath);
-const app = express();
-const PORT = Number(process.env.PORT) || 3000;
-const sessions = new Map();
-const adminSessions = new Map();
+const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
+const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;fs.mkdirSync(dataDir,{recursive:true});
+const dbPath=path.join(dataDir,'studyvillage.db'),db=new Database(dbPath),app=express(),PORT=Number(process.env.PORT)||3000;
+const sessions=new Map(),adminSessions=new Map();
+app.use(express.json({limit:'2mb'}));app.use(express.static(rootDir));db.pragma('journal_mode = WAL');
+db.exec(`CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,password_hash TEXT NOT NULL,password_salt TEXT NOT NULL,total_score INTEGER NOT NULL DEFAULT 0,attempts INTEGER NOT NULL DEFAULT 0,best_score INTEGER NOT NULL DEFAULT 0,last_score INTEGER NOT NULL DEFAULT 0,login_count INTEGER NOT NULL DEFAULT 0,last_login_at TEXT,xp INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT NOT NULL);CREATE TABLE IF NOT EXISTS activity_log (id INTEGER PRIMARY KEY AUTOINCREMENT,player_name TEXT NOT NULL,type TEXT NOT NULL,detail TEXT,created_at TEXT NOT NULL);`);
+function ensurePlayerColumn(name,definition){const cols=db.prepare('PRAGMA table_info(players)').all().map(r=>r.name);if(!cols.includes(name))db.exec(`ALTER TABLE players ADD COLUMN ${name} ${definition}`)}
+ensurePlayerColumn('login_count','INTEGER NOT NULL DEFAULT 0');ensurePlayerColumn('last_login_at','TEXT');ensurePlayerColumn('xp','INTEGER NOT NULL DEFAULT 0');
+const levelFromXp=xp=>Math.max(1,Math.floor((Number(xp)||0)/200)+1);
+const xpIntoLevel=xp=>(Number(xp)||0)%200;
+function hashPassword(password,salt){return crypto.scryptSync(password,salt,64).toString('hex')}
+function safePlayer(r){return{name:r.name,totalScore:r.total_score,attempts:r.attempts,bestScore:r.best_score,lastScore:r.last_score,loginCount:r.login_count||0,lastLoginAt:r.last_login_at||null,xp:r.xp||0,level:levelFromXp(r.xp),xpIntoLevel:xpIntoLevel(r.xp),xpToNext:200,updatedAt:r.updated_at}}
+function logActivity(name,type,detail=''){db.prepare('INSERT INTO activity_log(player_name,type,detail,created_at) VALUES(?,?,?,?)').run(name,type,detail,new Date().toISOString())}
+const bearer=req=>{const a=String(req.headers.authorization||'');return a.startsWith('Bearer ')?a.slice(7):''};
+function requireSession(req,res,next){const s=sessions.get(bearer(req));if(!s)return res.status(401).json({ok:false,code:'not-authenticated'});req.session=s;next()}
+function requireAdmin(req,res,next){if(!adminSessions.has(bearer(req)))return res.status(401).json({ok:false,code:'admin-not-authenticated'});next()}
+const createSession=name=>{const t=crypto.randomBytes(32).toString('hex');sessions.set(t,{name,createdAt:Date.now()});return t};
+const createAdminSession=()=>{const t=crypto.randomBytes(32).toString('hex');adminSessions.set(t,{createdAt:Date.now()});return t};
+function classroomUrls(){const u=[];for(const[adapter,entries]of Object.entries(os.networkInterfaces()))for(const n of entries||[])if(n.family==='IPv4'&&!n.internal)u.push({adapter,address:n.address,url:`http://${n.address}:${PORT}`});return u}
+const getSetting=k=>db.prepare('SELECT value FROM settings WHERE key=?').get(k)?.value||null;
+const setSetting=(k,v)=>db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(k,v);
+function ensureAdminPassword(){if(getSetting('admin_hash')&&getSetting('admin_salt'))return;const initial=process.env.STUDYVILLAGE_ADMIN_PASSWORD||'teacher1234',salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(initial,salt));console.log('초기 관리자 비밀번호: teacher1234 (첫 로그인 후 변경 권장)')};ensureAdminPassword();
 
-app.use(express.json({ limit: '512kb' }));
-app.use(express.static(rootDir));
+app.post('/api/login',(req,res)=>{const name=String(req.body?.name||'').trim().replace(/\s+/g,' ').slice(0,12),password=String(req.body?.password||'');if(!name||password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-input'});let row=db.prepare('SELECT * FROM players WHERE name=?').get(name),isNew=false;const now=new Date().toISOString();if(!row){const salt=crypto.randomBytes(16).toString('hex');db.prepare('INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(name,hashPassword(password,salt),salt,1,now,now,now);isNew=true;logActivity(name,'account-created','첫 계정 생성');}else{const a=Buffer.from(row.password_hash,'hex'),c=Buffer.from(hashPassword(password,row.password_salt),'hex');if(!(a.length===c.length&&crypto.timingSafeEqual(a,c)))return res.status(401).json({ok:false,code:'wrong-password'});db.prepare('UPDATE players SET login_count=login_count+1,last_login_at=?,updated_at=? WHERE name=?').run(now,now,name);logActivity(name,'login','마을 접속');}row=db.prepare('SELECT * FROM players WHERE name=?').get(name);res.json({ok:true,isNew,token:createSession(name),player:safePlayer(row)})});
+app.get('/api/player/me',requireSession,(req,res)=>{const r=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!r)return res.status(404).json({ok:false});res.json({ok:true,player:safePlayer(r)})});
+app.post('/api/player/me/record',requireSession,(req,res)=>{const e=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!e)return res.status(404).json({ok:false});const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0)),totalScore=clamp(req.body?.totalScore,0,100000000),attempts=clamp(req.body?.attempts,0,1000000),bestScore=clamp(req.body?.bestScore,0,1000),lastScore=clamp(req.body?.lastScore,0,1000),now=new Date().toISOString();let xp=e.xp||0;if(attempts>e.attempts){const gained=20+Math.floor(lastScore/10);xp+=gained;logActivity(req.session.name,'quiz-complete',`${lastScore}점 · +${gained}XP`)}db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,xp=?,updated_at=? WHERE name=?').run(totalScore,attempts,bestScore,lastScore,xp,now,req.session.name);res.json({ok:true,player:safePlayer(db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name))})});
 
-db.pragma('journal_mode = WAL');
-db.exec(`
-CREATE TABLE IF NOT EXISTS players (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  password_salt TEXT NOT NULL,
-  total_score INTEGER NOT NULL DEFAULT 0,
-  attempts INTEGER NOT NULL DEFAULT 0,
-  best_score INTEGER NOT NULL DEFAULT 0,
-  last_score INTEGER NOT NULL DEFAULT 0,
-  login_count INTEGER NOT NULL DEFAULT 0,
-  last_login_at TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS settings (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS activity_log (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  player_name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  detail TEXT,
-  created_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_activity_player ON activity_log(player_name);
-CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_log(created_at DESC);
-`);
+app.post('/api/admin/login',(req,res)=>{const p=String(req.body?.password||''),salt=getSetting('admin_salt'),expected=getSetting('admin_hash'),a=Buffer.from(expected,'hex'),c=Buffer.from(hashPassword(p,salt),'hex');if(!(a.length===c.length&&crypto.timingSafeEqual(a,c)))return res.status(401).json({ok:false});res.json({ok:true,token:createAdminSession()})});
+app.post('/api/admin/password',requireAdmin,(req,res)=>{const p=String(req.body?.password||'');if(p.length<6||p.length>72)return res.status(400).json({ok:false});const salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(p,salt));adminSessions.clear();res.json({ok:true})});
+app.get('/api/admin/players',requireAdmin,(_req,res)=>res.json({ok:true,players:db.prepare('SELECT * FROM players ORDER BY xp DESC,best_score DESC,total_score DESC,name ASC').all().map(safePlayer)}));
+app.get('/api/admin/activity',requireAdmin,(_req,res)=>res.json({ok:true,activities:db.prepare('SELECT player_name AS playerName,type,detail,created_at AS createdAt FROM activity_log ORDER BY id DESC LIMIT 100').all()}));
+app.post('/api/admin/player/:name/reset-record',requireAdmin,(req,res)=>{const n=String(req.params.name||'').slice(0,12),now=new Date().toISOString();db.prepare('UPDATE players SET total_score=0,attempts=0,best_score=0,last_score=0,xp=0,updated_at=? WHERE name=?').run(now,n);logActivity(n,'record-reset','교사가 학습 기록/XP 초기화');res.json({ok:true})});
+app.post('/api/admin/player/:name/reset-password',requireAdmin,(req,res)=>{const n=String(req.params.name||'').slice(0,12),p=String(req.body?.password||'');if(p.length<4||p.length>72)return res.status(400).json({ok:false});const salt=crypto.randomBytes(16).toString('hex'),now=new Date().toISOString();db.prepare('UPDATE players SET password_hash=?,password_salt=?,updated_at=? WHERE name=?').run(hashPassword(p,salt),salt,now,n);res.json({ok:true})});
+app.delete('/api/admin/player/:name',requireAdmin,(req,res)=>{const n=String(req.params.name||'').slice(0,12);db.prepare('DELETE FROM players WHERE name=?').run(n);db.prepare('DELETE FROM activity_log WHERE player_name=?').run(n);for(const[t,s]of sessions)if(s.name===n)sessions.delete(t);res.json({ok:true})});
+app.get('/api/admin/backup',requireAdmin,(_req,res)=>{const payload={format:'studyvillage-backup',version:3,exportedAt:new Date().toISOString(),players:db.prepare('SELECT * FROM players ORDER BY id').all(),settings:db.prepare('SELECT * FROM settings ORDER BY key').all(),activities:db.prepare('SELECT * FROM activity_log ORDER BY id').all()};res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Content-Disposition',`attachment; filename="studyvillage-backup-${new Date().toISOString().slice(0,10).replaceAll('-','')}.json"`);res.send(JSON.stringify(payload,null,2))});
+app.post('/api/admin/restore',requireAdmin,(req,res)=>{const b=req.body;if(b?.format!=='studyvillage-backup'||!Array.isArray(b.players)||!Array.isArray(b.settings))return res.status(400).json({ok:false});const restore=db.transaction(()=>{db.prepare('DELETE FROM players').run();db.prepare('DELETE FROM settings').run();db.prepare('DELETE FROM activity_log').run();const p=db.prepare('INSERT INTO players(id,name,password_hash,password_salt,total_score,attempts,best_score,last_score,login_count,last_login_at,xp,created_at,updated_at) VALUES(@id,@name,@password_hash,@password_salt,@total_score,@attempts,@best_score,@last_score,@login_count,@last_login_at,@xp,@created_at,@updated_at)');for(const r of b.players)p.run({...r,login_count:r.login_count||0,last_login_at:r.last_login_at||null,xp:r.xp||0});const s=db.prepare('INSERT INTO settings(key,value) VALUES(@key,@value)');for(const r of b.settings)s.run(r);const a=db.prepare('INSERT INTO activity_log(id,player_name,type,detail,created_at) VALUES(@id,@player_name,@type,@detail,@created_at)');for(const r of b.activities||[])a.run(r)});restore();ensureAdminPassword();sessions.clear();adminSessions.clear();res.json({ok:true,players:b.players.length})});
 
-const playerColumns = new Set(db.prepare('PRAGMA table_info(players)').all().map(row => row.name));
-if (!playerColumns.has('login_count')) db.exec('ALTER TABLE players ADD COLUMN login_count INTEGER NOT NULL DEFAULT 0');
-if (!playerColumns.has('last_login_at')) db.exec('ALTER TABLE players ADD COLUMN last_login_at TEXT');
-
-function hashPassword(password, salt) { return crypto.scryptSync(password, salt, 64).toString('hex'); }
-function safePlayer(row) { return { name:row.name,totalScore:row.total_score,attempts:row.attempts,bestScore:row.best_score,lastScore:row.last_score,loginCount:row.login_count||0,lastLoginAt:row.last_login_at||null,updatedAt:row.updated_at }; }
-function createSession(name) { const token=crypto.randomBytes(32).toString('hex');sessions.set(token,{name,createdAt:Date.now()});return token; }
-function createAdminSession() { const token=crypto.randomBytes(32).toString('hex');adminSessions.set(token,{createdAt:Date.now()});return token; }
-function bearer(req) { const auth=String(req.headers.authorization||'');return auth.startsWith('Bearer ')?auth.slice(7):''; }
-function requireSession(req,res,next){const session=sessions.get(bearer(req));if(!session)return res.status(401).json({ok:false,code:'not-authenticated'});req.session=session;next();}
-function requireAdmin(req,res,next){if(!adminSessions.has(bearer(req)))return res.status(401).json({ok:false,code:'admin-not-authenticated'});next();}
-function classroomUrls(){const urls=[];for(const [adapter,entries] of Object.entries(os.networkInterfaces()))for(const net of entries||[])if(net.family==='IPv4'&&!net.internal)urls.push({adapter,address:net.address,url:`http://${net.address}:${PORT}`});return urls;}
-function getSetting(key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null;}
-function setSetting(key,value){db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,value);}
-function addActivity(name,type,detail=null){db.prepare('INSERT INTO activity_log(player_name,type,detail,created_at) VALUES(?,?,?,?)').run(name,type,detail?JSON.stringify(detail):null,new Date().toISOString());}
-function ensureAdminPassword(){if(getSetting('admin_hash')&&getSetting('admin_salt'))return;const initial=process.env.STUDYVILLAGE_ADMIN_PASSWORD||'teacher1234';const salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(initial,salt));console.log('초기 관리자 비밀번호: teacher1234 (첫 로그인 후 변경 권장)');}
-ensureAdminPassword();
-
-app.post('/api/login',(req,res)=>{
-  const name=String(req.body?.name||'').trim().replace(/\s+/g,' ').slice(0,12),password=String(req.body?.password||'');
-  if(!name||password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-input'});
-  let existing=db.prepare('SELECT * FROM players WHERE name=?').get(name);
-  const now=new Date().toISOString();
-  let isNew=false;
-  if(!existing){const salt=crypto.randomBytes(16).toString('hex');db.prepare('INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(name,hashPassword(password,salt),salt,1,now,now,now);existing=db.prepare('SELECT * FROM players WHERE name=?').get(name);isNew=true;}
-  else {const actual=Buffer.from(existing.password_hash,'hex'),candidate=Buffer.from(hashPassword(password,existing.password_salt),'hex');if(!(actual.length===candidate.length&&crypto.timingSafeEqual(actual,candidate)))return res.status(401).json({ok:false,code:'wrong-password'});db.prepare('UPDATE players SET login_count=login_count+1,last_login_at=?,updated_at=? WHERE name=?').run(now,now,name);existing=db.prepare('SELECT * FROM players WHERE name=?').get(name);}
-  addActivity(name,'login',{isNew});
-  res.json({ok:true,isNew,token:createSession(name),player:safePlayer(existing)});
-});
-app.get('/api/player/me',requireSession,(req,res)=>{const row=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!row)return res.status(404).json({ok:false,code:'not-found'});res.json({ok:true,player:safePlayer(row)});});
-app.post('/api/player/me/record',requireSession,(req,res)=>{const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));const old=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!old)return res.status(404).json({ok:false,code:'not-found'});const totalScore=clamp(req.body?.totalScore,0,100000000),attempts=clamp(req.body?.attempts,0,1000000),bestScore=clamp(req.body?.bestScore,0,1000),lastScore=clamp(req.body?.lastScore,0,1000),now=new Date().toISOString();db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,updated_at=? WHERE name=?').run(totalScore,attempts,bestScore,lastScore,now,req.session.name);if(attempts>old.attempts)addActivity(req.session.name,'quiz_complete',{score:lastScore,bestScore,totalScore,attempts});const updated=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);res.json({ok:true,player:safePlayer(updated)});});
-
-app.post('/api/admin/login',(req,res)=>{const password=String(req.body?.password||''),salt=getSetting('admin_salt'),expected=getSetting('admin_hash');const actual=Buffer.from(expected,'hex'),candidate=Buffer.from(hashPassword(password,salt),'hex');if(!(actual.length===candidate.length&&crypto.timingSafeEqual(actual,candidate)))return res.status(401).json({ok:false,code:'wrong-admin-password'});res.json({ok:true,token:createAdminSession()});});
-app.post('/api/admin/password',requireAdmin,(req,res)=>{const password=String(req.body?.password||'');if(password.length<6||password.length>72)return res.status(400).json({ok:false,code:'invalid-password'});const salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(password,salt));adminSessions.clear();res.json({ok:true});});
-app.get('/api/admin/players',requireAdmin,(_req,res)=>{const rows=db.prepare('SELECT * FROM players ORDER BY best_score DESC,total_score DESC,attempts ASC,name ASC').all();res.json({ok:true,players:rows.map(safePlayer)});});
-app.get('/api/admin/activity',requireAdmin,(req,res)=>{const limit=Math.max(1,Math.min(200,Number(req.query.limit)||50));const rows=db.prepare('SELECT id,player_name AS playerName,type,detail,created_at AS createdAt FROM activity_log ORDER BY id DESC LIMIT ?').all(limit).map(row=>({...row,detail:row.detail?JSON.parse(row.detail):null}));res.json({ok:true,activities:rows});});
-app.post('/api/admin/player/:name/reset-record',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12),now=new Date().toISOString();db.prepare('UPDATE players SET total_score=0,attempts=0,best_score=0,last_score=0,updated_at=? WHERE name=?').run(now,name);addActivity(name,'admin_reset_record');res.json({ok:true});});
-app.post('/api/admin/player/:name/reset-password',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12),password=String(req.body?.password||'');if(password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-password'});const salt=crypto.randomBytes(16).toString('hex'),now=new Date().toISOString();db.prepare('UPDATE players SET password_hash=?,password_salt=?,updated_at=? WHERE name=?').run(hashPassword(password,salt),salt,now,name);addActivity(name,'admin_reset_password');res.json({ok:true});});
-app.delete('/api/admin/player/:name',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12);db.prepare('DELETE FROM players WHERE name=?').run(name);db.prepare('DELETE FROM activity_log WHERE player_name=?').run(name);for(const [token,session] of sessions)if(session.name===name)sessions.delete(token);res.json({ok:true});});
-
-app.get('/api/admin/backup',requireAdmin,(_req,res)=>{const players=db.prepare('SELECT * FROM players ORDER BY id').all(),settings=db.prepare('SELECT * FROM settings ORDER BY key').all(),activities=db.prepare('SELECT * FROM activity_log ORDER BY id').all();const payload={format:'studyvillage-backup',version:2,exportedAt:new Date().toISOString(),players,settings,activities};const stamp=new Date().toISOString().slice(0,10).replaceAll('-','');res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Content-Disposition',`attachment; filename="studyvillage-backup-${stamp}.json"`);res.send(JSON.stringify(payload,null,2));});
-app.post('/api/admin/restore',requireAdmin,(req,res)=>{const backup=req.body;if(backup?.format!=='studyvillage-backup'||![1,2].includes(backup?.version)||!Array.isArray(backup.players)||!Array.isArray(backup.settings))return res.status(400).json({ok:false,code:'invalid-backup'});const restore=db.transaction(()=>{db.prepare('DELETE FROM activity_log').run();db.prepare('DELETE FROM players').run();db.prepare('DELETE FROM settings').run();const p=db.prepare('INSERT INTO players(id,name,password_hash,password_salt,total_score,attempts,best_score,last_score,login_count,last_login_at,created_at,updated_at) VALUES (@id,@name,@password_hash,@password_salt,@total_score,@attempts,@best_score,@last_score,@login_count,@last_login_at,@created_at,@updated_at)');for(const raw of backup.players){const row={...raw,login_count:raw.login_count||0,last_login_at:raw.last_login_at||null};p.run(row);}const s=db.prepare('INSERT INTO settings(key,value) VALUES (@key,@value)');for(const row of backup.settings)s.run(row);if(Array.isArray(backup.activities)){const a=db.prepare('INSERT INTO activity_log(id,player_name,type,detail,created_at) VALUES (@id,@player_name,@type,@detail,@created_at)');for(const row of backup.activities)a.run(row);}});restore();ensureAdminPassword();sessions.clear();adminSessions.clear();res.json({ok:true,players:backup.players.length});});
-
-app.get('/api/ranking',(_req,res)=>{const rows=db.prepare('SELECT * FROM players ORDER BY best_score DESC,total_score DESC,attempts ASC,name ASC LIMIT 100').all();res.json({ok:true,players:rows.map(safePlayer)});});
-app.get('/api/network',async(_req,res)=>{const urls=classroomUrls();const items=await Promise.all(urls.map(async item=>({...item,qr:await QRCode.toDataURL(item.url,{margin:1,width:320})})));res.json({ok:true,port:PORT,teacherUrl:`http://localhost:${PORT}`,urls:items});});
+app.get('/api/ranking',(_req,res)=>res.json({ok:true,players:db.prepare('SELECT * FROM players ORDER BY xp DESC,best_score DESC,total_score DESC,name ASC LIMIT 100').all().map(safePlayer)}));
+app.get('/api/network',async(_req,res)=>{const urls=classroomUrls();res.json({ok:true,port:PORT,teacherUrl:`http://localhost:${PORT}`,urls:await Promise.all(urls.map(async i=>({...i,qr:await QRCode.toDataURL(i.url,{margin:1,width:320})})))})});
 app.get('/api/health',(_req,res)=>res.json({ok:true,server:'Studyvillage classroom server',dataPath:dbPath}));
-
-export function startClassroomServer(){return app.listen(PORT,'0.0.0.0',()=>{console.log('');console.log('=============================================');console.log(' Studyvillage 교실 서버가 실행되었습니다.');console.log('=============================================');console.log(`접속/QR: http://localhost:${PORT}/connect.html`);console.log(`관리자: http://localhost:${PORT}/admin.html`);console.log(`데이터: ${dbPath}`);for(const {adapter,url} of classroomUrls())console.log(`학생 [${adapter}] ${url}`);console.log('');});}
+export function startClassroomServer(){return app.listen(PORT,'0.0.0.0',()=>{console.log(`Studyvillage: http://localhost:${PORT}/connect.html`);for(const{adapter,url}of classroomUrls())console.log(`학생 [${adapter}] ${url}`)})}
 if(process.env.STUDYVILLAGE_EMBEDDED!=='1')startClassroomServer();
