@@ -1,14 +1,16 @@
-/* v0.9.48 local activity checkpoint foundation.
-   Progress payloads stay small, each student keeps only recent checkpoints, and a shared tablet also keeps a global cap so old students cannot accumulate unlimited local records. */
+/* v0.9.50 local activity checkpoint foundation.
+   Shared tablets keep bounded recent checkpoints, and stale/invalid records are cleaned globally even when the original student no longer logs in. */
 window.StudyVillageCheckpoint=(()=>{
   const PREFIX='studyvillage-checkpoint:v1:',MAX_AGE_MS=604800000,MAX_BYTES=16384,MAX_PER_PLAYER=20,MAX_TOTAL=80;
   const part=s=>encodeURIComponent(String(s||'').trim()).slice(0,240),key=(playerName,activityId)=>`${PREFIX}${part(playerName)}:${part(activityId)}`;
-  function valid(value){if(!value||value.version!==1||!value.updatedAt)return false;const age=Date.now()-Date.parse(value.updatedAt);return Number.isFinite(age)&&age>=0&&age<=MAX_AGE_MS}
+  function valid(value){if(!value||value.version!==1||!value.updatedAt||!value.playerName||!value.activityId)return false;const age=Date.now()-Date.parse(value.updatedAt);return Number.isFinite(age)&&age>=0&&age<=MAX_AGE_MS}
   function collect(prefixFilter=''){const items=[];try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(!k?.startsWith(PREFIX)||prefixFilter&&!k.startsWith(prefixFilter))continue;try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);continue}const value=JSON.parse(raw);if(valid(value))items.push({k,value,updatedAt:value.updatedAt});else localStorage.removeItem(k)}catch{localStorage.removeItem(k)}}}catch{}return items}
-  function prune(playerName){const expected=String(playerName),playerPrefix=`${PREFIX}${part(playerName)}:`;const mine=collect(playerPrefix).filter(item=>item.value.playerName===expected).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));mine.slice(MAX_PER_PLAYER).forEach(item=>{try{localStorage.removeItem(item.k)}catch{}});const all=collect().sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));all.slice(MAX_TOTAL).forEach(item=>{try{localStorage.removeItem(item.k)}catch{}})}
+  function prune(playerName){const expected=String(playerName),playerPrefix=`${PREFIX}${part(playerName)}:`,mine=collect(playerPrefix).filter(item=>item.value.playerName===expected).sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));mine.slice(MAX_PER_PLAYER).forEach(item=>{try{localStorage.removeItem(item.k)}catch{}});pruneAll()}
+  function pruneAll(){const all=collect().sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));all.slice(MAX_TOTAL).forEach(item=>{try{localStorage.removeItem(item.k)}catch{}});return Math.min(all.length,MAX_TOTAL)}
   function save(playerName,activityId,progress={}){if(!playerName||!activityId)return false;const value={version:1,playerName:String(playerName),activityId:String(activityId),progress,updatedAt:new Date().toISOString()};try{const serialized=JSON.stringify(value);if(!serialized||serialized.length>MAX_BYTES)return false;localStorage.setItem(key(playerName,activityId),serialized);prune(playerName);return true}catch{return false}}
   function load(playerName,activityId){if(!playerName||!activityId)return null;const k=key(playerName,activityId);try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);return null}const value=JSON.parse(raw);if(valid(value)&&value.playerName===String(playerName)&&value.activityId===String(activityId))return value;localStorage.removeItem(k);return null}catch{try{localStorage.removeItem(k)}catch{}return null}}
   function clear(playerName,activityId){if(!playerName||!activityId)return;try{localStorage.removeItem(key(playerName,activityId))}catch{}}
   function list(playerName){if(!playerName)return[];prune(playerName);const expected=String(playerName),playerPrefix=`${PREFIX}${part(playerName)}:`;return collect(playerPrefix).filter(item=>item.value.playerName===expected).map(item=>item.value).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))}
-  return{save,load,clear,list,maxAgeMs:MAX_AGE_MS,maxBytes:MAX_BYTES,maxPerPlayer:MAX_PER_PLAYER,maxTotal:MAX_TOTAL};
+  setTimeout(pruneAll,1200);
+  return{save,load,clear,list,pruneAll,maxAgeMs:MAX_AGE_MS,maxBytes:MAX_BYTES,maxPerPlayer:MAX_PER_PLAYER,maxTotal:MAX_TOTAL};
 })();
