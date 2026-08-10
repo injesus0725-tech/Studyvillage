@@ -1,8 +1,8 @@
-/* v0.9.991 shared classroom routes.
+/* v0.9.992 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
    Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
-   Pre-1.0 readiness is false whenever the latest restore integrity audit is missing or failed. */
+   Pre-1.0 readiness remains false until both restore integrity and direct wardrobe DB wiring are complete. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
@@ -56,8 +56,10 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
 
   app.get('/api/admin/release-readiness',requireAdmin,(_req,res)=>{
     const audit=readRestoreAudit();
-    const wardrobeRestoreReady=!!audit?.ok;
-    res.json({ok:true,readyFor1_0:wardrobeRestoreReady,checks:{wardrobeRestoreIntegrity:wardrobeRestoreReady},lastRestoreIntegrity:audit||null,message:wardrobeRestoreReady?'현재 복원 무결성 검사가 통과되어 있습니다.':'1.0 전 옷장 복원 무결성 확인이 더 필요합니다.'});
+    const wardrobeRestoreIntegrity=!!audit?.ok;
+    const wardrobeDirectDbWiring=getSetting('release:wardrobe-direct-db-wiring')==='verified';
+    const readyFor1_0=wardrobeRestoreIntegrity&&wardrobeDirectDbWiring;
+    res.json({ok:true,readyFor1_0,checks:{wardrobeRestoreIntegrity,wardrobeDirectDbWiring},lastRestoreIntegrity:audit||null,message:readyFor1_0?'1.0 핵심 복원 조건이 모두 확인되었습니다.':!wardrobeDirectDbWiring?'옷장 데이터의 직접 DB 연결 검증이 남아 있습니다.':'1.0 전 옷장 복원 무결성 확인이 더 필요합니다.'});
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
