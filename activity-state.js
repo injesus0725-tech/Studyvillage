@@ -1,10 +1,11 @@
-/* v0.9.35 shared activity availability foundation.
-   Activities default to open when the server does not yet expose a state endpoint.
-   This module gives every learning activity one place to check whether it may start/resume
-   and one consistent student-facing closed message. */
+/* v0.9.38 shared activity availability guard.
+   Known classroom activities fail closed when the server cannot confirm their state.
+   This prevents a stale cached "open" state from letting a student re-enter an activity
+   after the teacher closed it while the student's network was temporarily unavailable. */
 window.StudyVillageActivityState=(()=>{
   const cache=new Map();
   const REQUEST_TIMEOUT_MS=3000;
+  const CONTROLLED_IDS=new Set(['riddle-demo','library-vocabulary']);
   function normalize(id,name='학습 활동',state={}){
     return{
       activityId:String(id||''),
@@ -25,6 +26,7 @@ window.StudyVillageActivityState=(()=>{
       const r=await timedFetch(`/api/activity-state/${encodeURIComponent(id)}`);
       if(r.ok){const d=await r.json(),value=normalize(id,name,d.activity||d);cache.set(id,value);return value}
     }catch{}
+    if(CONTROLLED_IDS.has(id))return normalize(id,name,{open:false,message:`📡 ${name||'학습 활동'}의 상태를 확인할 수 없어요.\n교실 서버 연결이 돌아오면 다시 시도해 주세요.`});
     return cache.get(id)||normalize(id,name);
   }
   function closedText(state){
