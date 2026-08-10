@@ -4,66 +4,59 @@
 
 ## 현재 버전
 
-**v0.4.6 — Backup & Restore**
+**v0.5.0 — Portable EXE Packaging Foundation**
 
 기본 운영 구조는 **교실 선생님 컴퓨터 = 서버**입니다.
 
-- Node + SQLite 교실 서버
+- Electron 기반 교사용 실행기
+- 앱 실행 시 Express + SQLite 서버 자동 시작
 - 학생 이름 + 비밀번호 로그인
 - 학생 기록을 선생님 PC의 SQLite DB에 저장
 - 교사용 관리자 인증 및 학생 계정 관리
-- 학생 접속 주소 자동 탐색
 - 유선/Wi-Fi 어댑터별 QR 자동 생성
-- 서버 실행 후 QR 화면 자동 열기
-- 관리자 화면에서 백업 파일 다운로드
-- 백업 파일로 학생 계정/점수/관리자 설정 복원
+- 관리자 백업/복원
+- Windows portable EXE 빌드 설정
+- GitHub Actions 자동 Windows 빌드 워크플로
 
-## 사용 흐름
+## 독립 실행형 목표
 
-1. `start-classroom.bat` 더블클릭
-2. 서버 자동 시작
-3. 잠시 후 `connect.html` 자동 열림
-4. 선생님은 QR 화면에서 학생용 주소 확인
-5. 학생은 태블릿으로 같은 네트워크의 QR 스캔
-6. 이름 + 비밀번호로 입장
-7. 교사는 관리자 화면에서 학생 기록 및 계정을 관리
+최종 사용 흐름은 다음과 같습니다.
 
-## 백업과 복원
+1. `Studyvillage.exe` 더블클릭
+2. 교실 서버 자동 시작
+3. QR 화면 자동 표시
+4. 학생은 태블릿으로 같은 네트워크의 QR 스캔
+5. 이름 + 비밀번호로 입장
+6. 학생 기록은 교사용 PC에 저장
 
-관리자 화면의 `💾 백업` 버튼을 누르면 `studyvillage-backup-날짜.json` 파일이 저장됩니다.
+Electron 패키지 내부는 읽기 전용이 될 수 있으므로 실제 SQLite 데이터는 Windows의 사용자 데이터 폴더 아래 별도 `data/studyvillage.db`에 저장하도록 변경했습니다. 따라서 프로그램을 새 버전으로 교체해도 기존 데이터 파일을 분리해서 유지할 수 있는 구조입니다.
 
-이 파일에는 다음 정보가 들어 있습니다.
+## Windows 빌드
 
-- 학생 계정
-- 학생 비밀번호 해시/솔트
-- 누적 점수
-- 도전 횟수
-- 최고/최근 점수
-- 관리자 설정
+루트 `package.json`에 Electron 및 electron-builder 설정이 있습니다.
 
-새 교실 PC로 옮길 때는 Studyvillage를 실행한 뒤 관리자 화면의 `♻️ 복원`에서 백업 JSON 파일을 선택하면 됩니다. 복원은 현재 데이터를 모두 백업 시점의 데이터로 교체합니다.
+개발 환경에서는:
 
-백업 파일에는 계정 인증 정보가 포함되므로 개인 USB나 안전한 교사용 저장 공간에 보관하세요.
+`npm install`
 
-## 주요 파일
+`npm start`
 
-- `start-classroom.bat`: Windows 교실 서버 시작
-- `connect.html`: 학생 접속 주소 + QR + 교사용 바로가기
-- `admin.html`: 관리자 로그인, 학생 관리, 백업/복원
-- `server/server.js`: Express + SQLite 서버
-- `server/studyvillage.db`: 첫 실행 시 생성되는 실제 학생 데이터 파일
+Windows portable EXE 생성:
 
-## 네트워크
+`npm run dist:win`
 
-유선과 Wi-Fi가 동시에 연결된 PC에서는 QR이 여러 개 표시될 수 있습니다. 학생 태블릿과 같은 네트워크에 연결된 어댑터의 QR을 사용하면 됩니다.
+또한 `.github/workflows/build-windows.yml`이 있어 GitHub Actions에서 Windows EXE를 자동 빌드할 수 있도록 준비했습니다.
 
-## 실행 상태
+## 기존 개발용 실행
 
-현재 **Node.js가 설치된 Windows PC에서는 실행 테스트가 가능한 단계**입니다.
+Node.js가 설치된 PC에서는 기존 `start-classroom.bat` 방식도 계속 사용할 수 있습니다.
 
-아직 Node.js 설치가 필요 없는 독립형 `.exe`는 아닙니다. 이후 패키징 단계에서 이 의존성까지 없애는 것을 목표로 합니다.
+## 데이터와 백업
+
+관리자 화면에서 백업 JSON을 내려받고 새 PC에서 복원할 수 있습니다. 백업 파일에는 학생 계정 인증 정보와 기록이 포함되므로 교사용 안전한 저장 공간에 보관하세요.
 
 ## 다음 개발 예정
 
-- v0.5.0: 독립 실행형 교실 패키징 기반
-- 이후: 참여 기록 확장, 학습 보상, 실제 교실 테스트에 따른 개선
+- v0.5.1: GitHub Actions 실제 Windows 빌드 검증 및 오류 수정
+- v0.5.2: portable EXE 실행 흐름 검증
+- 이후: 참여 기록 확장, 학습 보상, 실제 교실 테스트 개선
