@@ -1,4 +1,4 @@
-/* v0.8.1 village layout
+/* v0.9.0 village layout
    Adds visual districts and roads to the expanded map without coupling them to game logic. */
 (()=>{
   const map=document.querySelector('#world-map');
@@ -22,6 +22,6 @@
   const add=(cls,html='')=>{const el=document.createElement('div');el.className=cls;el.innerHTML=html;map.appendChild(el);return el};
   add('village-road road-h');add('village-road road-v');add('village-road road-nw');add('village-road road-ne');add('village-road road-sw');add('village-road road-se');add('village-plaza');
   add('district-sign sign-school','🏫 배움터 구역');add('district-sign sign-library','📚 책마루 구역');add('district-sign sign-shop','🏪 상점 구역');add('district-sign sign-quiz','❓ 도전 구역');
-  add('shop-zone obstacle','🏪<span>상점 준비 중</span>');
+  add('shop-zone obstacle','🏪<span>꾸미기 상점</span>');
   add('flower f1','🌼');add('flower f2','🌷');add('flower f3','🌻');add('flower f4','🌸');
 })();
