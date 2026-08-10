@@ -1,17 +1,17 @@
-/* v0.9.37 student activity gate.
-   Closed activities cannot start or resume. Existing checkpoints are preserved. */
+/* v0.9.43 student activity gate.
+   Closed activities cannot start or resume. Existing checkpoints are preserved.
+   Repeated taps/keys while the same gate check is running are ignored, and closed notices have a short cooldown. */
 (()=>{
   const activityState=()=>window.StudyVillageActivityState;
-  let bypassRiddle=false;
+  let bypassRiddle=false,lastNoticeAt=0;const pending=new Set(),NOTICE_COOLDOWN_MS=1800;
   function nearQuizHall(){
     const player=document.querySelector('#player'),hall=document.querySelector('#quiz-hall');
     if(!player||!hall)return false;const p=player.getBoundingClientRect(),h=hall.getBoundingClientRect();
     return Math.hypot(p.left+p.width/2-(h.left+h.width/2),p.top+p.height/2-(h.top+h.height/2))<170;
   }
   async function allow(id,name){
-    const state=activityState();if(!state)return true;
-    const result=await state.requireOpen(id,name);if(result.ok)return true;
-    alert(result.message);return false;
+    if(pending.has(id))return false;pending.add(id);
+    try{const state=activityState();if(!state)return true;const result=await state.requireOpen(id,name);if(result.ok)return true;const now=Date.now();if(now-lastNoticeAt>=NOTICE_COOLDOWN_MS){lastNoticeAt=now;alert(result.message)}return false}finally{pending.delete(id)}
   }
   window.addEventListener('studyvillage:open-library-game',e=>{
     if(e.detail?.gateApproved)return;
