@@ -1,5 +1,6 @@
-/* v0.9.82 backward-compatible Studyvillage backup migration.
+/* v0.9.89 backward-compatible Studyvillage backup migration.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
+   Original character IDs are mirrored into compatibility settings so future versions can restore legacy/special characters even if the current UI cannot render them.
    Migration output is deterministic and startup verification checks continuity plus repeatability.
    Never mutates the original parsed backup object. */
 
@@ -9,6 +10,7 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
 const LEGACY_EPOCH='1970-01-01T00:00:00.000Z';
 const stable=value=>JSON.stringify(value);
+const legacyCharacterKey=name=>`compat:base-character:${encodeURIComponent(String(name||''))}`;
 
 function normalizePlayer(player={}){
   const out={...player};
@@ -26,12 +28,26 @@ function normalizePlayer(player={}){
   return out;
 }
 
+function preserveCharacterIds(backup){
+  if(!Array.isArray(backup.players)||!Array.isArray(backup.settings))return backup;
+  const settings=new Map(backup.settings.map(row=>[String(row?.key||''),row]));
+  for(const player of backup.players){
+    const name=String(player?.name||'').trim(),character=String(player?.base_character||'').trim();
+    if(!name||!character)continue;
+    const key=legacyCharacterKey(name);
+    if(!settings.has(key))settings.set(key,{key,value:character});
+  }
+  backup.settings=[...settings.values()];
+  return backup;
+}
+
 function normalizeBackupShape(backup){
   backup.players=Array.isArray(backup.players)?backup.players.map(normalizePlayer):backup.players;
   backup.settings=Array.isArray(backup.settings)?backup.settings:[];
   backup.activities=Array.isArray(backup.activities)?backup.activities:[];
   backup.activityRecords=Array.isArray(backup.activityRecords)?backup.activityRecords:[];
   backup.errorReports=Array.isArray(backup.errorReports)?backup.errorReports:[];
+  preserveCharacterIds(backup);
   return backup;
 }
 
@@ -74,3 +90,5 @@ export function migrateStudyvillageBackup(input){
   backup=normalizeBackupShape(backup);backup.version=CURRENT_BACKUP_VERSION;
   return{ok:true,backup,fromVersion:originalVersion,toVersion:CURRENT_BACKUP_VERSION,migrated:originalVersion!==CURRENT_BACKUP_VERSION};
 }
+
+export { legacyCharacterKey };
