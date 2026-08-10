@@ -15,7 +15,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const sessions = new Map();
 const adminSessions = new Map();
 
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '2mb' }));
 app.use(express.static(rootDir));
 
 db.pragma('journal_mode = WAL');
@@ -84,6 +84,30 @@ app.get('/api/admin/players',requireAdmin,(_req,res)=>{const rows=db.prepare('SE
 app.post('/api/admin/player/:name/reset-record',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12),now=new Date().toISOString();db.prepare('UPDATE players SET total_score=0,attempts=0,best_score=0,last_score=0,updated_at=? WHERE name=?').run(now,name);res.json({ok:true});});
 app.post('/api/admin/player/:name/reset-password',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12),password=String(req.body?.password||'');if(password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-password'});const salt=crypto.randomBytes(16).toString('hex'),now=new Date().toISOString();db.prepare('UPDATE players SET password_hash=?,password_salt=?,updated_at=? WHERE name=?').run(hashPassword(password,salt),salt,now,name);res.json({ok:true});});
 app.delete('/api/admin/player/:name',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12);db.prepare('DELETE FROM players WHERE name=?').run(name);for(const [token,session] of sessions)if(session.name===name)sessions.delete(token);res.json({ok:true});});
+
+app.get('/api/admin/backup',requireAdmin,(_req,res)=>{
+  const backup={format:'studyvillage-backup',version:1,createdAt:new Date().toISOString(),players:db.prepare('SELECT * FROM players ORDER BY id').all(),settings:db.prepare('SELECT * FROM settings').all()};
+  const date=new Date().toISOString().slice(0,10).replaceAll('-','');
+  res.setHeader('Content-Type','application/json; charset=utf-8');
+  res.setHeader('Content-Disposition',`attachment; filename="studyvillage-backup-${date}.json"`);
+  res.send(JSON.stringify(backup,null,2));
+});
+app.post('/api/admin/restore',requireAdmin,(req,res)=>{
+  const backup=req.body;
+  if(!backup||backup.format!=='studyvillage-backup'||backup.version!==1||!Array.isArray(backup.players)||!Array.isArray(backup.settings)) return res.status(400).json({ok:false,code:'invalid-backup'});
+  const restore=db.transaction(()=>{
+    db.prepare('DELETE FROM players').run();
+    db.prepare('DELETE FROM settings').run();
+    const insertPlayer=db.prepare('INSERT INTO players (id,name,password_hash,password_salt,total_score,attempts,best_score,last_score,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)');
+    for(const p of backup.players){
+      if(!p||!p.name||!p.password_hash||!p.password_salt) throw new Error('invalid-player');
+      insertPlayer.run(p.id,p.name,p.password_hash,p.password_salt,Number(p.total_score)||0,Number(p.attempts)||0,Number(p.best_score)||0,Number(p.last_score)||0,p.created_at||new Date().toISOString(),p.updated_at||new Date().toISOString());
+    }
+    const insertSetting=db.prepare('INSERT INTO settings(key,value) VALUES(?,?)');
+    for(const s of backup.settings){if(!s||!s.key)continue;insertSetting.run(String(s.key),String(s.value??''));}
+  });
+  try{restore();ensureAdminPassword();sessions.clear();adminSessions.clear();res.json({ok:true,players:backup.players.length});}catch(error){res.status(400).json({ok:false,code:'restore-failed'});}
+});
 
 app.get('/api/ranking',(_req,res)=>{const rows=db.prepare('SELECT * FROM players ORDER BY best_score DESC,total_score DESC,attempts ASC,name ASC LIMIT 100').all();res.json({ok:true,players:rows.map(safePlayer)});});
 app.get('/api/network',async(_req,res)=>{const urls=classroomUrls();const items=await Promise.all(urls.map(async item=>({...item,qr:await QRCode.toDataURL(item.url,{margin:1,width:320})})));res.json({ok:true,port:PORT,teacherUrl:`http://localhost:${PORT}`,urls:items});});
