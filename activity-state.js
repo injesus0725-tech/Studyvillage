@@ -1,6 +1,6 @@
-/* v0.9.44 shared activity availability guard.
+/* v0.9.49 shared activity availability guard.
    Known classroom activities fail closed when the server cannot confirm their state.
-   Concurrent checks for the same activity share one request, reducing duplicate traffic when students tap repeatedly. */
+   Concurrent checks for the same activity share one request, and reconnect events clear stale cached states so the next activity entry uses fresh teacher settings. */
 window.StudyVillageActivityState=(()=>{
   const cache=new Map(),inflight=new Map();
   const REQUEST_TIMEOUT_MS=3000;
@@ -12,5 +12,8 @@ window.StudyVillageActivityState=(()=>{
   function closedText(state){const s=normalize(state?.activityId,state?.name,state);return s.message||`🔒 ${s.name}은(는) 문을 닫았습니다.\n선생님이 활동을 종료했어요. 다음 모험을 기다려 주세요!`}
   async function requireOpen(activityId,name){const state=await get(activityId,name);return{ok:state.open,state,message:state.open?'':closedText(state)}}
   function remember(activityId,state){const id=String(activityId||'').trim();if(id)cache.set(id,normalize(id,state?.name,state))}
-  return{get,requireOpen,closedText,remember};
+  function clear(){cache.clear()}
+  window.addEventListener('studyvillage:connection-change',e=>{if(e.detail?.online)clear()});
+  window.addEventListener('online',clear);
+  return{get,requireOpen,closedText,remember,clear};
 })();
