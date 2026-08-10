@@ -39,3 +39,4 @@
   restoreDraft();refreshAudience();audienceTimer=setInterval(refreshAudience,AUDIENCE_REFRESH_MS);
   window.addEventListener('beforeunload',()=>{saveDraft();if(audienceTimer)clearInterval(audienceTimer)});
 })();
+(()=>{const s=document.createElement('script');s.src='admin-activity-state.js';s.defer=true;document.body.appendChild(s)})();
