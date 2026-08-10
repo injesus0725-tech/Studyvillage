@@ -1,4 +1,4 @@
-/* v0.8.3 building entrance + interior transition system */
+/* v0.9.0 building entrance + interior transition system */
 (()=>{
   const game=document.querySelector('#game-screen'),player=document.querySelector('#player'),hint=document.querySelector('#interaction-hint'),talk=document.querySelector('#talk-button');
   if(!game||!player)return;
@@ -7,7 +7,7 @@
     {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:null},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
     {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'수수께끼와 여러 학습 퀴즈에 도전하는 공간입니다.',action:'quiz'},
-    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'활동으로 얻은 보상과 캐릭터 아이템을 만나는 공간입니다.',action:null}
+    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'학습과 성장으로 해금한 캐릭터 아이템을 확인하고 바로 꾸밀 수 있습니다.',action:'customize'}
   ];
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
   const exit=overlay.querySelector('#interior-exit'),icon=overlay.querySelector('#interior-icon'),title=overlay.querySelector('#interior-title'),text=overlay.querySelector('#interior-text'),actions=overlay.querySelector('#interior-action-wrap');
@@ -17,6 +17,7 @@
   function enter(b){if(!b)return;open=true;current=b;overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';
     if(b.action==='quiz')addActionButton('🎯 수수께끼 도전 시작',()=>{leave();bypassUntil=performance.now()+700;setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true})),60)});
     else if(b.action==='library')addActionButton('📖 낱말 뜻 맞추기 시작',()=>window.dispatchEvent(new CustomEvent('studyvillage:open-library-game')));
+    else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();setTimeout(()=>document.querySelector('#customize-button')?.click(),50)});
     else{const note=document.createElement('p');note.className='interior-coming';note.textContent='✨ 이 공간의 활동은 다음 업데이트에서 열립니다.';actions.appendChild(note)}
     document.body.classList.add('inside-building')}
   function leave(){open=false;overlay.hidden=true;current=null;document.body.classList.remove('inside-building')}
