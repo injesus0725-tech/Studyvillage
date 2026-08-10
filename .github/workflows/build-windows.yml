@@ -38,9 +38,16 @@ jobs:
           if (-not $files) { throw "Portable EXE was not created." }
           $files | ForEach-Object { Write-Host "Built: $($_.FullName) ($($_.Length) bytes)" }
 
-      - name: Upload portable EXE
+      - name: Add classroom quick guide
+        shell: pwsh
+        run: Copy-Item CLASSROOM-QUICKSTART.txt dist/CLASSROOM-QUICKSTART.txt
+
+      - name: Upload Windows classroom package
         uses: actions/upload-artifact@v4
         with:
-          name: Studyvillage-Windows-v0.5.1
-          path: dist/*.exe
+          name: Studyvillage-Windows-latest
+          path: |
+            dist/*.exe
+            dist/CLASSROOM-QUICKSTART.txt
           if-no-files-found: error
+          retention-days: 30
