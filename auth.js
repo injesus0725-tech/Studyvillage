@@ -1,10 +1,10 @@
-/* v0.3.2 authentication router.
-   Firebase is used when configured; otherwise the local bridge remains available. */
+/* v0.4.0 authentication router.
+   Default: classroom Node server on the teacher PC.
+   Fallback: local browser account only when the server is unavailable. */
 window.StudyVillageAuth = (() => {
   const prefix = 'studyvillage-account:';
   const encoder = new TextEncoder();
-  let cloudChecked = false;
-  let cloudReady = false;
+  let serverAvailable = null;
 
   const toHex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,'0')).join('');
   async function hashPassword(password, salt) {
@@ -15,17 +15,25 @@ window.StudyVillageAuth = (() => {
   const randomSalt = () => { const bytes=new Uint8Array(16); crypto.getRandomValues(bytes); return toHex(bytes); };
   const read = name => { try{return JSON.parse(localStorage.getItem(key(name))||'null')}catch{return null} };
 
-  async function ensureCloud() {
-    if (cloudChecked) return cloudReady;
-    cloudChecked = true;
-    if (!window.StudyVillageFirebase) return false;
+  async function checkServer() {
+    if (serverAvailable !== null) return serverAvailable;
     try {
-      const result = await window.StudyVillageFirebase.init();
-      cloudReady = result.ok === true;
+      const response = await fetch('/api/health', { cache: 'no-store' });
+      serverAvailable = response.ok;
     } catch {
-      cloudReady = false;
+      serverAvailable = false;
     }
-    return cloudReady;
+    return serverAvailable;
+  }
+
+  async function serverLogin(name,password) {
+    const response = await fetch('/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,password})
+    });
+    const result = await response.json().catch(()=>({ok:false,code:'server-error'}));
+    return { ...result, mode:'classroom-server' };
   }
 
   async function localLogin(name,password) {
@@ -40,12 +48,9 @@ window.StudyVillageAuth = (() => {
   }
 
   async function login(name,password) {
-    if (await ensureCloud()) {
-      const result = await window.StudyVillageFirebase.loginOrRegister(name,password);
-      return { ...result, mode:'firebase' };
-    }
+    if (await checkServer()) return serverLogin(name,password);
     return localLogin(name,password);
   }
 
-  return { login, ensureCloud, mode: () => cloudReady ? 'firebase' : 'local' };
+  return { login, checkServer, mode: () => serverAvailable ? 'classroom-server' : 'local' };
 })();
