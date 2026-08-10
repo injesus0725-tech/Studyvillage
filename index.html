@@ -13,15 +13,27 @@
         <div class="tree">🌳</div>
         <h1>우리 학습마을</h1>
         <p>배우고, 도전하고, 함께 성장하는 마을</p>
-        <button id="start-button">게임 시작</button>
-        <span class="version">v0.2.4</span>
+        <label class="name-entry" for="player-name">
+          <span>이름을 입력해 주세요</span>
+          <input id="player-name" type="text" maxlength="12" autocomplete="off" placeholder="예: 김하늘" />
+        </label>
+        <p id="name-error" class="name-error" aria-live="polite"></p>
+        <button id="start-button">마을 입장</button>
+        <span class="version">v0.2.5</span>
       </div>
     </section>
 
     <section id="game-screen" class="screen">
       <header class="hud">
         <strong>🌳 우리 학습마을</strong>
-        <span>방향키/WASD 이동 · Space 상호작용</span>
+        <div class="hud-right">
+          <span class="control-help">방향키/WASD 이동 · Space 상호작용</span>
+          <div class="player-profile" aria-label="플레이어 정보">
+            <span class="profile-avatar">🧑‍🎓</span>
+            <strong id="profile-name">학생</strong>
+            <span id="profile-score">0점</span>
+          </div>
+        </div>
       </header>
 
       <div id="world" aria-label="학습마을 광장">
@@ -42,7 +54,10 @@
         </div>
 
         <div id="interaction-hint" class="interaction-hint" aria-live="polite"></div>
-        <div id="player" role="img" aria-label="플레이어 캐릭터">🧑‍🎓</div>
+        <div id="player" role="img" aria-label="플레이어 캐릭터">
+          <span class="player-icon">🧑‍🎓</span>
+          <span id="player-label" class="player-label">학생</span>
+        </div>
       </div>
 
       <div id="dialogue" class="dialogue" role="dialog" aria-modal="true" aria-labelledby="dialogue-name" hidden>
