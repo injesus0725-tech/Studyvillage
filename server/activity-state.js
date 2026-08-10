@@ -1,22 +1,28 @@
-/* v0.9.69 shared classroom routes.
+/* v0.9.72 shared classroom routes.
    Activity open/close state remains persisted in settings.
-   Backup restore requests are now server-validated before the existing restore transaction runs. */
+   Backup restore requests are server-validated and only one restore may run at a time. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
   const key=id=>`activity-state:${id}`;
   const valid=id=>/^[a-z0-9-]{1,40}$/.test(id);
+  let restoreInProgress=false;
   const read=(id,name='학습 활동')=>{
     let saved=null;try{saved=JSON.parse(getSetting(key(id))||'null')}catch{}
     return{activityId:id,name:String(saved?.name||name).slice(0,80),open:saved?.open!==false,message:String(saved?.message||'').slice(0,240),updatedAt:saved?.updatedAt||null};
   };
 
-  // This middleware is registered before server.js installs the actual restore route.
-  // A malformed backup therefore never reaches the destructive restore transaction.
+  // Registered before server.js installs the destructive restore route.
+  // Validation and a small mutex protect the transaction from malformed or duplicate requests.
   app.use('/api/admin/restore',requireAdmin,(req,res,next)=>{
     if(req.method!=='POST')return next();
+    if(restoreInProgress)return res.status(409).json({ok:false,code:'restore-in-progress',message:'이미 다른 복원 작업이 진행 중입니다.'});
     const validation=validateStudyvillageBackup(req.body);
     if(!validation.ok)return res.status(400).json({ok:false,code:validation.code,message:validation.message});
+    restoreInProgress=true;
+    let released=false;
+    const release=()=>{if(released)return;released=true;restoreInProgress=false};
+    res.once('finish',release);res.once('close',release);
     req.studyvillageBackupValidation=validation;
     next();
   });
