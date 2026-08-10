@@ -1,6 +1,6 @@
-/* v0.9.74 shared classroom routes.
+/* v0.9.79 shared classroom routes.
    Activity open/close state remains persisted in settings.
-   Older backups are migrated forward, then validated, before one-at-a-time restore. */
+   Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup } from './backup-migrator.js';
 
@@ -13,8 +13,6 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     return{activityId:id,name:String(saved?.name||name).slice(0,80),open:saved?.open!==false,message:String(saved?.message||'').slice(0,240),updatedAt:saved?.updatedAt||null};
   };
 
-  // Registered before server.js installs the destructive restore route.
-  // Old supported backups are copied/migrated to the current shape before validation.
   app.use('/api/admin/restore',requireAdmin,(req,res,next)=>{
     if(req.method!=='POST')return next();
     if(restoreInProgress)return res.status(409).json({ok:false,code:'restore-in-progress',message:'이미 다른 복원 작업이 진행 중입니다.'});
@@ -28,7 +26,13 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     restoreInProgress=true;
     let released=false;
     const release=()=>{if(released)return;released=true;restoreInProgress=false};
-    res.once('finish',release);res.once('close',release);
+    res.once('finish',()=>{
+      if(res.statusCode>=200&&res.statusCode<300&&migration.migrated){
+        try{setSetting('backup:last-migration',JSON.stringify({fromVersion:migration.fromVersion,toVersion:migration.toVersion,restoredAt:new Date().toISOString()}))}catch{}
+      }
+      release();
+    });
+    res.once('close',release);
     next();
   });
 
