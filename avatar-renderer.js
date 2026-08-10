@@ -1,4 +1,4 @@
-/* v0.7.3 avatar renderer */
+/* v0.7.4 avatar renderer */
 window.StudyVillageAvatar = (() => {
   const BASES = {
     'student-default': { emoji:'🧑‍🎓', src:null, alt:'기본 학생 캐릭터' },
@@ -19,5 +19,17 @@ window.StudyVillageAvatar = (() => {
   function asset(id,fallback=''){if(!id)return{emoji:'',src:null,alt:''};return ASSETS[id]||{emoji:fallback,src:null,alt:id}}
   function paintBase(element,id='student-default'){paint(element,base(id))}
   function paintItem(element,id,fallback=''){paint(element,asset(id,fallback))}
-  return { BASES, ASSETS, base, asset, paint, paintBase, paintItem };
+  function setMotion(container,{moving=false,direction='down'}={}){
+    if(!container)return;
+    const dir=['up','down','left','right'].includes(direction)?direction:'down';
+    container.dataset.motion=moving?'walk':'idle';
+    container.dataset.direction=dir;
+    container.classList.toggle('is-walking',!!moving);
+    container.classList.toggle('is-idle',!moving);
+    container.classList.toggle('facing-left',dir==='left');
+    container.classList.toggle('facing-right',dir==='right');
+    container.classList.toggle('facing-up',dir==='up');
+    container.classList.toggle('facing-down',dir==='down');
+  }
+  return { BASES, ASSETS, base, asset, paint, paintBase, paintItem, setMotion };
 })();
