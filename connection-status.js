@@ -1,5 +1,5 @@
-/* v0.9.4 classroom connection status notice.
-   This module only informs students about connectivity. It never changes scores, XP, or activity data. */
+/* v0.9.5 classroom connection status + shared activity guard state.
+   This module informs students about connectivity and exposes a read-only online state for scored activity entry guards. */
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
@@ -17,6 +17,7 @@
     #connection-status-banner strong{display:block;margin-bottom:2px;font-size:14px}
     #connection-status-banner.offline{background:#fff0e8;border:2px solid #efb493;color:#7d4026}
     #connection-status-banner.online{background:#eaf8ed;border:2px solid #b8dfc0;color:#285f37}
+    body.studyvillage-offline .interior-primary[data-requires-server="true"]{opacity:.55;cursor:not-allowed}
   `;
   document.head.appendChild(style);
 
@@ -29,6 +30,8 @@
   function setState(online){
     if(lastState===online)return;
     const previous=lastState;lastState=online;
+    document.body.classList.toggle('studyvillage-offline',!online);
+    window.dispatchEvent(new CustomEvent('studyvillage:connection-change',{detail:{online}}));
     if(!online){
       show('offline','⚠️ 교실 서버 연결이 끊겼어요','화면은 그대로 두고 선생님께 알려 주세요. 연결이 돌아오면 자동으로 다시 확인합니다.');
     }else if(previous===false){
@@ -38,14 +41,19 @@
     }
   }
   async function check(){
-    if(checking||!game.classList.contains('active'))return;
+    if(checking||!game.classList.contains('active'))return lastState;
     checking=true;
     try{
-      if(!navigator.onLine){setState(false);return}
+      if(!navigator.onLine){setState(false);return false}
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),3000);
-      try{const r=await fetch('/api/health',{cache:'no-store',signal:controller.signal});setState(r.ok)}catch{setState(false)}finally{clearTimeout(timeout)}
+      try{const r=await fetch('/api/health',{cache:'no-store',signal:controller.signal});setState(r.ok);return r.ok}catch{setState(false);return false}finally{clearTimeout(timeout)}
     }finally{checking=false}
   }
+  window.StudyVillageConnection={
+    isOnline:()=>lastState!==false,
+    check,
+    requireOnline:async()=>{const online=await check();if(online===false)show('offline','⚠️ 지금은 학습 활동을 시작할 수 없어요','서버 연결이 돌아오면 다시 도전해 주세요. 이미 저장된 기록은 그대로 유지됩니다.');return online!==false}
+  };
   window.addEventListener('offline',()=>setState(false));
   window.addEventListener('online',check);
   const observer=new MutationObserver(()=>{if(game.classList.contains('active'))check();else banner.hidden=true});
