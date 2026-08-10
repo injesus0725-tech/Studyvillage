@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import QRCode from 'qrcode';
 import { fileURLToPath } from 'node:url';
+import { installActivityStateRoutes } from './activity-state.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
 const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;fs.mkdirSync(dataDir,{recursive:true});
@@ -43,6 +44,7 @@ function activePresenceNames(){const now=Date.now();return new Set([...presence.
 function pruneLiveEvents(){const now=Date.now();while(liveEvents.length&&(liveEvents[0].expiresAt<=now||liveEvents.length>50))liveEvents.shift()}
 const getSetting=k=>db.prepare('SELECT value FROM settings WHERE key=?').get(k)?.value||null,setSetting=(k,v)=>db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(k,v);
 function ensureAdminPassword(){if(getSetting('admin_hash')&&getSetting('admin_salt'))return;const initial=process.env.STUDYVILLAGE_ADMIN_PASSWORD||'teacher1234',salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(initial,salt));console.log('초기 관리자 비밀번호: teacher1234 (첫 로그인 후 변경 권장)')};ensureAdminPassword();
+installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin});
 app.post('/api/login',(req,res)=>{const name=String(req.body?.name||'').trim().replace(/\s+/g,' ').slice(0,12),password=String(req.body?.password||'');if(!name||password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-input'});let row=db.prepare('SELECT * FROM players WHERE name=?').get(name),isNew=false;const now=new Date().toISOString();if(!row){const salt=crypto.randomBytes(16).toString('hex');db.prepare('INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(name,hashPassword(password,salt),salt,1,now,now,now);isNew=true;logActivity(name,'account-created','첫 계정 생성')}else{const a=Buffer.from(row.password_hash,'hex'),c=Buffer.from(hashPassword(password,row.password_salt),'hex');if(!(a.length===c.length&&crypto.timingSafeEqual(a,c)))return res.status(401).json({ok:false,code:'wrong-password'});db.prepare('UPDATE players SET login_count=login_count+1,last_login_at=?,updated_at=? WHERE name=?').run(now,now,name);logActivity(name,'login','마을 접속')}row=db.prepare('SELECT * FROM players WHERE name=?').get(name);res.json({ok:true,isNew,token:createSession(name),player:safePlayer(row)})});
 app.get('/api/player/me',requireSession,(req,res)=>{const r=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!r)return res.status(404).json({ok:false});res.json({ok:true,player:safePlayer(r)})});
 app.post('/api/presence/heartbeat',requireSession,(req,res)=>{presence.set(req.session.name,Date.now());res.json({ok:true})});
