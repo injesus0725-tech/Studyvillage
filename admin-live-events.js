@@ -1,6 +1,6 @@
-/* v0.9.21 teacher live classroom broadcast control.
-   Preserves an unsent teacher draft across accidental refreshes, disables empty sends,
-   and keeps the existing recipient preview + resend safety guards. */
+/* v0.9.23 teacher live classroom broadcast control.
+   Preserves broadcast safety and drafts while avoiding audience polling when the
+   teacher tab is hidden. Returning to the tab refreshes recipients immediately. */
 (()=>{
   const app=document.querySelector('#admin-app');if(!app)return;
   const token=()=>sessionStorage.getItem('studyvillage-admin-token')||'';
@@ -8,15 +8,15 @@
   const section=document.createElement('section');section.className='panel';section.innerHTML=`<div class="panel-head"><div><h2>📣 실시간 마을 방송</h2><p>현재 접속 중인 학생에게만 상단 알림을 보냅니다. 늦게 접속한 학생에게는 다시 표시되지 않습니다.</p></div><span id="live-broadcast-audience" class="overview-count">접속 확인 중…</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 22px 8px"><input id="live-broadcast-message" maxlength="160" placeholder="예: 오늘도 멋지게 도전하고 있어요!" style="flex:1;min-width:260px;padding:11px 12px;border:1px solid #d8e2d9;border-radius:10px"><button id="live-broadcast-send">✨ 방송 보내기</button><button id="live-broadcast-test">⭐ 테스트</button><span id="live-broadcast-result" style="align-self:center;font-weight:800;color:#607266"></span></div><div style="display:flex;justify-content:space-between;gap:12px;padding:0 22px 20px;color:#78857c;font-size:12px;font-weight:700"><span id="live-broadcast-draft-status">초안 자동 보관</span><span id="live-broadcast-count">0 / 160</span></div>`;
   const presence=[...app.querySelectorAll('.panel')].find(p=>p.textContent.includes('현재 접속 현황'));if(presence)presence.after(section);else app.prepend(section);
   const input=section.querySelector('#live-broadcast-message'),send=section.querySelector('#live-broadcast-send'),test=section.querySelector('#live-broadcast-test'),result=section.querySelector('#live-broadcast-result'),audience=section.querySelector('#live-broadcast-audience'),count=section.querySelector('#live-broadcast-count'),draftStatus=section.querySelector('#live-broadcast-draft-status');
-  const RESEND_GUARD_MS=2000,AUDIENCE_REFRESH_MS=10000;let sending=false,lastSentAt=0,audienceTimer=null;
+  const RESEND_GUARD_MS=2000,AUDIENCE_REFRESH_MS=10000;let sending=false,lastSentAt=0,audienceTimer=null,audienceLoading=false;
   function setBusy(value){sending=value;syncSendState();test.disabled=value}
   function syncSendState(){const text=input.value.trim();send.disabled=sending||!text;count.textContent=`${input.value.length} / 160`}
   function saveDraft(){try{const text=input.value;sessionStorage.setItem(DRAFT_KEY,text);draftStatus.textContent=text.trim()?'초안 자동 보관됨':'초안 자동 보관'}catch{}syncSendState()}
   function clearDraft(){input.value='';try{sessionStorage.removeItem(DRAFT_KEY)}catch{}draftStatus.textContent='초안 자동 보관';syncSendState()}
   function restoreDraft(){try{const draft=sessionStorage.getItem(DRAFT_KEY)||'';if(draft){input.value=draft.slice(0,160);draftStatus.textContent='이전 초안 복구됨'}}catch{}syncSendState()}
   async function refreshAudience(){
-    if(!token()||app.hidden)return;
-    try{const r=await fetch('/api/admin/presence',{headers:{Authorization:`Bearer ${token()}`},cache:'no-store'});if(!r.ok)throw new Error();const d=await r.json(),online=(d.players||[]).filter(p=>p.status==='online').length;audience.textContent=online>0?`🟢 지금 ${online}명에게 전송`:'⚪ 지금 전송 대상 0명';audience.title='학생 heartbeat 기준 현재 접속 인원'}catch{audience.textContent='접속 인원 확인 안 됨'}
+    if(!token()||app.hidden||document.hidden||audienceLoading)return;audienceLoading=true;
+    try{const r=await fetch('/api/admin/presence',{headers:{Authorization:`Bearer ${token()}`},cache:'no-store'});if(!r.ok)throw new Error();const d=await r.json(),online=(d.players||[]).filter(p=>p.status==='online').length;audience.textContent=online>0?`🟢 지금 ${online}명에게 전송`:'⚪ 지금 전송 대상 0명';audience.title='학생 heartbeat 기준 현재 접속 인원'}catch{audience.textContent='접속 인원 확인 안 됨'}finally{audienceLoading=false}
   }
   async function publish(message,icon='✨',{clearDraftOnSuccess=true}={}){
     const text=String(message||'').trim();if(!token()||!text)return;
@@ -34,6 +34,8 @@
   input.addEventListener('input',saveDraft);
   input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();if(input.value.trim())publish(input.value,'📣',{clearDraftOnSuccess:true})}});
   const observer=new MutationObserver(()=>{if(!app.hidden)refreshAudience()});observer.observe(app,{attributes:true,attributeFilter:['hidden']});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAudience()});
+  window.addEventListener('focus',refreshAudience);
   restoreDraft();refreshAudience();audienceTimer=setInterval(refreshAudience,AUDIENCE_REFRESH_MS);
   window.addEventListener('beforeunload',()=>{saveDraft();if(audienceTimer)clearInterval(audienceTimer)});
 })();
