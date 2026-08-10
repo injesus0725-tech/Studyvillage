@@ -2,6 +2,7 @@ import express from 'express';
 import Database from 'better-sqlite3';
 import crypto from 'node:crypto';
 import os from 'node:os';
+import fs from 'node:fs';
 import path from 'node:path';
 import QRCode from 'qrcode';
 import { fileURLToPath } from 'node:url';
@@ -9,13 +10,16 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
-const db = new Database(path.join(__dirname, 'studyvillage.db'));
+const dataDir = process.env.STUDYVILLAGE_DATA_DIR || __dirname;
+fs.mkdirSync(dataDir, { recursive: true });
+const dbPath = path.join(dataDir, 'studyvillage.db');
+const db = new Database(dbPath);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const sessions = new Map();
 const adminSessions = new Map();
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '32kb' }));
 app.use(express.static(rootDir));
 
 db.pragma('journal_mode = WAL');
@@ -86,30 +90,23 @@ app.post('/api/admin/player/:name/reset-password',requireAdmin,(req,res)=>{const
 app.delete('/api/admin/player/:name',requireAdmin,(req,res)=>{const name=String(req.params.name||'').slice(0,12);db.prepare('DELETE FROM players WHERE name=?').run(name);for(const [token,session] of sessions)if(session.name===name)sessions.delete(token);res.json({ok:true});});
 
 app.get('/api/admin/backup',requireAdmin,(_req,res)=>{
-  const backup={format:'studyvillage-backup',version:1,createdAt:new Date().toISOString(),players:db.prepare('SELECT * FROM players ORDER BY id').all(),settings:db.prepare('SELECT * FROM settings').all()};
-  const date=new Date().toISOString().slice(0,10).replaceAll('-','');
-  res.setHeader('Content-Type','application/json; charset=utf-8');
-  res.setHeader('Content-Disposition',`attachment; filename="studyvillage-backup-${date}.json"`);
-  res.send(JSON.stringify(backup,null,2));
+  const players=db.prepare('SELECT * FROM players ORDER BY id').all();const settings=db.prepare('SELECT * FROM settings ORDER BY key').all();
+  const payload={format:'studyvillage-backup',version:1,exportedAt:new Date().toISOString(),players,settings};
+  const stamp=new Date().toISOString().slice(0,10).replaceAll('-','');
+  res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Content-Disposition',`attachment; filename="studyvillage-backup-${stamp}.json"`);res.send(JSON.stringify(payload,null,2));
 });
 app.post('/api/admin/restore',requireAdmin,(req,res)=>{
-  const backup=req.body;
-  if(!backup||backup.format!=='studyvillage-backup'||backup.version!==1||!Array.isArray(backup.players)||!Array.isArray(backup.settings)) return res.status(400).json({ok:false,code:'invalid-backup'});
-  const restore=db.transaction(()=>{
-    db.prepare('DELETE FROM players').run();
-    db.prepare('DELETE FROM settings').run();
-    const insertPlayer=db.prepare('INSERT INTO players (id,name,password_hash,password_salt,total_score,attempts,best_score,last_score,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)');
-    for(const p of backup.players){
-      if(!p||!p.name||!p.password_hash||!p.password_salt) throw new Error('invalid-player');
-      insertPlayer.run(p.id,p.name,p.password_hash,p.password_salt,Number(p.total_score)||0,Number(p.attempts)||0,Number(p.best_score)||0,Number(p.last_score)||0,p.created_at||new Date().toISOString(),p.updated_at||new Date().toISOString());
-    }
-    const insertSetting=db.prepare('INSERT INTO settings(key,value) VALUES(?,?)');
-    for(const s of backup.settings){if(!s||!s.key)continue;insertSetting.run(String(s.key),String(s.value??''));}
-  });
-  try{restore();ensureAdminPassword();sessions.clear();adminSessions.clear();res.json({ok:true,players:backup.players.length});}catch(error){res.status(400).json({ok:false,code:'restore-failed'});}
+  const backup=req.body;if(backup?.format!=='studyvillage-backup'||backup?.version!==1||!Array.isArray(backup.players)||!Array.isArray(backup.settings)) return res.status(400).json({ok:false,code:'invalid-backup'});
+  const restore=db.transaction(()=>{db.prepare('DELETE FROM players').run();db.prepare('DELETE FROM settings').run();const p=db.prepare('INSERT INTO players(id,name,password_hash,password_salt,total_score,attempts,best_score,last_score,created_at,updated_at) VALUES (@id,@name,@password_hash,@password_salt,@total_score,@attempts,@best_score,@last_score,@created_at,@updated_at)');for(const row of backup.players)p.run(row);const s=db.prepare('INSERT INTO settings(key,value) VALUES (@key,@value)');for(const row of backup.settings)s.run(row);});
+  restore();ensureAdminPassword();sessions.clear();adminSessions.clear();res.json({ok:true,players:backup.players.length});
 });
 
 app.get('/api/ranking',(_req,res)=>{const rows=db.prepare('SELECT * FROM players ORDER BY best_score DESC,total_score DESC,attempts ASC,name ASC LIMIT 100').all();res.json({ok:true,players:rows.map(safePlayer)});});
 app.get('/api/network',async(_req,res)=>{const urls=classroomUrls();const items=await Promise.all(urls.map(async item=>({...item,qr:await QRCode.toDataURL(item.url,{margin:1,width:320})})));res.json({ok:true,port:PORT,teacherUrl:`http://localhost:${PORT}`,urls:items});});
-app.get('/api/health',(_req,res)=>res.json({ok:true,server:'Studyvillage classroom server'}));
-app.listen(PORT,'0.0.0.0',()=>{console.log('');console.log('=============================================');console.log(' Studyvillage 교실 서버가 실행되었습니다.');console.log('=============================================');console.log(`접속/QR: http://localhost:${PORT}/connect.html`);console.log(`관리자: http://localhost:${PORT}/admin.html`);for(const {adapter,url} of classroomUrls())console.log(`학생 [${adapter}] ${url}`);console.log('');});
+app.get('/api/health',(_req,res)=>res.json({ok:true,server:'Studyvillage classroom server',dataPath:dbPath}));
+
+export function startClassroomServer() {
+  return app.listen(PORT,'0.0.0.0',()=>{console.log('');console.log('=============================================');console.log(' Studyvillage 교실 서버가 실행되었습니다.');console.log('=============================================');console.log(`접속/QR: http://localhost:${PORT}/connect.html`);console.log(`관리자: http://localhost:${PORT}/admin.html`);console.log(`데이터: ${dbPath}`);for(const {adapter,url} of classroomUrls())console.log(`학생 [${adapter}] ${url}`);console.log('');});
+}
+
+if (process.env.STUDYVILLAGE_EMBEDDED !== '1') startClassroomServer();
