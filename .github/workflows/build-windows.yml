@@ -3,12 +3,16 @@ name: Build Studyvillage Windows
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
 jobs:
   build-windows:
     runs-on: windows-latest
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,18 +20,25 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install dependencies and rebuild native modules
         run: npm install
 
       - name: Build portable EXE
         run: npm run dist:win
 
+      - name: Verify EXE exists
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path dist -Filter *.exe -ErrorAction SilentlyContinue
+          if (-not $files) { throw "Portable EXE was not created." }
+          $files | ForEach-Object { Write-Host "Built: $($_.FullName) ($($_.Length) bytes)" }
+
       - name: Upload portable EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Studyvillage-Windows
+          name: Studyvillage-Windows-v0.5.1
           path: dist/*.exe
           if-no-files-found: error
