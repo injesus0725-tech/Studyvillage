@@ -1,6 +1,6 @@
-/* v0.9.79 shared classroom routes.
+/* v0.9.80 shared classroom routes.
    Activity open/close state remains persisted in settings.
-   Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded. */
+   Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup } from './backup-migrator.js';
 
@@ -24,15 +24,16 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     req.studyvillageBackupMigration={fromVersion:migration.fromVersion,toVersion:migration.toVersion,migrated:migration.migrated};
     req.studyvillageBackupValidation=validation;
     restoreInProgress=true;
-    let released=false;
+    let released=false,finished=false;
     const release=()=>{if(released)return;released=true;restoreInProgress=false};
     res.once('finish',()=>{
+      finished=true;
       if(res.statusCode>=200&&res.statusCode<300&&migration.migrated){
-        try{setSetting('backup:last-migration',JSON.stringify({fromVersion:migration.fromVersion,toVersion:migration.toVersion,restoredAt:new Date().toISOString()}))}catch{}
+        try{setSetting('backup:last-migration',JSON.stringify({fromVersion:migration.fromVersion,toVersion:migration.toVersion,restoredAt:new Date().toISOString()}))}catch(err){console.error('복원 변환 이력 저장 실패:',err?.message||err)}
       }
       release();
     });
-    res.once('close',release);
+    res.once('close',()=>{if(!finished)release()});
     next();
   });
 
