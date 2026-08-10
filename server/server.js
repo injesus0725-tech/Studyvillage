@@ -1,3 +1,4 @@
+/* v0.9.88: current client view filters unavailable legacy customization IDs while database/backup values remain preserved for forward compatibility. */
 import express from 'express';
 import Database from 'better-sqlite3';
 import crypto from 'node:crypto';
@@ -29,7 +30,8 @@ function rewardsFor(r){const level=levelFromXp(r.xp),badges=[];if((r.attempts||0
 const BASE_CHARACTERS=[{id:'student-default',icon:'🧑‍🎓',name:'기본 학생'},{id:'student-boy',icon:'👦',name:'소년 탐험가'},{id:'student-girl',icon:'👧',name:'소녀 탐험가'},{id:'student-hero',icon:'🧑‍🚀',name:'우주 탐험가'}];
 const BASE_IDS=new Set(BASE_CHARACTERS.map(c=>c.id));
 const ITEM_CATALOG=[{id:'cap-blue',slot:'hat',icon:'🧢',name:'파란 모자',unlock:r=>levelFromXp(r.xp)>=2,condition:'Lv.2 달성'},{id:'crown-gold',slot:'hat',icon:'👑',name:'황금 왕관',unlock:r=>(r.best_score||0)>=1000,condition:'퀴즈 만점 달성'},{id:'glasses-round',slot:'glasses',icon:'👓',name:'동그란 안경',unlock:r=>levelFromXp(r.xp)>=3,condition:'Lv.3 달성'},{id:'backpack',slot:'bag',icon:'🎒',name:'모험 가방',unlock:r=>(r.attempts||0)>=5,condition:'도전 5회 완료'},{id:'pet-chick',slot:'pet',icon:'🐣',name:'병아리 친구',unlock:r=>(r.login_count||0)>=10,condition:'로그인 10회'},{id:'pet-cat',slot:'pet',icon:'🐱',name:'고양이 친구',unlock:r=>levelFromXp(r.xp)>=5,condition:'Lv.5 달성'}];
-function parseEquipment(r){try{const v=JSON.parse(r.equipment_json||'{}');return{hat:v.hat||null,glasses:v.glasses||null,bag:v.bag||null,pet:v.pet||null}}catch{return{hat:null,glasses:null,bag:null,pet:null}}}
+const ITEM_BY_ID=new Map(ITEM_CATALOG.map(item=>[item.id,item]));
+function parseEquipment(r){try{const v=JSON.parse(r.equipment_json||'{}'),out={hat:null,glasses:null,bag:null,pet:null};for(const slot of Object.keys(out)){const id=v?.[slot],item=ITEM_BY_ID.get(id);if(item?.slot===slot)out[slot]=id}return out}catch{return{hat:null,glasses:null,bag:null,pet:null}}}
 function inventoryFor(r){return ITEM_CATALOG.map(item=>({id:item.id,slot:item.slot,icon:item.icon,name:item.name,condition:item.condition,unlocked:!!item.unlock(r)}))}
 function sanitizeEquipment(r,equipment){const inv=inventoryFor(r),allowed=new Map(inv.filter(i=>i.unlocked).map(i=>[i.id,i]));const out={hat:null,glasses:null,bag:null,pet:null};for(const slot of Object.keys(out)){const id=equipment?.[slot];if(id&&allowed.get(id)?.slot===slot)out[slot]=id}return out}
 function activityRecordsFor(name){return db.prepare('SELECT activity_id AS activityId,attempts,best_score AS bestScore,last_score AS lastScore,total_score AS totalScore,updated_at AS updatedAt FROM activity_records WHERE player_name=? ORDER BY activity_id').all(name)}
