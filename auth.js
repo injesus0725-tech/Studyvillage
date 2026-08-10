@@ -1,11 +1,17 @@
-/* v0.4.1 authentication router.
+/* v0.9.12 authentication router.
    Default: classroom Node server on the teacher PC.
-   Fallback: local browser account only when the server is unavailable. */
+   Fallback: local browser account only when the server is unavailable.
+   Classroom session tokens survive a page refresh in sessionStorage so a student can re-enter without typing the password again while the server session is still valid. */
 window.StudyVillageAuth = (() => {
   const prefix = 'studyvillage-account:';
+  const SESSION_TOKEN_KEY='studyvillage-session-token';
+  const SESSION_NAME_KEY='studyvillage-session-name';
+  const RESTORE_SENTINEL='__studyvillage_restore__';
   const encoder = new TextEncoder();
   let serverAvailable = null;
-  let sessionToken = null;
+  let sessionToken = sessionStorage.getItem(SESSION_TOKEN_KEY)||null;
+  let sessionName = sessionStorage.getItem(SESSION_NAME_KEY)||null;
+  let restoredPlayer = null;
 
   const toHex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,'0')).join('');
   async function hashPassword(password, salt) {
@@ -15,6 +21,8 @@ window.StudyVillageAuth = (() => {
   const key = name => prefix + name.trim().toLowerCase();
   const randomSalt = () => { const bytes=new Uint8Array(16); crypto.getRandomValues(bytes); return toHex(bytes); };
   const read = name => { try{return JSON.parse(localStorage.getItem(key(name))||'null')}catch{return null} };
+  function saveSession(name,token){sessionName=name;sessionToken=token;sessionStorage.setItem(SESSION_NAME_KEY,name);sessionStorage.setItem(SESSION_TOKEN_KEY,token)}
+  function clearSession(){sessionName=null;sessionToken=null;restoredPlayer=null;sessionStorage.removeItem(SESSION_NAME_KEY);sessionStorage.removeItem(SESSION_TOKEN_KEY)}
 
   async function checkServer(force = false) {
     if (!force && serverAvailable !== null) return serverAvailable;
@@ -34,7 +42,7 @@ window.StudyVillageAuth = (() => {
       body:JSON.stringify({name,password})
     });
     const result = await response.json().catch(()=>({ok:false,code:'server-error'}));
-    if (result.ok && result.token) sessionToken = result.token;
+    if (result.ok && result.token) saveSession(name,result.token);
     return { ...result, mode:'classroom-server' };
   }
 
@@ -49,7 +57,21 @@ window.StudyVillageAuth = (() => {
     return passwordHash===account.passwordHash ? {ok:true,isNew:false,mode:'local'} : {ok:false,code:'wrong-password',mode:'local'};
   }
 
+  async function restoreSession(){
+    if(!sessionToken||!sessionName)return null;
+    if(!(await checkServer(true)))return null;
+    try{
+      const response=await fetch('/api/player/me',{headers:{Authorization:`Bearer ${sessionToken}`},cache:'no-store'});
+      if(!response.ok){if(response.status===401)clearSession();return null}
+      const result=await response.json();
+      if(!result.ok||!result.player)return null;
+      restoredPlayer=result.player;
+      return{ok:true,name:sessionName,player:result.player,mode:'classroom-server'};
+    }catch{return null}
+  }
+
   async function login(name,password) {
+    if(password===RESTORE_SENTINEL&&restoredPlayer&&sessionToken&&name===sessionName){const player=restoredPlayer;restoredPlayer=null;return{ok:true,isNew:false,restored:true,player,mode:'classroom-server'}}
     if (await checkServer()) return serverLogin(name,password);
     return localLogin(name,password);
   }
@@ -58,5 +80,5 @@ window.StudyVillageAuth = (() => {
     return sessionToken ? { Authorization:`Bearer ${sessionToken}` } : {};
   }
 
-  return { login, checkServer, authHeaders, mode: () => serverAvailable ? 'classroom-server' : 'local' };
+  return { login, restoreSession, checkServer, authHeaders, clearSession, restoreSentinel:RESTORE_SENTINEL, mode: () => serverAvailable ? 'classroom-server' : 'local' };
 })();
