@@ -1,7 +1,8 @@
-/* v0.9.72 shared classroom routes.
+/* v0.9.74 shared classroom routes.
    Activity open/close state remains persisted in settings.
-   Backup restore requests are server-validated and only one restore may run at a time. */
+   Older backups are migrated forward, then validated, before one-at-a-time restore. */
 import { validateStudyvillageBackup } from './backup-validator.js';
+import { migrateStudyvillageBackup } from './backup-migrator.js';
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
   const key=id=>`activity-state:${id}`;
@@ -13,17 +14,21 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
   };
 
   // Registered before server.js installs the destructive restore route.
-  // Validation and a small mutex protect the transaction from malformed or duplicate requests.
+  // Old supported backups are copied/migrated to the current shape before validation.
   app.use('/api/admin/restore',requireAdmin,(req,res,next)=>{
     if(req.method!=='POST')return next();
     if(restoreInProgress)return res.status(409).json({ok:false,code:'restore-in-progress',message:'이미 다른 복원 작업이 진행 중입니다.'});
-    const validation=validateStudyvillageBackup(req.body);
+    const migration=migrateStudyvillageBackup(req.body);
+    if(!migration.ok)return res.status(400).json({ok:false,code:migration.code,message:migration.message});
+    const validation=validateStudyvillageBackup(migration.backup);
     if(!validation.ok)return res.status(400).json({ok:false,code:validation.code,message:validation.message});
+    req.body=migration.backup;
+    req.studyvillageBackupMigration={fromVersion:migration.fromVersion,toVersion:migration.toVersion,migrated:migration.migrated};
+    req.studyvillageBackupValidation=validation;
     restoreInProgress=true;
     let released=false;
     const release=()=>{if(released)return;released=true;restoreInProgress=false};
     res.once('finish',release);res.once('close',release);
-    req.studyvillageBackupValidation=validation;
     next();
   });
 
