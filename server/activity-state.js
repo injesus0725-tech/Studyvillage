@@ -1,8 +1,9 @@
-/* v0.9.80 shared classroom routes.
+/* v0.9.97 shared classroom routes.
    Activity open/close state remains persisted in settings.
-   Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore. */
+   Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
+   Wardrobe compatibility mirrors are verified after successful restore so ownership preservation cannot fail silently. */
 import { validateStudyvillageBackup } from './backup-validator.js';
-import { migrateStudyvillageBackup } from './backup-migrator.js';
+import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
   const key=id=>`activity-state:${id}`;
@@ -28,8 +29,18 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     const release=()=>{if(released)return;released=true;restoreInProgress=false};
     res.once('finish',()=>{
       finished=true;
-      if(res.statusCode>=200&&res.statusCode<300&&migration.migrated){
-        try{setSetting('backup:last-migration',JSON.stringify({fromVersion:migration.fromVersion,toVersion:migration.toVersion,restoredAt:new Date().toISOString()}))}catch(err){console.error('복원 변환 이력 저장 실패:',err?.message||err)}
+      if(res.statusCode>=200&&res.statusCode<300){
+        if(migration.migrated){
+          try{setSetting('backup:last-migration',JSON.stringify({fromVersion:migration.fromVersion,toVersion:migration.toVersion,restoredAt:new Date().toISOString()}))}catch(err){console.error('복원 변환 이력 저장 실패:',err?.message||err)}
+        }
+        try{
+          const expected=(migration.backup.players||[]).filter(p=>String(p?.owned_items_json||'[]')!=='[]');
+          const missing=[];
+          for(const player of expected){const name=String(player?.name||'').trim(),wanted=String(player?.owned_items_json||'[]'),saved=getSetting(legacyWardrobeKey(name));if(saved!==wanted)missing.push(name)}
+          const audit={ok:missing.length===0,checked:expected.length,missingCount:missing.length,missingPlayers:missing.slice(0,20),checkedAt:new Date().toISOString()};
+          setSetting('backup:last-restore-integrity',JSON.stringify(audit));
+          if(!audit.ok)console.error('[Studyvillage] 복원 후 옷장 호환성 검증 실패:',missing.join(', '));
+        }catch(err){console.error('복원 후 옷장 호환성 검증 실패:',err?.message||err)}
       }
       release();
     });
