@@ -1,8 +1,8 @@
-/* v1.1 shared classroom routes.
+/* v1.4 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
    Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
-   Live DB wardrobe schema wiring is verified at server startup without rewriting the large server entry file. */
+   Live DB wardrobe schema wiring and activity-record relational integrity are verified at server startup. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,11 +10,11 @@ import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
+function openLiveDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,dbPath=path.join(dataDir,'studyvillage.db'),db=new Database(dbPath);db.pragma('busy_timeout = 3000');return db}
 function verifyLiveWardrobeDb(setSetting){
-  const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,dbPath=path.join(dataDir,'studyvillage.db');
   let db;
   try{
-    db=new Database(dbPath);db.pragma('busy_timeout = 3000');
+    db=openLiveDb();
     const columns=()=>db.prepare('PRAGMA table_info(players)').all().map(r=>r.name);
     if(!columns().includes('owned_items_json'))db.exec(`ALTER TABLE players ADD COLUMN owned_items_json TEXT NOT NULL DEFAULT '[]'`);
     if(!columns().includes('owned_items_json'))throw new Error('owned_items_json 컬럼 생성 확인 실패');
@@ -26,17 +26,37 @@ function verifyLiveWardrobeDb(setSetting){
     console.error('[Studyvillage] 옷장 DB 직접 연결 확인 실패:',err?.message||err);return false;
   }finally{try{db?.close()}catch{}}
 }
+function auditActivityRecords(setSetting){
+  let db;
+  try{
+    db=openLiveDb();
+    const orphanCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM activity_records a LEFT JOIN players p ON p.name=a.player_name WHERE p.name IS NULL`).get()?.n||0);
+    const duplicateCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM (SELECT player_name,activity_id,COUNT(*) c FROM activity_records GROUP BY player_name,activity_id HAVING c>1)`).get()?.n||0);
+    const invalidCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM activity_records WHERE attempts<0 OR best_score<0 OR last_score<0 OR total_score<0 OR best_score>1000 OR last_score>1000`).get()?.n||0);
+    const rowCount=Number(db.prepare('SELECT COUNT(*) AS n FROM activity_records').get()?.n||0);
+    const audit={ok:orphanCount===0&&duplicateCount===0&&invalidCount===0,rowCount,orphanCount,duplicateCount,invalidCount,checkedAt:new Date().toISOString()};
+    setSetting('release:activity-record-integrity',JSON.stringify(audit));
+    if(!audit.ok)console.error('[Studyvillage] 활동별 기록 무결성 이상:',JSON.stringify(audit));
+    return audit;
+  }catch(err){
+    const audit={ok:false,rowCount:0,orphanCount:-1,duplicateCount:-1,invalidCount:-1,error:String(err?.message||err).slice(0,240),checkedAt:new Date().toISOString()};
+    try{setSetting('release:activity-record-integrity',JSON.stringify(audit))}catch{}
+    console.error('[Studyvillage] 활동별 기록 무결성 검사 실패:',err?.message||err);return audit;
+  }finally{try{db?.close()}catch{}}
+}
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
   const key=id=>`activity-state:${id}`;
   const valid=id=>/^[a-z0-9-]{1,40}$/.test(id);
   let restoreInProgress=false;
   verifyLiveWardrobeDb(setSetting);
+  auditActivityRecords(setSetting);
   const read=(id,name='학습 활동')=>{
     let saved=null;try{saved=JSON.parse(getSetting(key(id))||'null')}catch{}
     return{activityId:id,name:String(saved?.name||name).slice(0,80),open:saved?.open!==false,message:String(saved?.message||'').slice(0,240),updatedAt:saved?.updatedAt||null};
   };
   const readRestoreAudit=()=>{try{return JSON.parse(getSetting('backup:last-restore-integrity')||'null')}catch{return null}};
+  const readActivityAudit=()=>{try{return JSON.parse(getSetting('release:activity-record-integrity')||'null')}catch{return null}};
 
   app.use('/api/admin/restore',requireAdmin,(req,res,next)=>{
     if(req.method!=='POST')return next();
@@ -69,6 +89,7 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
           try{setSetting('backup:last-restore-integrity',JSON.stringify(audit))}catch{}
           console.error('복원 후 옷장 호환성 복구 실패:',err?.message||err);
         }
+        auditActivityRecords(setSetting);
       }
       release();
     });
@@ -77,11 +98,12 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
   });
 
   app.get('/api/admin/release-readiness',requireAdmin,(_req,res)=>{
-    const audit=readRestoreAudit();
+    const audit=readRestoreAudit(),activityAudit=readActivityAudit();
     const wardrobeRestoreIntegrity=!!audit?.ok;
     const wardrobeDirectDbWiring=getSetting('release:wardrobe-direct-db-wiring')==='verified';
-    const readyFor1_0=wardrobeRestoreIntegrity&&wardrobeDirectDbWiring;
-    res.json({ok:true,readyFor1_0,checks:{wardrobeRestoreIntegrity,wardrobeDirectDbWiring},lastRestoreIntegrity:audit||null,message:readyFor1_0?'핵심 복원 조건이 모두 확인되었습니다.':!wardrobeDirectDbWiring?'옷장 데이터의 직접 DB 연결 검증이 남아 있습니다.':'옷장 복원 무결성 확인이 더 필요합니다.'});
+    const activityRecordIntegrity=!!activityAudit?.ok;
+    const readyFor1_0=wardrobeRestoreIntegrity&&wardrobeDirectDbWiring&&activityRecordIntegrity;
+    res.json({ok:true,readyFor1_0,checks:{wardrobeRestoreIntegrity,wardrobeDirectDbWiring,activityRecordIntegrity},lastRestoreIntegrity:audit||null,lastActivityRecordIntegrity:activityAudit||null,message:readyFor1_0?'핵심 데이터 무결성 조건이 모두 확인되었습니다.':!wardrobeDirectDbWiring?'옷장 데이터의 직접 DB 연결 검증이 남아 있습니다.':!activityRecordIntegrity?'활동별 기록 무결성 확인이 더 필요합니다.':'옷장 복원 무결성 확인이 더 필요합니다.'});
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
