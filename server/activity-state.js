@@ -1,8 +1,8 @@
-/* v1.5 shared classroom routes.
+/* v1.6 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
    Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
-   Live DB wardrobe schema wiring, activity-record integrity, and score/XP ledger auditing are verified at server startup. */
+   Live DB wardrobe schema wiring, activity-record integrity, score/XP ledger auditing, and teacher-only anomaly alerts are verified at server startup. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,6 +45,12 @@ CREATE TABLE IF NOT EXISTS score_ledger (
 );
 CREATE INDEX IF NOT EXISTS idx_score_ledger_player_id ON score_ledger(player_name,id DESC);
 CREATE INDEX IF NOT EXISTS idx_score_ledger_activity_id ON score_ledger(activity_id,id DESC);
+CREATE TABLE IF NOT EXISTS score_alert_reviews (
+  ledger_id INTEGER PRIMARY KEY,
+  status TEXT NOT NULL,
+  note TEXT,
+  reviewed_at TEXT NOT NULL
+);
 CREATE TRIGGER IF NOT EXISTS trg_score_ledger_player_total_score
 AFTER UPDATE OF total_score ON players
 WHEN NEW.total_score <> OLD.total_score
@@ -82,10 +88,11 @@ BEGIN
 END;
 `);
     const triggerCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_score_ledger_%'`).get()?.n||0);
-    const ok=triggerCount===5;
+    const reviewTable=!!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='score_alert_reviews'`).get();
+    const ok=triggerCount===5&&reviewTable;
     setSetting('release:score-ledger-wiring',ok?'verified':'failed');
     setSetting('release:score-ledger-wiring-checked-at',new Date().toISOString());
-    if(!ok)throw new Error(`점수 장부 트리거 확인 실패 (${triggerCount}/5)`);
+    if(!ok)throw new Error(`점수 장부/검토 테이블 확인 실패 (${triggerCount}/5)`);
     return true;
   }catch(err){
     try{setSetting('release:score-ledger-wiring','failed');setSetting('release:score-ledger-wiring-error',String(err?.message||err).slice(0,240))}catch{}
@@ -119,6 +126,39 @@ function scoreLedgerRows({playerName='',activityId='',limit=200}={}){
     if(activityId){where.push('activity_id=@activityId');params.activityId=String(activityId).trim().slice(0,40)}
     const sql=`SELECT id,player_name AS playerName,scope,activity_id AS activityId,field,before_value AS beforeValue,after_value AS afterValue,delta,source,created_at AS createdAt FROM score_ledger ${where.length?`WHERE ${where.join(' AND ')}`:''} ORDER BY id DESC LIMIT @limit`;
     return db.prepare(sql).all(params);
+  }finally{try{db?.close()}catch{}}
+}
+function detectScoreAlerts({limit=300}={}){
+  let db;
+  try{
+    db=openLiveDb();
+    const rows=db.prepare(`SELECT l.id,l.player_name AS playerName,l.scope,l.activity_id AS activityId,l.field,l.before_value AS beforeValue,l.after_value AS afterValue,l.delta,l.source,l.created_at AS createdAt,r.status AS reviewStatus,r.note AS reviewNote,r.reviewed_at AS reviewedAt FROM score_ledger l LEFT JOIN score_alert_reviews r ON r.ledger_id=l.id ORDER BY l.id DESC LIMIT ?`).all(Math.max(50,Math.min(1000,Number(limit)||300)));
+    const alerts=[];
+    for(let i=0;i<rows.length;i++){
+      const row=rows[i],reasons=[];let severity='notice';
+      if(row.field==='xp'&&Math.abs(row.delta)>200){reasons.push(`XP가 한 번에 ${row.delta>0?'+':''}${row.delta} 변했습니다.`);severity='warning'}
+      if(row.scope==='activity'&&row.field==='total_score'&&Math.abs(row.delta)>1000){reasons.push(`한 활동 점수가 한 번에 ${row.delta>0?'+':''}${row.delta} 변했습니다.`);severity='warning'}
+      if(row.scope==='player'&&row.field==='total_score'&&Math.abs(row.delta)>3000){reasons.push(`전체 점수가 한 번에 ${row.delta>0?'+':''}${row.delta} 변했습니다.`);severity='warning'}
+      if(row.delta<0&&row.source!=='activity-delete'){reasons.push('점수/XP가 감소했습니다. 초기화나 교사 수정인지 확인해 주세요.');if(severity==='notice')severity='check'}
+      const t=Date.parse(row.createdAt)||0;
+      const duplicate=rows.slice(i+1,i+8).find(other=>other.playerName===row.playerName&&other.activityId===row.activityId&&other.field===row.field&&other.delta===row.delta&&Math.abs(t-(Date.parse(other.createdAt)||0))<=5000);
+      if(duplicate){reasons.push('5초 안에 같은 값의 변경이 반복되었습니다. 중복 반영 여부를 확인해 주세요.');severity='warning'}
+      if(reasons.length)alerts.push({...row,severity,reasons});
+    }
+    const pending=alerts.filter(a=>!a.reviewStatus),reviewed=alerts.filter(a=>!!a.reviewStatus);
+    return{alerts:[...pending,...reviewed].slice(0,100),pendingCount:pending.length,checkedRows:rows.length,checkedAt:new Date().toISOString()};
+  }finally{try{db?.close()}catch{}}
+}
+function reviewScoreAlert(ledgerId,status,note=''){
+  let db;
+  try{
+    db=openLiveDb();
+    const id=Math.max(1,Number(ledgerId)||0),allowed=new Set(['normal','needs-correction']);
+    if(!allowed.has(status))return{ok:false,code:'invalid-status'};
+    if(!db.prepare('SELECT id FROM score_ledger WHERE id=?').get(id))return{ok:false,code:'not-found'};
+    const reviewedAt=new Date().toISOString();
+    db.prepare(`INSERT INTO score_alert_reviews(ledger_id,status,note,reviewed_at) VALUES(?,?,?,?) ON CONFLICT(ledger_id) DO UPDATE SET status=excluded.status,note=excluded.note,reviewed_at=excluded.reviewed_at`).run(id,status,String(note||'').trim().slice(0,240),reviewedAt);
+    return{ok:true,ledgerId:id,status,reviewedAt};
   }finally{try{db?.close()}catch{}}
 }
 
@@ -189,6 +229,15 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
   app.get('/api/admin/score-ledger',requireAdmin,(req,res)=>{
     try{res.json({ok:true,entries:scoreLedgerRows({playerName:req.query.playerName,activityId:req.query.activityId,limit:req.query.limit})})}
     catch(err){res.status(500).json({ok:false,code:'score-ledger-read-failed',message:String(err?.message||err).slice(0,240)})}
+  });
+
+  app.get('/api/admin/score-alerts',requireAdmin,(req,res)=>{
+    try{res.json({ok:true,...detectScoreAlerts({limit:req.query.limit})})}
+    catch(err){res.status(500).json({ok:false,code:'score-alert-read-failed',message:String(err?.message||err).slice(0,240)})}
+  });
+  app.post('/api/admin/score-alerts/:ledgerId/review',requireAdmin,(req,res)=>{
+    try{const result=reviewScoreAlert(req.params.ledgerId,String(req.body?.status||''),req.body?.note);if(!result.ok)return res.status(result.code==='not-found'?404:400).json(result);res.json(result)}
+    catch(err){res.status(500).json({ok:false,code:'score-alert-review-failed',message:String(err?.message||err).slice(0,240)})}
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
