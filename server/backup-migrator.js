@@ -1,8 +1,8 @@
-/* v0.9.95 backward-compatible Studyvillage backup migration.
+/* v0.9.96 backward-compatible Studyvillage backup migration.
    Backup v8 adds permanent wardrobe ownership through owned_items_json.
    Until every restore path writes that player column directly, non-empty wardrobe ownership is mirrored into compatibility settings so restore cannot silently lose purchases.
+   Compatibility helpers can also recover wardrobe/legacy character values deterministically after restore.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
-   Original character IDs are mirrored into compatibility settings so future versions can restore legacy/special characters even if the current UI cannot render them.
    Migration output is deterministic and startup verification checks continuity plus repeatability.
    Never mutates the original parsed backup object. */
 
@@ -46,6 +46,14 @@ function preserveCompatibilityData(backup){
   return backup;
 }
 
+export function compatibilityValue(settings,key,fallback=null){
+  if(!Array.isArray(settings))return fallback;
+  const row=settings.find(item=>String(item?.key||'')===key);
+  return typeof row?.value==='string'?row.value:fallback;
+}
+export function recoverWardrobeCompatibility(settings,name,fallback='[]'){return compatibilityValue(settings,legacyWardrobeKey(name),fallback)}
+export function recoverCharacterCompatibility(settings,name,fallback='student-default'){return compatibilityValue(settings,legacyCharacterKey(name),fallback)}
+
 function normalizeBackupShape(backup){
   backup.players=Array.isArray(backup.players)?backup.players.map(normalizePlayer):backup.players;
   backup.settings=Array.isArray(backup.settings)?backup.settings:[];
@@ -79,6 +87,8 @@ export function verifyMigrationChain(){
       if(stable(probe)!==stable({format:'studyvillage-backup',version,players:[{name:'검증',password_hash:'x',password_salt:'y'}],settings:[]}))return{ok:false,code:'migration-mutates-input',version,message:`백업 v${version} 변환 규칙이 원본 데이터를 변경합니다.`};
     }catch(error){return{ok:false,code:'migration-error',version,message:`백업 v${version} 변환 규칙 검사 중 오류가 발생했습니다: ${String(error?.message||error).slice(0,160)}`}}
   }
+  const wardrobeProbe='["cap-blue"]',settings=[{key:legacyWardrobeKey('검증'),value:wardrobeProbe},{key:legacyCharacterKey('검증'),value:'legacy-hero'}];
+  if(recoverWardrobeCompatibility(settings,'검증')!==wardrobeProbe||recoverCharacterCompatibility(settings,'검증')!=='legacy-hero')return{ok:false,code:'compat-recovery-broken',message:'백업 호환성 보존값을 다시 읽는 규칙에 문제가 있습니다.'};
   return{ok:true,currentVersion:CURRENT_BACKUP_VERSION,steps:CURRENT_BACKUP_VERSION-1};
 }
 
