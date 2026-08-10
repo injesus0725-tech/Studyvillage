@@ -1,9 +1,9 @@
-/* v0.9.9 privacy-safe automatic client error reporter.
+/* v0.9.11 privacy-safe automatic client error reporter.
    Errors are kept locally as a fallback and automatically sent to the classroom server after login.
    Students do not need to press or send anything.
    Passwords, auth tokens, request bodies, and full student records are never included. */
 (()=>{
-  const VERSION='0.9.9';
+  const VERSION='0.9.11';
   const STORAGE_KEY='studyvillage-error-reports:v1';
   const EVENT_KEY='studyvillage-error-events:v1';
   const MAX_REPORTS=30,MAX_EVENTS=80;
