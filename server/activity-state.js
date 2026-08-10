@@ -1,7 +1,7 @@
-/* v0.9.98 shared classroom routes.
+/* v0.9.99 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
-   Wardrobe ownership is recovered from the validated compatibility mirror after successful restore. */
+   Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
@@ -40,7 +40,11 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
           const audit={ok:missing.length===0,checked:expected.length,recovered:expected.length-missing.length,missingCount:missing.length,missingPlayers:missing.slice(0,20),checkedAt:new Date().toISOString()};
           setSetting('backup:last-restore-integrity',JSON.stringify(audit));
           if(!audit.ok)console.error('[Studyvillage] 복원 후 옷장 호환성 복구 실패:',missing.join(', '));
-        }catch(err){console.error('복원 후 옷장 호환성 복구 실패:',err?.message||err)}
+        }catch(err){
+          const audit={ok:false,checked:0,recovered:0,missingCount:-1,missingPlayers:[],error:String(err?.message||err).slice(0,240),checkedAt:new Date().toISOString()};
+          try{setSetting('backup:last-restore-integrity',JSON.stringify(audit))}catch{}
+          console.error('복원 후 옷장 호환성 복구 실패:',err?.message||err);
+        }
       }
       release();
     });
