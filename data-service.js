@@ -1,22 +1,27 @@
-/* v0.3.2 sync-ready data layer with Firebase routing and local fallback. */
+/* v0.4.0 data service. Default storage is the classroom Node + SQLite server. */
 window.StudyVillageData = (() => {
   const prefix = 'studyvillage-player:';
   const emptyRecord = () => ({ totalScore: 0, attempts: 0, bestScore: 0, lastScore: 0, updatedAt: null });
   const key = name => `${prefix}${name}`;
 
+  async function serverReady() {
+    return window.StudyVillageAuth?.checkServer ? window.StudyVillageAuth.checkServer() : false;
+  }
+
   async function loadPlayer(name) {
-    if (window.StudyVillageFirebase?.isReady()) {
+    if (await serverReady()) {
       try {
-        const remote = await window.StudyVillageFirebase.loadRecord();
-        return { ...emptyRecord(), ...(remote || {}) };
+        const r = await fetch(`/api/player/${encodeURIComponent(name)}`, { cache:'no-store' });
+        if (r.ok) {
+          const data = await r.json();
+          return { ...emptyRecord(), ...(data.player || {}) };
+        }
       } catch {}
     }
     try {
       const raw = localStorage.getItem(key(name));
       return raw ? { ...emptyRecord(), ...JSON.parse(raw) } : emptyRecord();
-    } catch {
-      return emptyRecord();
-    }
+    } catch { return emptyRecord(); }
   }
 
   async function savePlayer(name, record) {
@@ -24,25 +29,35 @@ window.StudyVillageData = (() => {
       totalScore: Number(record.totalScore) || 0,
       attempts: Number(record.attempts) || 0,
       bestScore: Number(record.bestScore) || 0,
-      lastScore: Number(record.lastScore) || 0,
-      updatedAt: new Date().toISOString()
+      lastScore: Number(record.lastScore) || 0
     };
-    if (window.StudyVillageFirebase?.isReady()) {
-      try { return await window.StudyVillageFirebase.saveRecord(name, payload); } catch {}
+    if (await serverReady()) {
+      try {
+        const r = await fetch(`/api/player/${encodeURIComponent(name)}/record`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        if (r.ok) {
+          const data = await r.json();
+          return { ...emptyRecord(), ...(data.player || {}) };
+        }
+      } catch {}
     }
-    localStorage.setItem(key(name), JSON.stringify(payload));
-    return payload;
+    const localPayload = { ...payload, updatedAt:new Date().toISOString() };
+    localStorage.setItem(key(name), JSON.stringify(localPayload));
+    return localPayload;
   }
 
   async function listPlayers() {
-    const players = [];
-    for (let i = 0; i < localStorage.length; i += 1) {
-      const k = localStorage.key(i);
-      if (!k || !k.startsWith(prefix)) continue;
-      try { players.push({ name: k.slice(prefix.length), ...JSON.parse(localStorage.getItem(k)) }); } catch {}
+    if (await serverReady()) {
+      try {
+        const r = await fetch('/api/ranking', { cache:'no-store' });
+        if (r.ok) return (await r.json()).players || [];
+      } catch {}
     }
+    const players=[];
+    for(let i=0;i<localStorage.length;i+=1){const k=localStorage.key(i);if(!k||!k.startsWith(prefix))continue;try{players.push({name:k.slice(prefix.length),...JSON.parse(localStorage.getItem(k))})}catch{}}
     return players;
   }
 
-  return { loadPlayer, savePlayer, listPlayers, mode: () => window.StudyVillageFirebase?.isReady() ? 'firebase' : 'local' };
+  return { loadPlayer, savePlayer, listPlayers, mode: async() => await serverReady() ? 'classroom-server' : 'local' };
 })();
