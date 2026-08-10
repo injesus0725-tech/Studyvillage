@@ -14,9 +14,9 @@ window.StudyVillageFirebase = (() => {
     const config = window.StudyVillageFirebaseConfig;
     if (!config?.enabled) return { ok: false, mode: 'local', reason: 'disabled' };
 
-    const appMod = await import('https://www.gstatic.com/firebasejs/12.2.0/firebase-app.js');
-    const authMod = await import('https://www.gstatic.com/firebasejs/12.2.0/firebase-auth.js');
-    const firestoreMod = await import('https://www.gstatic.com/firebasejs/12.2.0/firebase-firestore.js');
+    const appMod = await import('https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js');
+    const authMod = await import('https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js');
+    const firestoreMod = await import('https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js');
 
     const app = appMod.initializeApp(config);
     auth = authMod.getAuth(app);
