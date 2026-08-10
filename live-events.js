@@ -1,6 +1,6 @@
-/* v0.9.18 live village event presentation + lightweight server receiver.
-   Classroom broadcasts use the dedicated TOP lane. Repeated identical notices
-   are collapsed and the queue is capped so announcements never take over learning. */
+/* v0.9.24 live village event presentation + lightweight server receiver.
+   Classroom broadcasts use the dedicated TOP lane. Polling runs only while the
+   student page is visible and online, and resumes immediately when it returns. */
 (()=>{
   const queue=[];
   const MAX_QUEUE=5,DUPLICATE_WINDOW_MS=10000;
@@ -34,11 +34,12 @@
       for(const e of d.events||[])show(e);
     }catch{}finally{polling=false}
   }
-  function start(){if(timer)return;poll();timer=setInterval(poll,3000)}
+  function start(){if(timer||document.hidden||!navigator.onLine)return;poll();timer=setInterval(poll,3000)}
   function stop(){if(timer){clearInterval(timer);timer=null}}
   window.addEventListener('studyvillage:live-event',e=>show(e.detail||{}));
   window.addEventListener('studyvillage:session-ready',()=>{cursor=null;start()});
   window.addEventListener('online',start);window.addEventListener('offline',stop);
+  window.addEventListener('focus',()=>{start();poll()});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start()});
   setTimeout(start,1500);
   window.StudyVillageLiveEvents={show,poll,lane:'top-announcement',maxQueue:MAX_QUEUE};
