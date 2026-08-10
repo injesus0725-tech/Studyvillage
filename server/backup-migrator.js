@@ -1,7 +1,6 @@
-/* v0.9.81 backward-compatible Studyvillage backup migration.
+/* v0.9.82 backward-compatible Studyvillage backup migration.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
-   Migration output is deterministic: missing historical timestamps use a fixed legacy epoch instead of the current clock.
-   Startup verification catches missing or broken migration steps before restore is attempted.
+   Migration output is deterministic and startup verification checks continuity plus repeatability.
    Never mutates the original parsed backup object. */
 
 export const CURRENT_BACKUP_VERSION=7;
@@ -9,6 +8,7 @@ export const CURRENT_BACKUP_VERSION=7;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
 const LEGACY_EPOCH='1970-01-01T00:00:00.000Z';
+const stable=value=>JSON.stringify(value);
 
 function normalizePlayer(player={}){
   const out={...player};
@@ -50,8 +50,11 @@ export function verifyMigrationChain(){
     const migrate=migrations[version];
     if(typeof migrate!=='function')return{ok:false,code:'missing-migration',version,message:`백업 v${version} → v${version+1} 변환 규칙이 없습니다.`};
     try{
-      const probe={format:'studyvillage-backup',version,players:[],settings:[]},next=migrate(clone(probe));
-      if(Number(next?.version)!==version+1)return{ok:false,code:'broken-migration',version,message:`백업 v${version} 변환 규칙이 정확히 v${version+1}로 진행하지 않습니다.`};
+      const probe={format:'studyvillage-backup',version,players:[{name:'검증',password_hash:'x',password_salt:'y'}],settings:[]};
+      const first=migrate(clone(probe)),second=migrate(clone(probe));
+      if(Number(first?.version)!==version+1)return{ok:false,code:'broken-migration',version,message:`백업 v${version} 변환 규칙이 정확히 v${version+1}로 진행하지 않습니다.`};
+      if(stable(first)!==stable(second))return{ok:false,code:'nondeterministic-migration',version,message:`백업 v${version} 변환 결과가 실행할 때마다 달라집니다.`};
+      if(stable(probe)!==stable({format:'studyvillage-backup',version,players:[{name:'검증',password_hash:'x',password_salt:'y'}],settings:[]}))return{ok:false,code:'migration-mutates-input',version,message:`백업 v${version} 변환 규칙이 원본 데이터를 변경합니다.`};
     }catch(error){return{ok:false,code:'migration-error',version,message:`백업 v${version} 변환 규칙 검사 중 오류가 발생했습니다: ${String(error?.message||error).slice(0,160)}`}}
   }
   return{ok:true,currentVersion:CURRENT_BACKUP_VERSION,steps:CURRENT_BACKUP_VERSION-1};
