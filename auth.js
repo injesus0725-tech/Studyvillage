@@ -1,12 +1,14 @@
-/* v0.9.12 authentication router.
+/* v0.9.26 authentication router.
    Default: classroom Node server on the teacher PC.
    Fallback: local browser account only when the server is unavailable.
-   Classroom session tokens survive a page refresh in sessionStorage so a student can re-enter without typing the password again while the server session is still valid. */
+   Classroom session tokens survive a page refresh in sessionStorage so a student can re-enter without typing the password again while the server session is still valid.
+   Server health checks use a short timeout so a stalled classroom server cannot leave login/session restore waiting indefinitely. */
 window.StudyVillageAuth = (() => {
   const prefix = 'studyvillage-account:';
   const SESSION_TOKEN_KEY='studyvillage-session-token';
   const SESSION_NAME_KEY='studyvillage-session-name';
   const RESTORE_SENTINEL='__studyvillage_restore__';
+  const SERVER_CHECK_TIMEOUT_MS=3000;
   const encoder = new TextEncoder();
   let serverAvailable = null;
   let sessionToken = sessionStorage.getItem(SESSION_TOKEN_KEY)||null;
@@ -26,11 +28,14 @@ window.StudyVillageAuth = (() => {
 
   async function checkServer(force = false) {
     if (!force && serverAvailable !== null) return serverAvailable;
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),SERVER_CHECK_TIMEOUT_MS);
     try {
-      const response = await fetch('/api/health', { cache: 'no-store' });
+      const response = await fetch('/api/health', { cache: 'no-store', signal:controller.signal });
       serverAvailable = response.ok;
     } catch {
       serverAvailable = false;
+    } finally {
+      clearTimeout(timeout);
     }
     return serverAvailable;
   }
