@@ -1,10 +1,11 @@
-/* v0.9.89 backward-compatible Studyvillage backup migration.
+/* v0.9.92 backward-compatible Studyvillage backup migration.
+   Backup v8 adds permanent wardrobe ownership through owned_items_json.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
    Original character IDs are mirrored into compatibility settings so future versions can restore legacy/special characters even if the current UI cannot render them.
    Migration output is deterministic and startup verification checks continuity plus repeatability.
    Never mutates the original parsed backup object. */
 
-export const CURRENT_BACKUP_VERSION=7;
+export const CURRENT_BACKUP_VERSION=8;
 
 const clone=value=>JSON.parse(JSON.stringify(value));
 const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
@@ -23,6 +24,7 @@ function normalizePlayer(player={}){
   if(!has(out,'xp'))out.xp=0;
   if(!has(out,'base_character'))out.base_character='student-default';
   if(!has(out,'equipment_json'))out.equipment_json='{}';
+  if(!has(out,'owned_items_json'))out.owned_items_json='[]';
   if(!has(out,'created_at'))out.created_at=has(out,'updated_at')?out.updated_at:LEGACY_EPOCH;
   if(!has(out,'updated_at'))out.updated_at=has(out,'created_at')?out.created_at:LEGACY_EPOCH;
   return out;
@@ -58,7 +60,8 @@ const migrations={
   3:b=>({...normalizeBackupShape(b),version:4}),
   4:b=>({...normalizeBackupShape(b),version:5}),
   5:b=>({...normalizeBackupShape(b),version:6}),
-  6:b=>({...normalizeBackupShape(b),version:7})
+  6:b=>({...normalizeBackupShape(b),version:7}),
+  7:b=>({...normalizeBackupShape(b),version:8})
 };
 
 export function verifyMigrationChain(){
