@@ -1,5 +1,6 @@
-/* v0.9.77 backward-compatible Studyvillage backup migration.
+/* v0.9.81 backward-compatible Studyvillage backup migration.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
+   Migration output is deterministic: missing historical timestamps use a fixed legacy epoch instead of the current clock.
    Startup verification catches missing or broken migration steps before restore is attempted.
    Never mutates the original parsed backup object. */
 
@@ -7,6 +8,7 @@ export const CURRENT_BACKUP_VERSION=7;
 
 const clone=value=>JSON.parse(JSON.stringify(value));
 const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
+const LEGACY_EPOCH='1970-01-01T00:00:00.000Z';
 
 function normalizePlayer(player={}){
   const out={...player};
@@ -19,8 +21,8 @@ function normalizePlayer(player={}){
   if(!has(out,'xp'))out.xp=0;
   if(!has(out,'base_character'))out.base_character='student-default';
   if(!has(out,'equipment_json'))out.equipment_json='{}';
-  if(!has(out,'created_at')&&has(out,'updated_at'))out.created_at=out.updated_at;
-  if(!has(out,'updated_at')&&has(out,'created_at'))out.updated_at=out.created_at;
+  if(!has(out,'created_at'))out.created_at=has(out,'updated_at')?out.updated_at:LEGACY_EPOCH;
+  if(!has(out,'updated_at'))out.updated_at=has(out,'created_at')?out.created_at:LEGACY_EPOCH;
   return out;
 }
 
