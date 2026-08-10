@@ -1,27 +1,26 @@
-/* v0.9.73 backward-compatible Studyvillage backup migration.
-   Older supported backups are normalized forward before validation/restore.
+/* v0.9.76 backward-compatible Studyvillage backup migration.
+   Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
    Never mutates the original parsed backup object. */
 
 export const CURRENT_BACKUP_VERSION=7;
 
 const clone=value=>JSON.parse(JSON.stringify(value));
-const baseEquipment='{}';
+const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
 
 function normalizePlayer(player={}){
-  return {
-    ...player,
-    total_score:Number(player.total_score)||0,
-    attempts:Number(player.attempts)||0,
-    best_score:Number(player.best_score)||0,
-    last_score:Number(player.last_score)||0,
-    login_count:Number(player.login_count)||0,
-    last_login_at:player.last_login_at||null,
-    xp:Number(player.xp)||0,
-    base_character:player.base_character||'student-default',
-    equipment_json:typeof player.equipment_json==='string'?player.equipment_json:baseEquipment,
-    created_at:player.created_at||player.updated_at||new Date(0).toISOString(),
-    updated_at:player.updated_at||player.created_at||new Date(0).toISOString()
-  };
+  const out={...player};
+  if(!has(out,'total_score'))out.total_score=0;
+  if(!has(out,'attempts'))out.attempts=0;
+  if(!has(out,'best_score'))out.best_score=0;
+  if(!has(out,'last_score'))out.last_score=0;
+  if(!has(out,'login_count'))out.login_count=0;
+  if(!has(out,'last_login_at'))out.last_login_at=null;
+  if(!has(out,'xp'))out.xp=0;
+  if(!has(out,'base_character'))out.base_character='student-default';
+  if(!has(out,'equipment_json'))out.equipment_json='{}';
+  if(!has(out,'created_at')&&has(out,'updated_at'))out.created_at=out.updated_at;
+  if(!has(out,'updated_at')&&has(out,'created_at'))out.updated_at=out.created_at;
+  return out;
 }
 
 function normalizeBackupShape(backup){
@@ -33,11 +32,7 @@ function normalizeBackupShape(backup){
   return backup;
 }
 
-/*
-  Migration registry. Add future migrations here instead of rewriting old backups.
-  Each function receives the previous version and returns the next version.
-  Historical versions 1~6 are normalized into the fields required by v7.
-*/
+/* Add future one-version-at-a-time migrations here. Never rewrite or delete old rules. */
 const migrations={
   1:b=>({...normalizeBackupShape(b),version:2}),
   2:b=>({...normalizeBackupShape(b),version:3}),
