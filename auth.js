@@ -1,10 +1,11 @@
-/* v0.4.0 authentication router.
+/* v0.4.1 authentication router.
    Default: classroom Node server on the teacher PC.
    Fallback: local browser account only when the server is unavailable. */
 window.StudyVillageAuth = (() => {
   const prefix = 'studyvillage-account:';
   const encoder = new TextEncoder();
   let serverAvailable = null;
+  let sessionToken = null;
 
   const toHex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2,'0')).join('');
   async function hashPassword(password, salt) {
@@ -15,8 +16,8 @@ window.StudyVillageAuth = (() => {
   const randomSalt = () => { const bytes=new Uint8Array(16); crypto.getRandomValues(bytes); return toHex(bytes); };
   const read = name => { try{return JSON.parse(localStorage.getItem(key(name))||'null')}catch{return null} };
 
-  async function checkServer() {
-    if (serverAvailable !== null) return serverAvailable;
+  async function checkServer(force = false) {
+    if (!force && serverAvailable !== null) return serverAvailable;
     try {
       const response = await fetch('/api/health', { cache: 'no-store' });
       serverAvailable = response.ok;
@@ -33,6 +34,7 @@ window.StudyVillageAuth = (() => {
       body:JSON.stringify({name,password})
     });
     const result = await response.json().catch(()=>({ok:false,code:'server-error'}));
+    if (result.ok && result.token) sessionToken = result.token;
     return { ...result, mode:'classroom-server' };
   }
 
@@ -52,5 +54,9 @@ window.StudyVillageAuth = (() => {
     return localLogin(name,password);
   }
 
-  return { login, checkServer, mode: () => serverAvailable ? 'classroom-server' : 'local' };
+  function authHeaders() {
+    return sessionToken ? { Authorization:`Bearer ${sessionToken}` } : {};
+  }
+
+  return { login, checkServer, authHeaders, mode: () => serverAvailable ? 'classroom-server' : 'local' };
 })();
