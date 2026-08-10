@@ -30,10 +30,10 @@ if not exist "node_modules" (
 
 echo.
 echo 서버를 시작합니다.
-echo 선생님 컴퓨터에서는 http://localhost:3000 으로 접속하세요.
-echo 학생 접속 주소는 아래 서버 화면에 표시됩니다.
+echo 잠시 후 학생 접속 QR 화면이 자동으로 열립니다.
 echo 종료하려면 이 창에서 Ctrl+C를 누르세요.
 echo.
 
+start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:3000/connect.html"
 call npm start
 pause
