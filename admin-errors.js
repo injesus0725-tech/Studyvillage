@@ -1,0 +1,16 @@
+/* v0.9.7 teacher-side error report viewer */
+(()=>{
+  const app=document.querySelector('#admin-app');
+  if(!app)return;
+  const token=()=>sessionStorage.getItem('studyvillage-admin-token')||'';
+  const headers=()=>token()?{Authorization:`Bearer ${token()}`}:{},esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const section=document.createElement('section');section.className='panel';section.innerHTML=`<div class="panel-head"><div><h2>🛠️ 자동 오류 수집</h2><p>학생 기기에서 발생한 오류가 자동으로 교사 PC에 모입니다. 학생은 따로 누를 것이 없습니다.</p></div><div class="actions"><span id="teacher-error-count" class="overview-count">0건</span><button id="teacher-error-refresh">새로고침</button><button id="teacher-error-export">JSON 내보내기</button><button id="teacher-error-clear">기록 비우기</button></div></div><div id="teacher-error-list" style="padding:18px 22px 22px"><p class="empty">오류 기록을 불러오는 중입니다.</p></div>`;
+  const recent=[...app.querySelectorAll('.panel')].find(p=>p.textContent.includes('최근 활동'));if(recent)recent.before(section);else app.appendChild(section);
+  const count=section.querySelector('#teacher-error-count'),list=section.querySelector('#teacher-error-list'),refresh=section.querySelector('#teacher-error-refresh'),exportBtn=section.querySelector('#teacher-error-export'),clearBtn=section.querySelector('#teacher-error-clear');
+  function fmt(v){if(!v)return'-';const d=new Date(v);return Number.isNaN(d.getTime())?'-':d.toLocaleString('ko-KR')}
+  async function load(){if(!token())return;try{const r=await fetch('/api/admin/errors',{headers:headers(),cache:'no-store'});if(!r.ok)return;const rows=(await r.json()).errors||[];count.textContent=`${rows.length}건`;list.innerHTML='';if(!rows.length){list.innerHTML='<p class="empty">수집된 오류가 없습니다. 🌱</p>';return}rows.slice(0,50).forEach(e=>{const card=document.createElement('article');card.style.cssText='border:1px solid #eadfd5;border-radius:14px;padding:13px 14px;margin-bottom:10px;background:#fffdf9';card.innerHTML=`<div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap"><strong>${esc(e.playerName||'학생 미확인')} · ${esc(e.kind||'error')}</strong><small>${fmt(e.createdAt)} · v${esc(e.version||'?')}</small></div><div style="margin-top:7px;font-weight:700">${esc(e.message||'오류 메시지 없음')}</div><small style="display:block;margin-top:6px;color:#78857c">${esc(e.page||'/')}</small>`;list.appendChild(card)})}catch{list.innerHTML='<p class="empty">오류 기록을 불러오지 못했습니다.</p>'}}
+  async function exportErrors(){try{const r=await fetch('/api/admin/errors/export',{headers:headers(),cache:'no-store'});if(!r.ok)throw new Error();const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Studyvillage-server-errors-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}catch{alert('오류 리포트를 내보내지 못했습니다.')}}
+  async function clearErrors(){if(!confirm('교사 PC에 모인 오류 기록을 모두 비울까요?'))return;const r=await fetch('/api/admin/errors',{method:'DELETE',headers:headers()});if(r.ok)load()}
+  refresh.onclick=load;exportBtn.onclick=exportErrors;clearBtn.onclick=clearErrors;
+  const observer=new MutationObserver(()=>{if(!app.hidden&&token())load()});observer.observe(app,{attributes:true,attributeFilter:['hidden']});setTimeout(load,700);
+})();
