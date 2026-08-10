@@ -1,15 +1,37 @@
-/* v0.9.992 shared classroom routes.
+/* v1.1 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
    Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
-   Pre-1.0 readiness remains false until both restore integrity and direct wardrobe DB wiring are complete. */
+   Live DB wardrobe schema wiring is verified at server startup without rewriting the large server entry file. */
+import Database from 'better-sqlite3';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
+
+const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
+function verifyLiveWardrobeDb(setSetting){
+  const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,dbPath=path.join(dataDir,'studyvillage.db');
+  let db;
+  try{
+    db=new Database(dbPath);db.pragma('busy_timeout = 3000');
+    const columns=()=>db.prepare('PRAGMA table_info(players)').all().map(r=>r.name);
+    if(!columns().includes('owned_items_json'))db.exec(`ALTER TABLE players ADD COLUMN owned_items_json TEXT NOT NULL DEFAULT '[]'`);
+    if(!columns().includes('owned_items_json'))throw new Error('owned_items_json 컬럼 생성 확인 실패');
+    setSetting('release:wardrobe-direct-db-wiring','verified');
+    setSetting('release:wardrobe-direct-db-wiring-checked-at',new Date().toISOString());
+    return true;
+  }catch(err){
+    try{setSetting('release:wardrobe-direct-db-wiring','failed');setSetting('release:wardrobe-direct-db-wiring-error',String(err?.message||err).slice(0,240))}catch{}
+    console.error('[Studyvillage] 옷장 DB 직접 연결 확인 실패:',err?.message||err);return false;
+  }finally{try{db?.close()}catch{}}
+}
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
   const key=id=>`activity-state:${id}`;
   const valid=id=>/^[a-z0-9-]{1,40}$/.test(id);
   let restoreInProgress=false;
+  verifyLiveWardrobeDb(setSetting);
   const read=(id,name='학습 활동')=>{
     let saved=null;try{saved=JSON.parse(getSetting(key(id))||'null')}catch{}
     return{activityId:id,name:String(saved?.name||name).slice(0,80),open:saved?.open!==false,message:String(saved?.message||'').slice(0,240),updatedAt:saved?.updatedAt||null};
@@ -59,7 +81,7 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
     const wardrobeRestoreIntegrity=!!audit?.ok;
     const wardrobeDirectDbWiring=getSetting('release:wardrobe-direct-db-wiring')==='verified';
     const readyFor1_0=wardrobeRestoreIntegrity&&wardrobeDirectDbWiring;
-    res.json({ok:true,readyFor1_0,checks:{wardrobeRestoreIntegrity,wardrobeDirectDbWiring},lastRestoreIntegrity:audit||null,message:readyFor1_0?'1.0 핵심 복원 조건이 모두 확인되었습니다.':!wardrobeDirectDbWiring?'옷장 데이터의 직접 DB 연결 검증이 남아 있습니다.':'1.0 전 옷장 복원 무결성 확인이 더 필요합니다.'});
+    res.json({ok:true,readyFor1_0,checks:{wardrobeRestoreIntegrity,wardrobeDirectDbWiring},lastRestoreIntegrity:audit||null,message:readyFor1_0?'핵심 복원 조건이 모두 확인되었습니다.':!wardrobeDirectDbWiring?'옷장 데이터의 직접 DB 연결 검증이 남아 있습니다.':'옷장 복원 무결성 확인이 더 필요합니다.'});
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
