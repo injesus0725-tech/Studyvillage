@@ -1,12 +1,12 @@
-/* v0.9.96 backward-compatible Studyvillage backup migration.
-   Backup v8 adds permanent wardrobe ownership through owned_items_json.
+/* v1.8 backward-compatible Studyvillage backup migration.
+   Backup v9 adds score ledger, teacher review, and correction/undo history.
    Until every restore path writes that player column directly, non-empty wardrobe ownership is mirrored into compatibility settings so restore cannot silently lose purchases.
    Compatibility helpers can also recover wardrobe/legacy character values deterministically after restore.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
    Migration output is deterministic and startup verification checks continuity plus repeatability.
    Never mutates the original parsed backup object. */
 
-export const CURRENT_BACKUP_VERSION=8;
+export const CURRENT_BACKUP_VERSION=9;
 
 const clone=value=>JSON.parse(JSON.stringify(value));
 const has=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
@@ -60,6 +60,9 @@ function normalizeBackupShape(backup){
   backup.activities=Array.isArray(backup.activities)?backup.activities:[];
   backup.activityRecords=Array.isArray(backup.activityRecords)?backup.activityRecords:[];
   backup.errorReports=Array.isArray(backup.errorReports)?backup.errorReports:[];
+  backup.scoreLedger=Array.isArray(backup.scoreLedger)?backup.scoreLedger:[];
+  backup.scoreAlertReviews=Array.isArray(backup.scoreAlertReviews)?backup.scoreAlertReviews:[];
+  backup.scoreCorrections=Array.isArray(backup.scoreCorrections)?backup.scoreCorrections:[];
   preserveCompatibilityData(backup);
   return backup;
 }
@@ -72,7 +75,8 @@ const migrations={
   4:b=>({...normalizeBackupShape(b),version:5}),
   5:b=>({...normalizeBackupShape(b),version:6}),
   6:b=>({...normalizeBackupShape(b),version:7}),
-  7:b=>({...normalizeBackupShape(b),version:8})
+  7:b=>({...normalizeBackupShape(b),version:8}),
+  8:b=>({...normalizeBackupShape(b),version:9})
 };
 
 export function verifyMigrationChain(){
