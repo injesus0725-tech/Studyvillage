@@ -14,15 +14,16 @@
         <h1>우리 학습마을</h1>
         <p>배우고, 도전하고, 함께 성장하는 마을</p>
         <button id="start-button">게임 시작</button>
-        <span class="version">v0.2.2</span>
+        <span class="version">v0.2.3</span>
       </div>
     </section>
 
     <section id="game-screen" class="screen">
       <header class="hud">
         <strong>🌳 우리 학습마을</strong>
-        <span>방향키 또는 WASD로 이동</span>
+        <span>방향키/WASD 이동 · Space 대화</span>
       </header>
+
       <div id="world" aria-label="학습마을 광장">
         <div class="cloud cloud-a">☁️</div>
         <div class="cloud cloud-b">☁️</div>
@@ -34,15 +35,34 @@
         <div class="tree-item t2 obstacle">🌲</div>
         <div class="tree-item t3 obstacle">🌳</div>
         <div class="tree-item t4 obstacle">🌲</div>
+
+        <div id="guide-npc" class="npc obstacle" data-name="도우미 선생님" role="img" aria-label="도우미 선생님">
+          <span class="npc-icon">👩‍🏫</span>
+          <span class="npc-name">도우미 선생님</span>
+        </div>
+
+        <div id="interaction-hint" class="interaction-hint" aria-live="polite">Space 키로 이야기하기</div>
         <div id="player" role="img" aria-label="플레이어 캐릭터">🧑‍🎓</div>
       </div>
-      <footer class="mobile-controls" aria-label="이동 버튼">
+
+      <div id="dialogue" class="dialogue" role="dialog" aria-modal="true" aria-labelledby="dialogue-name" hidden>
+        <div class="dialogue-avatar">👩‍🏫</div>
+        <div class="dialogue-body">
+          <strong id="dialogue-name">도우미 선생님</strong>
+          <p id="dialogue-text">안녕! 우리 학습마을에 온 걸 환영해. 마을을 둘러보고 재미있는 도전을 찾아보렴!</p>
+          <small>Space 또는 아래 버튼으로 다음</small>
+        </div>
+        <button id="dialogue-next">다음 ▶</button>
+      </div>
+
+      <footer class="mobile-controls" aria-label="이동 및 상호작용 버튼">
         <button data-key="ArrowUp">▲</button>
         <div>
           <button data-key="ArrowLeft">◀</button>
           <button data-key="ArrowDown">▼</button>
           <button data-key="ArrowRight">▶</button>
         </div>
+        <button id="talk-button" class="talk-button">💬 대화</button>
       </footer>
     </section>
   </main>
