@@ -1,6 +1,6 @@
 {
   "name": "studyvillage",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "교실용 학습 RPG 서버 및 학생 웹앱",
   "main": "electron/main.cjs",
   "private": true,
