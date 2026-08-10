@@ -1,33 +1,14 @@
-/* v0.9.40 local activity checkpoint foundation.
-   Checkpoint keys use encoded identity parts so different student names/activity IDs cannot collapse into the same localStorage key.
-   Progress payloads must be serializable and stay small so a malformed activity cannot fill the student's browser storage. */
+/* v0.9.46 local activity checkpoint foundation.
+   Progress payloads stay small and each student keeps only a limited number of recent checkpoints,
+   preventing abandoned activities from gradually filling a shared tablet's browser storage. */
 window.StudyVillageCheckpoint=(()=>{
-  const PREFIX='studyvillage-checkpoint:v1:';
-  const MAX_AGE_MS=604800000;
-  const MAX_BYTES=16384;
-  const part=s=>encodeURIComponent(String(s||'').trim()).slice(0,240);
-  const key=(playerName,activityId)=>`${PREFIX}${part(playerName)}:${part(activityId)}`;
-  function valid(value){
-    if(!value||value.version!==1||!value.updatedAt)return false;
-    const age=Date.now()-Date.parse(value.updatedAt);
-    return Number.isFinite(age)&&age>=0&&age<=MAX_AGE_MS;
-  }
-  function save(playerName,activityId,progress={}){
-    if(!playerName||!activityId)return false;
-    const value={version:1,playerName:String(playerName),activityId:String(activityId),progress,updatedAt:new Date().toISOString()};
-    try{const serialized=JSON.stringify(value);if(!serialized||serialized.length>MAX_BYTES)return false;localStorage.setItem(key(playerName,activityId),serialized);return true}catch{return false}
-  }
-  function load(playerName,activityId){
-    if(!playerName||!activityId)return null;
-    const k=key(playerName,activityId);
-    try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);return null}const value=JSON.parse(raw);if(valid(value)&&value.playerName===String(playerName)&&value.activityId===String(activityId))return value;localStorage.removeItem(k);return null}catch{try{localStorage.removeItem(k)}catch{}return null}
-  }
+  const PREFIX='studyvillage-checkpoint:v1:',MAX_AGE_MS=604800000,MAX_BYTES=16384,MAX_PER_PLAYER=20;
+  const part=s=>encodeURIComponent(String(s||'').trim()).slice(0,240),key=(playerName,activityId)=>`${PREFIX}${part(playerName)}:${part(activityId)}`;
+  function valid(value){if(!value||value.version!==1||!value.updatedAt)return false;const age=Date.now()-Date.parse(value.updatedAt);return Number.isFinite(age)&&age>=0&&age<=MAX_AGE_MS}
+  function prune(playerName){const expected=String(playerName),prefix=`${PREFIX}${part(playerName)}:`,items=[];try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(!k?.startsWith(prefix))continue;try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);continue}const value=JSON.parse(raw);if(valid(value)&&value.playerName===expected)items.push({k,updatedAt:value.updatedAt});else localStorage.removeItem(k)}catch{localStorage.removeItem(k)}}items.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));items.slice(MAX_PER_PLAYER).forEach(item=>localStorage.removeItem(item.k))}catch{}}
+  function save(playerName,activityId,progress={}){if(!playerName||!activityId)return false;const value={version:1,playerName:String(playerName),activityId:String(activityId),progress,updatedAt:new Date().toISOString()};try{const serialized=JSON.stringify(value);if(!serialized||serialized.length>MAX_BYTES)return false;localStorage.setItem(key(playerName,activityId),serialized);prune(playerName);return true}catch{return false}}
+  function load(playerName,activityId){if(!playerName||!activityId)return null;const k=key(playerName,activityId);try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);return null}const value=JSON.parse(raw);if(valid(value)&&value.playerName===String(playerName)&&value.activityId===String(activityId))return value;localStorage.removeItem(k);return null}catch{try{localStorage.removeItem(k)}catch{}return null}}
   function clear(playerName,activityId){if(!playerName||!activityId)return;try{localStorage.removeItem(key(playerName,activityId))}catch{}}
-  function list(playerName){
-    const out=[];if(!playerName)return out;
-    const expectedPlayer=String(playerName),prefix=`${PREFIX}${part(playerName)}:`;
-    try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(!k?.startsWith(prefix))continue;try{const raw=localStorage.getItem(k);if(!raw||raw.length>MAX_BYTES){localStorage.removeItem(k);continue}const value=JSON.parse(raw);if(valid(value)&&value.playerName===expectedPlayer)out.push(value);else localStorage.removeItem(k)}catch{localStorage.removeItem(k)}}}catch{}
-    return out.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
-  }
-  return{save,load,clear,list,maxAgeMs:MAX_AGE_MS,maxBytes:MAX_BYTES};
+  function list(playerName){if(!playerName)return[];prune(playerName);const out=[],expected=String(playerName),prefix=`${PREFIX}${part(playerName)}:`;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(!k?.startsWith(prefix))continue;try{const value=JSON.parse(localStorage.getItem(k)||'null');if(valid(value)&&value.playerName===expected)out.push(value)}catch{}}}catch{}return out.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))}
+  return{save,load,clear,list,maxAgeMs:MAX_AGE_MS,maxBytes:MAX_BYTES,maxPerPlayer:MAX_PER_PLAYER};
 })();
