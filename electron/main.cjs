@@ -1,6 +1,7 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const { pathToFileURL } = require('node:url');
 
 let mainWindow;
 
@@ -21,7 +22,9 @@ async function startServer() {
   fs.mkdirSync(dataDir, { recursive: true });
   process.env.STUDYVILLAGE_DATA_DIR = dataDir;
   process.env.STUDYVILLAGE_EMBEDDED = '1';
-  const serverModule = await import(path.join(__dirname, '..', 'server', 'server.js'));
+
+  const serverPath = path.join(__dirname, '..', 'server', 'server.js');
+  const serverModule = await import(pathToFileURL(serverPath).href);
   serverModule.startClassroomServer();
 }
 
