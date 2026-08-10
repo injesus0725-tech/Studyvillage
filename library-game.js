@@ -1,8 +1,8 @@
-/* v0.9.30 Bookmaru vocabulary mini game + local checkpoint resume + activity record */
+/* v0.9.33 Bookmaru vocabulary mini game + local checkpoint resume + confirmed activity save */
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
-  const ACTIVITY_ID='vocabulary';
+  const ACTIVITY_ID='vocabulary',SAVE_TIMEOUT_MS=5000;
   const questions=[
     {word:'다정하다',options:['정이 많고 친절하다','매우 빠르다','소리가 크다','마음이 급하다'],answer:0},
     {word:'망설이다',options:['바로 행동하다','결정하지 못하고 주저하다','기뻐서 웃다','조용히 기다리다'],answer:1},
@@ -19,16 +19,17 @@
   function saveCheckpoint(){const name=playerName();if(!name||!checkpoint())return;checkpoint().save(name,ACTIVITY_ID,{index,score,total:questions.length})}
   function clearCheckpoint(){const name=playerName();if(name&&checkpoint())checkpoint().clear(name,ACTIVITY_ID)}
   function readCheckpoint(){const name=playerName(),saved=name&&checkpoint()?checkpoint().load(name,ACTIVITY_ID):null,p=saved?.progress;if(!p)return null;const savedIndex=Number(p.index),savedScore=Number(p.score);if(!Number.isInteger(savedIndex)||savedIndex<0||savedIndex>=questions.length||!Number.isFinite(savedScore)||savedScore<0||savedScore>100)return null;return{index:savedIndex,score:savedScore,updatedAt:saved.updatedAt}}
-  function open(){
-    index=0;score=0;answered=false;saving=false;
-    const saved=readCheckpoint();
-    if(saved&&confirm(`이전에 풀던 책마루 기록이 있어요. ${saved.index+1}번 문제부터 이어서 할까요?`)){index=saved.index;score=saved.score}
-    else if(saved)clearCheckpoint();
-    panel.hidden=false;render();
-  }
+  function open(){index=0;score=0;answered=false;saving=false;const saved=readCheckpoint();if(saved&&confirm(`이전에 풀던 책마루 기록이 있어요. ${saved.index+1}번 문제부터 이어서 할까요?`)){index=saved.index;score=saved.score}else if(saved)clearCheckpoint();panel.hidden=false;render()}
   function render(){const item=questions[index];answered=false;saveCheckpoint();progress.textContent=`${index+1} / ${questions.length}`;scoreEl.textContent=`${score}점`;word.textContent=item.word;feedback.textContent='';feedback.className='library-feedback';next.hidden=true;next.onclick=null;options.innerHTML='';item.options.forEach((text,i)=>{const b=document.createElement('button');b.className='library-option';b.textContent=`${i+1}. ${text}`;b.onclick=()=>answer(i);options.appendChild(b)})}
   function answer(i){if(answered)return;answered=true;const item=questions[index],buttons=[...options.querySelectorAll('button')];buttons.forEach((b,j)=>{b.disabled=true;if(j===item.answer)b.classList.add('correct');if(j===i&&j!==item.answer)b.classList.add('wrong')});if(i===item.answer){score+=20;feedback.textContent='정답이에요! 🌟';feedback.classList.add('success')}else{feedback.textContent=`아쉬워요. 정답은 “${item.options[item.answer]}”예요.`;feedback.classList.add('error')}scoreEl.textContent=`${score}점`;next.hidden=false;next.textContent=index===questions.length-1?'결과 보기 📖':'다음 문제 ▶'}
-  async function saveActivity(){const r=await fetch('/api/player/me/activity',{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({activityId:ACTIVITY_ID,score})});if(!r.ok)throw new Error('save-failed');return r.json()}
-  async function finish(){if(saving)return;saving=true;progress.textContent='완료';word.textContent=score===100?'어휘 박사! 🏆':'책마루 도전 완료!';options.innerHTML='';feedback.textContent='기록 저장 중...';feedback.className='library-feedback';next.hidden=true;try{const result=await saveActivity();clearCheckpoint();const record=result.record||{},xp=result.gainedXp||0;feedback.textContent=`5문제 중 ${score/20}문제 정답 · ${score}점 · +${xp} XP\n어휘 도전 ${record.attempts||1}회 · 최고 ${record.bestScore??score}점`;feedback.className='library-feedback success';window.dispatchEvent(new CustomEvent('studyvillage:library-complete',{detail:{score,correct:score/20,total:5,gainedXp:xp,record,player:result.player}}))}catch{feedback.textContent=`${score}점! 다만 기록 저장에 실패했어요. 이어하기 기록은 이 기기에 남겨두었어요.`;feedback.className='library-feedback error'}finally{saving=false;next.hidden=false;next.textContent='책마루로 돌아가기';next.onclick=()=>{panel.hidden=true;next.onclick=null}}}
+  async function saveActivity(){const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),SAVE_TIMEOUT_MS);try{const r=await fetch('/api/player/me/activity',{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({activityId:ACTIVITY_ID,score}),signal:controller.signal});if(!r.ok)throw new Error('save-failed');return r.json()}finally{clearTimeout(timeout)}}
+  async function finish(){
+    if(saving)return;saving=true;progress.textContent='완료';word.textContent=score===100?'어휘 박사! 🏆':'책마루 도전 완료!';options.innerHTML='';feedback.textContent='기록 저장 중...';feedback.className='library-feedback';next.hidden=true;
+    try{
+      const result=await saveActivity();clearCheckpoint();const record=result.record||{},xp=result.gainedXp||0;feedback.textContent=`5문제 중 ${score/20}문제 정답 · ${score}점 · +${xp} XP\n어휘 도전 ${record.attempts||1}회 · 최고 ${record.bestScore??score}점`;feedback.className='library-feedback success';window.dispatchEvent(new CustomEvent('studyvillage:library-complete',{detail:{score,correct:score/20,total:5,gainedXp:xp,record,player:result.player}}));next.hidden=false;next.textContent='책마루로 돌아가기';next.onclick=()=>{panel.hidden=true;next.onclick=null}
+    }catch{
+      saveCheckpoint();progress.textContent='저장 대기';word.textContent='교실 서버 연결을 기다리고 있어요.';feedback.textContent=`이번 ${score}점은 이 기기에 임시 보관했어요. 서버가 돌아온 뒤 다시 저장해 주세요.`;feedback.className='library-feedback error';next.hidden=false;next.textContent='결과 다시 저장하기 ↻';next.onclick=finish
+    }finally{saving=false}
+  }
   next.addEventListener('click',()=>{if(index===questions.length-1)return finish();index++;render()});close.addEventListener('click',()=>{if(!saving)panel.hidden=true});window.addEventListener('studyvillage:open-library-game',open);
 })();
