@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
+import QRCode from 'qrcode';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,14 +37,7 @@ function hashPassword(password, salt) {
   return crypto.scryptSync(password, salt, 64).toString('hex');
 }
 function safePlayer(row) {
-  return {
-    name: row.name,
-    totalScore: row.total_score,
-    attempts: row.attempts,
-    bestScore: row.best_score,
-    lastScore: row.last_score,
-    updatedAt: row.updated_at
-  };
+  return { name: row.name, totalScore: row.total_score, attempts: row.attempts, bestScore: row.best_score, lastScore: row.last_score, updatedAt: row.updated_at };
 }
 function createSession(name) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -58,12 +52,21 @@ function requireSession(req, res, next) {
   req.session = session;
   next();
 }
+function classroomUrls() {
+  const urls = [];
+  const nets = os.networkInterfaces();
+  for (const [adapter, entries] of Object.entries(nets)) {
+    for (const net of entries || []) {
+      if (net.family === 'IPv4' && !net.internal) urls.push({ adapter, address: net.address, url: `http://${net.address}:${PORT}` });
+    }
+  }
+  return urls;
+}
 
 app.post('/api/login', (req, res) => {
   const name = String(req.body?.name || '').trim().replace(/\s+/g, ' ').slice(0, 12);
   const password = String(req.body?.password || '');
   if (!name || password.length < 4 || password.length > 72) return res.status(400).json({ ok: false, code: 'invalid-input' });
-
   const existing = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
   if (!existing) {
     const salt = crypto.randomBytes(16).toString('hex');
@@ -73,7 +76,6 @@ app.post('/api/login', (req, res) => {
     const created = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
     return res.json({ ok: true, isNew: true, token: createSession(name), player: safePlayer(created) });
   }
-
   const actual = Buffer.from(existing.password_hash, 'hex');
   const candidate = Buffer.from(hashPassword(password, existing.password_salt), 'hex');
   const valid = actual.length === candidate.length && crypto.timingSafeEqual(actual, candidate);
@@ -90,15 +92,13 @@ app.get('/api/player/me', requireSession, (req, res) => {
 app.post('/api/player/me/record', requireSession, (req, res) => {
   const existing = db.prepare('SELECT * FROM players WHERE name = ?').get(req.session.name);
   if (!existing) return res.status(404).json({ ok: false, code: 'not-found' });
-
   const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
   const totalScore = clamp(req.body?.totalScore, 0, 100000000);
   const attempts = clamp(req.body?.attempts, 0, 1000000);
   const bestScore = clamp(req.body?.bestScore, 0, 1000);
   const lastScore = clamp(req.body?.lastScore, 0, 1000);
   const now = new Date().toISOString();
-  db.prepare(`UPDATE players SET total_score=?, attempts=?, best_score=?, last_score=?, updated_at=? WHERE name=?`)
-    .run(totalScore, attempts, bestScore, lastScore, now, req.session.name);
+  db.prepare(`UPDATE players SET total_score=?, attempts=?, best_score=?, last_score=?, updated_at=? WHERE name=?`).run(totalScore, attempts, bestScore, lastScore, now, req.session.name);
   const updated = db.prepare('SELECT * FROM players WHERE name = ?').get(req.session.name);
   res.json({ ok: true, player: safePlayer(updated) });
 });
@@ -107,30 +107,23 @@ app.get('/api/ranking', (_req, res) => {
   const rows = db.prepare(`SELECT * FROM players ORDER BY best_score DESC, total_score DESC, attempts ASC, name ASC LIMIT 100`).all();
   res.json({ ok: true, players: rows.map(safePlayer) });
 });
-
+app.get('/api/network', async (_req, res) => {
+  const urls = classroomUrls();
+  const items = await Promise.all(urls.map(async item => ({ ...item, qr: await QRCode.toDataURL(item.url, { margin: 1, width: 320 }) })));
+  res.json({ ok: true, port: PORT, teacherUrl: `http://localhost:${PORT}`, urls: items });
+});
 app.get('/api/health', (_req, res) => res.json({ ok: true, server: 'Studyvillage classroom server' }));
-
-function classroomUrls() {
-  const urls = [];
-  const nets = os.networkInterfaces();
-  for (const entries of Object.values(nets)) {
-    for (const net of entries || []) {
-      if (net.family === 'IPv4' && !net.internal) urls.push(`http://${net.address}:${PORT}`);
-    }
-  }
-  return urls;
-}
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('=============================================');
   console.log(' Studyvillage 교실 서버가 실행되었습니다.');
   console.log('=============================================');
-  console.log(`선생님 컴퓨터: http://localhost:${PORT}`);
+  console.log(`선생님 컴퓨터: http://localhost:${PORT}/connect.html`);
   const urls = classroomUrls();
   if (urls.length) {
     console.log('학생 접속 주소:');
-    urls.forEach(url => console.log(`  ${url}`));
+    urls.forEach(({ adapter, url }) => console.log(`  [${adapter}] ${url}`));
   } else {
     console.log('학생 접속 주소를 찾지 못했습니다. 네트워크 연결을 확인하세요.');
   }
