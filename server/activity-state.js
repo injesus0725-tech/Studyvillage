@@ -1,7 +1,7 @@
-/* v0.9.97 shared classroom routes.
+/* v0.9.98 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
-   Wardrobe compatibility mirrors are verified after successful restore so ownership preservation cannot fail silently. */
+   Wardrobe ownership is recovered from the validated compatibility mirror after successful restore. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { migrateStudyvillageBackup, legacyWardrobeKey } from './backup-migrator.js';
 
@@ -36,11 +36,11 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
         try{
           const expected=(migration.backup.players||[]).filter(p=>String(p?.owned_items_json||'[]')!=='[]');
           const missing=[];
-          for(const player of expected){const name=String(player?.name||'').trim(),wanted=String(player?.owned_items_json||'[]'),saved=getSetting(legacyWardrobeKey(name));if(saved!==wanted)missing.push(name)}
-          const audit={ok:missing.length===0,checked:expected.length,missingCount:missing.length,missingPlayers:missing.slice(0,20),checkedAt:new Date().toISOString()};
+          for(const player of expected){const name=String(player?.name||'').trim(),wanted=String(player?.owned_items_json||'[]'),saved=getSetting(legacyWardrobeKey(name));if(saved!==wanted){setSetting(legacyWardrobeKey(name),wanted);const recovered=getSetting(legacyWardrobeKey(name));if(recovered!==wanted)missing.push(name)}}
+          const audit={ok:missing.length===0,checked:expected.length,recovered:expected.length-missing.length,missingCount:missing.length,missingPlayers:missing.slice(0,20),checkedAt:new Date().toISOString()};
           setSetting('backup:last-restore-integrity',JSON.stringify(audit));
-          if(!audit.ok)console.error('[Studyvillage] 복원 후 옷장 호환성 검증 실패:',missing.join(', '));
-        }catch(err){console.error('복원 후 옷장 호환성 검증 실패:',err?.message||err)}
+          if(!audit.ok)console.error('[Studyvillage] 복원 후 옷장 호환성 복구 실패:',missing.join(', '));
+        }catch(err){console.error('복원 후 옷장 호환성 복구 실패:',err?.message||err)}
       }
       release();
     });
