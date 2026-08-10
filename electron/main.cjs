@@ -23,6 +23,8 @@ async function startServer() {
   process.env.STUDYVILLAGE_DATA_DIR = dataDir;
   process.env.STUDYVILLAGE_EMBEDDED = '1';
 
+  const hookPath = path.join(__dirname, '..', 'server', 'activity-state-hook.js');
+  await import(pathToFileURL(hookPath).href);
   const serverPath = path.join(__dirname, '..', 'server', 'server.js');
   const serverModule = await import(pathToFileURL(serverPath).href);
   serverModule.startClassroomServer();
