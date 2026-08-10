@@ -24,7 +24,7 @@
     "productName": "Studyvillage",
     "asar": true,
     "asarUnpack": ["node_modules/better-sqlite3/**/*"],
-    "files": ["index.html","style.css","game.js","avatar-renderer.js","customize.js","auth.js","data-service.js","admin.html","admin.css","admin.js","connect.html","assets/**/*","server/**/*","electron/**/*","CLASSROOM-QUICKSTART.txt","package.json"],
+    "files": ["index.html","style.css","avatar-assets.css","game.js","avatar-renderer.js","customize.js","auth.js","data-service.js","admin.html","admin.css","admin.js","connect.html","assets/**/*","server/**/*","electron/**/*","CLASSROOM-QUICKSTART.txt","package.json"],
     "win": {"target":["portable"],"artifactName":"Studyvillage-${version}-portable.${ext}"}
   }
 }
