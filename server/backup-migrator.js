@@ -1,5 +1,6 @@
-/* v0.9.76 backward-compatible Studyvillage backup migration.
+/* v0.9.77 backward-compatible Studyvillage backup migration.
    Older supported backups gain only fields that did not exist yet; suspicious existing values are preserved so validation can reject them.
+   Startup verification catches missing or broken migration steps before restore is attempted.
    Never mutates the original parsed backup object. */
 
 export const CURRENT_BACKUP_VERSION=7;
@@ -42,13 +43,29 @@ const migrations={
   6:b=>({...normalizeBackupShape(b),version:7})
 };
 
+export function verifyMigrationChain(){
+  for(let version=1;version<CURRENT_BACKUP_VERSION;version++){
+    const migrate=migrations[version];
+    if(typeof migrate!=='function')return{ok:false,code:'missing-migration',version,message:`백업 v${version} → v${version+1} 변환 규칙이 없습니다.`};
+    try{
+      const probe={format:'studyvillage-backup',version,players:[],settings:[]},next=migrate(clone(probe));
+      if(Number(next?.version)!==version+1)return{ok:false,code:'broken-migration',version,message:`백업 v${version} 변환 규칙이 정확히 v${version+1}로 진행하지 않습니다.`};
+    }catch(error){return{ok:false,code:'migration-error',version,message:`백업 v${version} 변환 규칙 검사 중 오류가 발생했습니다: ${String(error?.message||error).slice(0,160)}`}}
+  }
+  return{ok:true,currentVersion:CURRENT_BACKUP_VERSION,steps:CURRENT_BACKUP_VERSION-1};
+}
+
+const chainStatus=verifyMigrationChain();
+if(!chainStatus.ok)console.error('[Studyvillage] backup migration chain invalid:',chainStatus.message);
+
 export function migrateStudyvillageBackup(input){
+  if(!chainStatus.ok)return{ok:false,code:'migration-chain-invalid',message:'이 버전의 백업 변환 규칙에 문제가 있어 안전을 위해 복원을 중단했습니다.'};
   if(!input||input.format!=='studyvillage-backup')return{ok:false,code:'invalid-format',message:'Studyvillage 백업 형식이 아닙니다.'};
   let backup=clone(input),fromVersion=Number(backup.version);
   if(!Number.isInteger(fromVersion)||fromVersion<1)return{ok:false,code:'invalid-version',message:'백업 버전 정보가 올바르지 않습니다.'};
   if(fromVersion>CURRENT_BACKUP_VERSION)return{ok:false,code:'future-version',message:`현재 프로그램보다 새로운 백업입니다. 지원 버전은 ${CURRENT_BACKUP_VERSION}까지입니다.`};
   const originalVersion=fromVersion;
-  while(fromVersion<CURRENT_BACKUP_VERSION){const migrate=migrations[fromVersion];if(typeof migrate!=='function')return{ok:false,code:'missing-migration',message:`백업 v${fromVersion}을(를) 현재 형식으로 변환하는 규칙이 없습니다.`};backup=migrate(backup);fromVersion=Number(backup.version)}
+  while(fromVersion<CURRENT_BACKUP_VERSION){const migrate=migrations[fromVersion];backup=migrate(backup);const nextVersion=Number(backup?.version);if(nextVersion!==fromVersion+1)return{ok:false,code:'broken-migration',message:`백업 v${fromVersion} 변환이 올바르게 진행되지 않아 복원을 중단했습니다.`};fromVersion=nextVersion}
   backup=normalizeBackupShape(backup);backup.version=CURRENT_BACKUP_VERSION;
   return{ok:true,backup,fromVersion:originalVersion,toVersion:CURRENT_BACKUP_VERSION,migrated:originalVersion!==CURRENT_BACKUP_VERSION};
 }
