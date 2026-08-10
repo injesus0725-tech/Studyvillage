@@ -10,8 +10,9 @@ const rootDir = path.resolve(__dirname, '..');
 const db = new Database(path.join(__dirname, 'studyvillage.db'));
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const sessions = new Map();
 
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
 app.use(express.static(rootDir));
 
 db.pragma('journal_mode = WAL');
@@ -43,11 +44,24 @@ function safePlayer(row) {
     updatedAt: row.updated_at
   };
 }
+function createSession(name) {
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions.set(token, { name, createdAt: Date.now() });
+  return token;
+}
+function requireSession(req, res, next) {
+  const auth = String(req.headers.authorization || '');
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const session = sessions.get(token);
+  if (!session) return res.status(401).json({ ok: false, code: 'not-authenticated' });
+  req.session = session;
+  next();
+}
 
 app.post('/api/login', (req, res) => {
-  const name = String(req.body?.name || '').trim().slice(0, 12);
+  const name = String(req.body?.name || '').trim().replace(/\s+/g, ' ').slice(0, 12);
   const password = String(req.body?.password || '');
-  if (!name || password.length < 4) return res.status(400).json({ ok: false, code: 'invalid-input' });
+  if (!name || password.length < 4 || password.length > 72) return res.status(400).json({ ok: false, code: 'invalid-input' });
 
   const existing = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
   if (!existing) {
@@ -56,41 +70,40 @@ app.post('/api/login', (req, res) => {
     const now = new Date().toISOString();
     db.prepare(`INSERT INTO players (name,password_hash,password_salt,created_at,updated_at) VALUES (?,?,?,?,?)`).run(name, hash, salt, now, now);
     const created = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
-    return res.json({ ok: true, isNew: true, player: safePlayer(created) });
+    return res.json({ ok: true, isNew: true, token: createSession(name), player: safePlayer(created) });
   }
 
-  const valid = crypto.timingSafeEqual(
-    Buffer.from(existing.password_hash, 'hex'),
-    Buffer.from(hashPassword(password, existing.password_salt), 'hex')
-  );
+  const actual = Buffer.from(existing.password_hash, 'hex');
+  const candidate = Buffer.from(hashPassword(password, existing.password_salt), 'hex');
+  const valid = actual.length === candidate.length && crypto.timingSafeEqual(actual, candidate);
   if (!valid) return res.status(401).json({ ok: false, code: 'wrong-password' });
-  res.json({ ok: true, isNew: false, player: safePlayer(existing) });
+  res.json({ ok: true, isNew: false, token: createSession(name), player: safePlayer(existing) });
 });
 
-app.get('/api/player/:name', (req, res) => {
-  const row = db.prepare('SELECT * FROM players WHERE name = ?').get(String(req.params.name || '').slice(0, 12));
+app.get('/api/player/me', requireSession, (req, res) => {
+  const row = db.prepare('SELECT * FROM players WHERE name = ?').get(req.session.name);
   if (!row) return res.status(404).json({ ok: false, code: 'not-found' });
   res.json({ ok: true, player: safePlayer(row) });
 });
 
-app.post('/api/player/:name/record', (req, res) => {
-  const name = String(req.params.name || '').slice(0, 12);
-  const existing = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
+app.post('/api/player/me/record', requireSession, (req, res) => {
+  const existing = db.prepare('SELECT * FROM players WHERE name = ?').get(req.session.name);
   if (!existing) return res.status(404).json({ ok: false, code: 'not-found' });
 
-  const totalScore = Number(req.body?.totalScore) || 0;
-  const attempts = Number(req.body?.attempts) || 0;
-  const bestScore = Number(req.body?.bestScore) || 0;
-  const lastScore = Number(req.body?.lastScore) || 0;
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+  const totalScore = clamp(req.body?.totalScore, 0, 100000000);
+  const attempts = clamp(req.body?.attempts, 0, 1000000);
+  const bestScore = clamp(req.body?.bestScore, 0, 1000);
+  const lastScore = clamp(req.body?.lastScore, 0, 1000);
   const now = new Date().toISOString();
   db.prepare(`UPDATE players SET total_score=?, attempts=?, best_score=?, last_score=?, updated_at=? WHERE name=?`)
-    .run(totalScore, attempts, bestScore, lastScore, now, name);
-  const updated = db.prepare('SELECT * FROM players WHERE name = ?').get(name);
+    .run(totalScore, attempts, bestScore, lastScore, now, req.session.name);
+  const updated = db.prepare('SELECT * FROM players WHERE name = ?').get(req.session.name);
   res.json({ ok: true, player: safePlayer(updated) });
 });
 
 app.get('/api/ranking', (_req, res) => {
-  const rows = db.prepare(`SELECT name,total_score,attempts,best_score,last_score,updated_at FROM players ORDER BY best_score DESC, total_score DESC, attempts ASC, name ASC LIMIT 100`).all();
+  const rows = db.prepare(`SELECT * FROM players ORDER BY best_score DESC, total_score DESC, attempts ASC, name ASC LIMIT 100`).all();
   res.json({ ok: true, players: rows.map(safePlayer) });
 });
 
