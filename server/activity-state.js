@@ -1,8 +1,8 @@
-/* v1.6 shared classroom routes.
+/* v1.7 shared classroom routes.
    Activity open/close state remains persisted in settings.
    Older backups are migrated forward, validated, restored one at a time, and successful migrations are recorded after restore.
    Wardrobe ownership is recovered from the validated compatibility mirror after successful restore and audited explicitly.
-   Live DB wardrobe schema wiring, activity-record integrity, score/XP ledger auditing, and teacher-only anomaly alerts are verified at server startup. */
+   Live DB wardrobe schema wiring, activity-record integrity, score/XP ledger auditing, teacher-only anomaly alerts, and reversible teacher corrections are verified at server startup. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,6 +51,22 @@ CREATE TABLE IF NOT EXISTS score_alert_reviews (
   note TEXT,
   reviewed_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS score_corrections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ledger_id INTEGER NOT NULL,
+  correction_ledger_id INTEGER,
+  player_name TEXT NOT NULL,
+  scope TEXT NOT NULL,
+  activity_id TEXT,
+  field TEXT NOT NULL,
+  before_value INTEGER NOT NULL,
+  after_value INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  corrected_at TEXT NOT NULL,
+  undone_at TEXT,
+  undo_ledger_id INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_score_corrections_ledger ON score_corrections(ledger_id,id DESC);
 CREATE TRIGGER IF NOT EXISTS trg_score_ledger_player_total_score
 AFTER UPDATE OF total_score ON players
 WHEN NEW.total_score <> OLD.total_score
@@ -89,10 +105,11 @@ END;
 `);
     const triggerCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_score_ledger_%'`).get()?.n||0);
     const reviewTable=!!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='score_alert_reviews'`).get();
-    const ok=triggerCount===5&&reviewTable;
+    const correctionTable=!!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='score_corrections'`).get();
+    const ok=triggerCount===5&&reviewTable&&correctionTable;
     setSetting('release:score-ledger-wiring',ok?'verified':'failed');
     setSetting('release:score-ledger-wiring-checked-at',new Date().toISOString());
-    if(!ok)throw new Error(`점수 장부/검토 테이블 확인 실패 (${triggerCount}/5)`);
+    if(!ok)throw new Error(`점수 장부/검토/수정 테이블 확인 실패 (${triggerCount}/5)`);
     return true;
   }catch(err){
     try{setSetting('release:score-ledger-wiring','failed');setSetting('release:score-ledger-wiring-error',String(err?.message||err).slice(0,240))}catch{}
@@ -132,7 +149,7 @@ function detectScoreAlerts({limit=300}={}){
   let db;
   try{
     db=openLiveDb();
-    const rows=db.prepare(`SELECT l.id,l.player_name AS playerName,l.scope,l.activity_id AS activityId,l.field,l.before_value AS beforeValue,l.after_value AS afterValue,l.delta,l.source,l.created_at AS createdAt,r.status AS reviewStatus,r.note AS reviewNote,r.reviewed_at AS reviewedAt FROM score_ledger l LEFT JOIN score_alert_reviews r ON r.ledger_id=l.id ORDER BY l.id DESC LIMIT ?`).all(Math.max(50,Math.min(1000,Number(limit)||300)));
+    const rows=db.prepare(`SELECT l.id,l.player_name AS playerName,l.scope,l.activity_id AS activityId,l.field,l.before_value AS beforeValue,l.after_value AS afterValue,l.delta,l.source,l.created_at AS createdAt,r.status AS reviewStatus,r.note AS reviewNote,r.reviewed_at AS reviewedAt,c.id AS correctionId,c.before_value AS correctionBeforeValue,c.after_value AS correctionAfterValue,c.reason AS correctionReason,c.corrected_at AS correctedAt,c.undone_at AS undoneAt FROM score_ledger l LEFT JOIN score_alert_reviews r ON r.ledger_id=l.id LEFT JOIN score_corrections c ON c.id=(SELECT c2.id FROM score_corrections c2 WHERE c2.ledger_id=l.id ORDER BY c2.id DESC LIMIT 1) ORDER BY l.id DESC LIMIT ?`).all(Math.max(50,Math.min(1000,Number(limit)||300)));
     const alerts=[];
     for(let i=0;i<rows.length;i++){
       const row=rows[i],reasons=[];let severity='notice';
@@ -160,6 +177,63 @@ function reviewScoreAlert(ledgerId,status,note=''){
     db.prepare(`INSERT INTO score_alert_reviews(ledger_id,status,note,reviewed_at) VALUES(?,?,?,?) ON CONFLICT(ledger_id) DO UPDATE SET status=excluded.status,note=excluded.note,reviewed_at=excluded.reviewed_at`).run(id,status,String(note||'').trim().slice(0,240),reviewedAt);
     return{ok:true,ledgerId:id,status,reviewedAt};
   }finally{try{db?.close()}catch{}}
+}
+function valueForLedgerTarget(db,row){
+  if(row.scope==='player'&&row.field==='xp')return db.prepare('SELECT xp AS value FROM players WHERE name=?').get(row.player_name)?.value;
+  if(row.scope==='player'&&row.field==='total_score')return db.prepare('SELECT total_score AS value FROM players WHERE name=?').get(row.player_name)?.value;
+  if(row.scope==='activity'&&row.field==='total_score')return db.prepare('SELECT total_score AS value FROM activity_records WHERE player_name=? AND activity_id=?').get(row.player_name,row.activity_id)?.value;
+  return undefined;
+}
+function updateLedgerTarget(db,row,value){
+  const now=new Date().toISOString();
+  if(row.scope==='player'&&row.field==='xp')return db.prepare('UPDATE players SET xp=?,updated_at=? WHERE name=?').run(value,now,row.player_name).changes;
+  if(row.scope==='player'&&row.field==='total_score')return db.prepare('UPDATE players SET total_score=?,updated_at=? WHERE name=?').run(value,now,row.player_name).changes;
+  if(row.scope==='activity'&&row.field==='total_score')return db.prepare('UPDATE activity_records SET total_score=?,updated_at=? WHERE player_name=? AND activity_id=?').run(value,now,row.player_name,row.activity_id).changes;
+  return 0;
+}
+function correctScoreAlert(ledgerId,nextValue,reason=''){
+  let db;
+  try{
+    db=openLiveDb();
+    const id=Math.max(1,Number(ledgerId)||0),value=Number(nextValue),why=String(reason||'').trim().slice(0,240);
+    if(!Number.isInteger(value)||value<0||value>100000000)return{ok:false,code:'invalid-value'};
+    if(why.length<2)return{ok:false,code:'reason-required'};
+    const row=db.prepare('SELECT * FROM score_ledger WHERE id=?').get(id);if(!row)return{ok:false,code:'not-found'};
+    const review=db.prepare('SELECT status FROM score_alert_reviews WHERE ledger_id=?').get(id);if(review?.status!=='needs-correction')return{ok:false,code:'review-required'};
+    const active=db.prepare('SELECT id FROM score_corrections WHERE ledger_id=? AND undone_at IS NULL ORDER BY id DESC LIMIT 1').get(id);if(active)return{ok:false,code:'already-corrected'};
+    const before=Number(valueForLedgerTarget(db,row));if(!Number.isFinite(before))return{ok:false,code:'target-not-found'};
+    const transaction=db.transaction(()=>{
+      const latest=Number(valueForLedgerTarget(db,row));if(latest!==before)throw Object.assign(new Error('stale-value'),{code:'stale-value'});
+      const ledgerBefore=Number(db.prepare('SELECT COALESCE(MAX(id),0) AS id FROM score_ledger').get()?.id||0);
+      if(!updateLedgerTarget(db,row,value))throw Object.assign(new Error('target-not-found'),{code:'target-not-found'});
+      const correctionLedgerId=Number(db.prepare('SELECT COALESCE(MAX(id),0) AS id FROM score_ledger').get()?.id||0);
+      const correctedAt=new Date().toISOString();
+      const result=db.prepare('INSERT INTO score_corrections(ledger_id,correction_ledger_id,player_name,scope,activity_id,field,before_value,after_value,reason,corrected_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(id,correctionLedgerId>ledgerBefore?correctionLedgerId:null,row.player_name,row.scope,row.activity_id,row.field,before,value,why,correctedAt);
+      db.prepare(`INSERT INTO score_alert_reviews(ledger_id,status,note,reviewed_at) VALUES(?,?,?,?) ON CONFLICT(ledger_id) DO UPDATE SET status=excluded.status,note=excluded.note,reviewed_at=excluded.reviewed_at`).run(id,'corrected',why,correctedAt);
+      return{ok:true,correctionId:Number(result.lastInsertRowid),ledgerId:id,beforeValue:before,afterValue:value,correctedAt};
+    });
+    return transaction();
+  }catch(err){if(err?.code)return{ok:false,code:err.code};throw err}
+  finally{try{db?.close()}catch{}}
+}
+function undoScoreCorrection(correctionId){
+  let db;
+  try{
+    db=openLiveDb();
+    const id=Math.max(1,Number(correctionId)||0),c=db.prepare('SELECT * FROM score_corrections WHERE id=?').get(id);if(!c)return{ok:false,code:'not-found'};if(c.undone_at)return{ok:false,code:'already-undone'};
+    const row=db.prepare('SELECT * FROM score_ledger WHERE id=?').get(c.ledger_id);if(!row)return{ok:false,code:'ledger-not-found'};
+    const current=Number(valueForLedgerTarget(db,row));if(!Number.isFinite(current))return{ok:false,code:'target-not-found'};if(current!==c.after_value)return{ok:false,code:'value-changed'};
+    const transaction=db.transaction(()=>{
+      const ledgerBefore=Number(db.prepare('SELECT COALESCE(MAX(id),0) AS id FROM score_ledger').get()?.id||0);
+      if(!updateLedgerTarget(db,row,c.before_value))throw Object.assign(new Error('target-not-found'),{code:'target-not-found'});
+      const undoLedgerId=Number(db.prepare('SELECT COALESCE(MAX(id),0) AS id FROM score_ledger').get()?.id||0),undoneAt=new Date().toISOString();
+      db.prepare('UPDATE score_corrections SET undone_at=?,undo_ledger_id=? WHERE id=?').run(undoneAt,undoLedgerId>ledgerBefore?undoLedgerId:null,id);
+      db.prepare('UPDATE score_alert_reviews SET status=?,note=?,reviewed_at=? WHERE ledger_id=?').run('needs-correction',`수정 되돌림 · ${c.reason}`,undoneAt,c.ledger_id);
+      return{ok:true,correctionId:id,restoredValue:c.before_value,undoneAt};
+    });
+    return transaction();
+  }catch(err){if(err?.code)return{ok:false,code:err.code};throw err}
+  finally{try{db?.close()}catch{}}
 }
 
 export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin}){
@@ -238,6 +312,14 @@ export function installActivityStateRoutes(app,{getSetting,setSetting,requireAdm
   app.post('/api/admin/score-alerts/:ledgerId/review',requireAdmin,(req,res)=>{
     try{const result=reviewScoreAlert(req.params.ledgerId,String(req.body?.status||''),req.body?.note);if(!result.ok)return res.status(result.code==='not-found'?404:400).json(result);res.json(result)}
     catch(err){res.status(500).json({ok:false,code:'score-alert-review-failed',message:String(err?.message||err).slice(0,240)})}
+  });
+  app.post('/api/admin/score-alerts/:ledgerId/correct',requireAdmin,(req,res)=>{
+    try{const result=correctScoreAlert(req.params.ledgerId,req.body?.value,req.body?.reason);if(!result.ok)return res.status(result.code==='not-found'||result.code==='target-not-found'?404:409).json(result);res.json(result)}
+    catch(err){res.status(500).json({ok:false,code:'score-correction-failed',message:String(err?.message||err).slice(0,240)})}
+  });
+  app.post('/api/admin/score-corrections/:correctionId/undo',requireAdmin,(req,res)=>{
+    try{const result=undoScoreCorrection(req.params.correctionId);if(!result.ok)return res.status(result.code==='not-found'||result.code==='ledger-not-found'||result.code==='target-not-found'?404:409).json(result);res.json(result)}
+    catch(err){res.status(500).json({ok:false,code:'score-correction-undo-failed',message:String(err?.message||err).slice(0,240)})}
   });
 
   app.get('/api/activity-state/:id',(req,res)=>{
