@@ -1,6 +1,11 @@
 const titleScreen = document.querySelector('#title-screen');
 const gameScreen = document.querySelector('#game-screen');
 const startButton = document.querySelector('#start-button');
+const nameInput = document.querySelector('#player-name');
+const nameError = document.querySelector('#name-error');
+const profileName = document.querySelector('#profile-name');
+const profileScore = document.querySelector('#profile-score');
+const playerLabel = document.querySelector('#player-label');
 const world = document.querySelector('#world');
 const player = document.querySelector('#player');
 const npc = document.querySelector('#guide-npc');
@@ -26,6 +31,8 @@ const state = {
   speed: 0.48,
   keys: new Set(),
   running: false,
+  playerName: '',
+  totalScore: 0,
   dialogueOpen: false,
   dialogueIndex: 0,
   quizOpen: false,
@@ -35,10 +42,10 @@ const state = {
 };
 
 const dialogueLines = [
-  '안녕! 우리 학습마을에 온 걸 환영해.',
-  '마을 곳곳에는 배움터와 책마루, 그리고 도전관이 있단다.',
-  '도전관에 가까이 가면 문제를 풀고 점수도 얻을 수 있어!',
-  '우선 마을을 천천히 둘러보렴. 다음에 또 이야기하자!'
+  () => `${state.playerName}아, 우리 학습마을에 온 걸 환영해!`,
+  () => '마을 곳곳에는 배움터와 책마루, 그리고 도전관이 있단다.',
+  () => '도전관에 가까이 가면 문제를 풀고 점수도 얻을 수 있어!',
+  () => '우선 마을을 천천히 둘러보렴. 다음에 또 이야기하자!'
 ];
 
 const quizQuestions = [
@@ -67,36 +74,54 @@ const movementKeys = new Set([
   'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'
 ]);
 
-startButton.addEventListener('click', () => {
+nameInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') startGame();
+});
+startButton.addEventListener('click', startGame);
+
+function startGame() {
+  const cleanedName = nameInput.value.trim().replace(/\s+/g, ' ');
+  if (!cleanedName) {
+    nameError.textContent = '이름을 입력해야 마을에 들어갈 수 있어요.';
+    nameInput.focus();
+    return;
+  }
+
+  state.playerName = cleanedName.slice(0, 12);
+  state.totalScore = Number(localStorage.getItem(`studyvillage-score:${state.playerName}`)) || 0;
+  profileName.textContent = state.playerName;
+  playerLabel.textContent = state.playerName;
+  updateProfileScore();
+  nameError.textContent = '';
   titleScreen.classList.remove('active');
   gameScreen.classList.add('active');
   state.running = true;
   requestAnimationFrame(gameLoop);
-});
+}
+
+function updateProfileScore() {
+  profileScore.textContent = `${state.totalScore}점`;
+}
 
 window.addEventListener('keydown', (event) => {
+  if (!state.running) return;
   if (event.code === 'Space') {
     event.preventDefault();
     handleInteraction();
     return;
   }
-
   if (event.key === 'Escape') {
     if (state.quizOpen) closeQuiz();
     else if (state.dialogueOpen) closeDialogue();
     return;
   }
-
   if (movementKeys.has(event.key) && !state.dialogueOpen && !state.quizOpen) {
     event.preventDefault();
     state.keys.add(event.key.toLowerCase());
   }
 });
 
-window.addEventListener('keyup', (event) => {
-  state.keys.delete(event.key.toLowerCase());
-});
-
+window.addEventListener('keyup', (event) => state.keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur', () => state.keys.clear());
 
 document.querySelectorAll('.mobile-controls button[data-key]').forEach((button) => {
@@ -109,7 +134,6 @@ document.querySelectorAll('.mobile-controls button[data-key]').forEach((button) 
     event.preventDefault();
     state.keys.delete(key);
   };
-
   button.addEventListener('pointerdown', press);
   button.addEventListener('pointerup', release);
   button.addEventListener('pointercancel', release);
@@ -126,7 +150,6 @@ function getObstacleRects() {
   return [...world.querySelectorAll('.obstacle')].map((element) => {
     const rect = element.getBoundingClientRect();
     return {
-      element,
       left: rect.left - worldRect.left,
       right: rect.right - worldRect.left,
       top: rect.top - worldRect.top,
@@ -142,14 +165,12 @@ function playerWouldCollide(nextX, nextY) {
   const halfHeight = playerRect.height / 2;
   const centerX = worldRect.width * (nextX / 100);
   const centerY = worldRect.height * (nextY / 100);
-
   const candidate = {
     left: centerX - halfWidth,
     right: centerX + halfWidth,
     top: centerY - halfHeight,
     bottom: centerY + halfHeight
   };
-
   return getObstacleRects().some((obstacle) => {
     const padding = 5;
     return !(
@@ -164,27 +185,22 @@ function playerWouldCollide(nextX, nextY) {
 function tryMove(dx, dy) {
   const nextX = Math.max(3, Math.min(97, state.x + dx * state.speed));
   const nextY = Math.max(5, Math.min(95, state.y + dy * state.speed));
-
   if (!playerWouldCollide(nextX, state.y)) state.x = nextX;
   if (!playerWouldCollide(state.x, nextY)) state.y = nextY;
 }
 
 function updatePlayer() {
   if (state.dialogueOpen || state.quizOpen) return;
-
   let dx = 0;
   let dy = 0;
-
   if (state.keys.has('arrowleft') || state.keys.has('a')) dx -= 1;
   if (state.keys.has('arrowright') || state.keys.has('d')) dx += 1;
   if (state.keys.has('arrowup') || state.keys.has('w')) dy -= 1;
   if (state.keys.has('arrowdown') || state.keys.has('s')) dy += 1;
-
   if (dx && dy) {
     dx *= Math.SQRT1_2;
     dy *= Math.SQRT1_2;
   }
-
   tryMove(dx, dy);
   player.style.left = `${state.x}%`;
   player.style.top = `${state.y}%`;
@@ -194,20 +210,14 @@ function distanceTo(element) {
   if (!element) return Infinity;
   const p = player.getBoundingClientRect();
   const e = element.getBoundingClientRect();
-  const px = p.left + p.width / 2;
-  const py = p.top + p.height / 2;
-  const ex = e.left + e.width / 2;
-  const ey = e.top + e.height / 2;
-  return Math.hypot(px - ex, py - ey);
+  return Math.hypot(
+    p.left + p.width / 2 - (e.left + e.width / 2),
+    p.top + p.height / 2 - (e.top + e.height / 2)
+  );
 }
 
-function isNearNpc() {
-  return distanceTo(npc) < 135;
-}
-
-function isNearQuizHall() {
-  return distanceTo(quizHall) < 170;
-}
+function isNearNpc() { return distanceTo(npc) < 135; }
+function isNearQuizHall() { return distanceTo(quizHall) < 170; }
 
 function updateInteractionHint() {
   if (state.dialogueOpen || state.quizOpen) {
@@ -215,38 +225,26 @@ function updateInteractionHint() {
     talkButton.classList.remove('ready');
     return;
   }
-
   if (isNearNpc()) {
     interactionHint.textContent = 'Space 키로 도우미 선생님과 이야기하기';
     interactionHint.classList.add('visible');
     talkButton.classList.add('ready');
     return;
   }
-
   if (isNearQuizHall()) {
     interactionHint.textContent = 'Space 키로 도전관 퀴즈 시작하기';
     interactionHint.classList.add('visible');
     talkButton.classList.add('ready');
     return;
   }
-
   interactionHint.classList.remove('visible');
   talkButton.classList.remove('ready');
 }
 
 function handleInteraction() {
   if (state.quizOpen) return;
-
-  if (state.dialogueOpen) {
-    advanceDialogue();
-    return;
-  }
-
-  if (isNearNpc()) {
-    openDialogue();
-    return;
-  }
-
+  if (state.dialogueOpen) return advanceDialogue();
+  if (isNearNpc()) return openDialogue();
   if (isNearQuizHall()) openQuiz();
 }
 
@@ -255,7 +253,7 @@ function openDialogue() {
   state.keys.clear();
   state.dialogueIndex = 0;
   dialogueName.textContent = npc.dataset.name || '도우미 선생님';
-  dialogueText.textContent = dialogueLines[0];
+  dialogueText.textContent = dialogueLines[0]();
   dialogue.hidden = false;
   interactionHint.classList.remove('visible');
 }
@@ -263,13 +261,8 @@ function openDialogue() {
 function advanceDialogue() {
   if (!state.dialogueOpen) return;
   state.dialogueIndex += 1;
-
-  if (state.dialogueIndex >= dialogueLines.length) {
-    closeDialogue();
-    return;
-  }
-
-  dialogueText.textContent = dialogueLines[state.dialogueIndex];
+  if (state.dialogueIndex >= dialogueLines.length) return closeDialogue();
+  dialogueText.textContent = dialogueLines[state.dialogueIndex]();
   dialogueNext.textContent = state.dialogueIndex === dialogueLines.length - 1 ? '닫기 ✓' : '다음 ▶';
 }
 
@@ -293,13 +286,13 @@ function renderQuizQuestion() {
   const item = quizQuestions[state.quizIndex];
   state.quizAnswered = false;
   quizProgress.textContent = `${state.quizIndex + 1} / ${quizQuestions.length}`;
-  quizScore.textContent = `점수 ${state.quizScore}`;
+  quizScore.textContent = `이번 도전 ${state.quizScore}점`;
   quizQuestion.textContent = item.question;
   quizFeedback.textContent = '';
   quizFeedback.className = 'quiz-feedback';
   quizNext.hidden = true;
+  quizNext.onclick = null;
   quizOptions.innerHTML = '';
-
   item.options.forEach((option, index) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -315,13 +308,11 @@ function answerQuiz(selectedIndex) {
   state.quizAnswered = true;
   const item = quizQuestions[state.quizIndex];
   const buttons = [...quizOptions.querySelectorAll('.quiz-option')];
-
   buttons.forEach((button, index) => {
     button.disabled = true;
     if (index === item.answer) button.classList.add('correct');
     if (index === selectedIndex && index !== item.answer) button.classList.add('wrong');
   });
-
   if (selectedIndex === item.answer) {
     state.quizScore += 100;
     quizFeedback.textContent = `정답! 🎉 ${item.explanation}`;
@@ -330,28 +321,25 @@ function answerQuiz(selectedIndex) {
     quizFeedback.textContent = `아쉬워요! ${item.explanation}`;
     quizFeedback.classList.add('error');
   }
-
-  quizScore.textContent = `점수 ${state.quizScore}`;
+  quizScore.textContent = `이번 도전 ${state.quizScore}점`;
   quizNext.hidden = false;
   quizNext.textContent = state.quizIndex === quizQuestions.length - 1 ? '결과 보기 🏆' : '다음 문제 ▶';
 }
 
 function advanceQuiz() {
   if (!state.quizAnswered) return;
-
-  if (state.quizIndex === quizQuestions.length - 1) {
-    renderQuizResult();
-    return;
-  }
-
+  if (state.quizIndex === quizQuestions.length - 1) return renderQuizResult();
   state.quizIndex += 1;
   renderQuizQuestion();
 }
 
 function renderQuizResult() {
+  state.totalScore += state.quizScore;
+  localStorage.setItem(`studyvillage-score:${state.playerName}`, String(state.totalScore));
+  updateProfileScore();
   quizProgress.textContent = '완료';
-  quizScore.textContent = `최종 ${state.quizScore}점`;
-  quizQuestion.textContent = `3문제 중 ${state.quizScore / 100}문제를 맞혔어요!`;
+  quizScore.textContent = `이번 도전 ${state.quizScore}점 · 누적 ${state.totalScore}점`;
+  quizQuestion.textContent = `${state.playerName}, 3문제 중 ${state.quizScore / 100}문제를 맞혔어요!`;
   quizOptions.innerHTML = '';
   quizFeedback.textContent = state.quizScore === 300
     ? '완벽해요! 도전관 수수께끼 마스터! 🏆'
