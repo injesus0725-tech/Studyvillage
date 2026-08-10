@@ -1,7 +1,7 @@
-/* v0.9.70 server-side Studyvillage backup validator.
-   Rejects malformed data and backup formats newer than this server understands. */
+/* v0.9.78 server-side Studyvillage backup validator.
+   Backup version compatibility follows the single version source in backup-migrator.js. */
+import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
 
-const CURRENT_BACKUP_VERSION=7;
 const LIMITS={players:500,settings:500,activities:50000,activityRecords:50000,errorReports:10000};
 const integer=(v,min,max)=>Number.isInteger(Number(v))&&Number(v)>=min&&Number(v)<=max;
 const text=(v,max)=>typeof v==='string'&&v.length<=max;
