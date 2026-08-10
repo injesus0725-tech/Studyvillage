@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "verify": "node --check electron/main.cjs && node --check server/server.js && node --check game.js && node --check auth.js && node --check data-service.js && node --check admin.js",
     "postinstall": "electron-builder install-app-deps",
     "dist:win": "electron-builder --win portable"
   },
