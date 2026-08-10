@@ -1,9 +1,10 @@
-/* v0.9.16 live village event presentation + lightweight server receiver.
-   Classroom broadcasts use the dedicated TOP lane.
-   The server only exposes events that targeted this student while they were actively connected. */
+/* v0.9.18 live village event presentation + lightweight server receiver.
+   Classroom broadcasts use the dedicated TOP lane. Repeated identical notices
+   are collapsed and the queue is capped so announcements never take over learning. */
 (()=>{
   const queue=[];
-  let showing=false,cursor=null,timer=null,polling=false;
+  const MAX_QUEUE=5,DUPLICATE_WINDOW_MS=10000;
+  let showing=false,cursor=null,timer=null,polling=false,lastShownKey='',lastShownAt=0;
 
   const style=document.createElement('style');
   style.textContent=`
@@ -15,10 +16,10 @@
 
   const host=document.createElement('div');host.id='studyvillage-live-events';host.dataset.lane='top-announcement';host.setAttribute('aria-live','polite');document.body.appendChild(host);
   const card=document.createElement('div');card.className='live-event-card';card.hidden=true;host.appendChild(card);
-  const safe=v=>String(v??'').slice(0,160);
+  const safe=v=>String(v??'').slice(0,160),keyOf=e=>`${safe(e.icon||'✨')}|${safe(e.message||'')}`;
 
-  function next(){if(showing||!queue.length)return;showing=true;const e=queue.shift();card.textContent=`${safe(e.icon||'✨')} ${safe(e.message||'마을에 새로운 소식이 있어요!')}`;card.hidden=false;requestAnimationFrame(()=>{card.style.opacity='1';card.style.transform='translateY(0)'});setTimeout(()=>{card.style.opacity='0';card.style.transform='translateY(-12px)';setTimeout(()=>{card.hidden=true;showing=false;next()},240)},Math.max(1800,Math.min(6000,Number(e.duration)||3600)))}
-  function show(event={}){queue.push({icon:event.icon||'✨',message:event.message||'',duration:event.duration||3600,type:event.type||'celebration'});next()}
+  function next(){if(showing||!queue.length)return;showing=true;const e=queue.shift(),key=keyOf(e);lastShownKey=key;lastShownAt=Date.now();card.textContent=`${safe(e.icon||'✨')} ${safe(e.message||'마을에 새로운 소식이 있어요!')}`;card.hidden=false;requestAnimationFrame(()=>{card.style.opacity='1';card.style.transform='translateY(0)'});setTimeout(()=>{card.style.opacity='0';card.style.transform='translateY(-12px)';setTimeout(()=>{card.hidden=true;showing=false;next()},240)},Math.max(1800,Math.min(6000,Number(e.duration)||3600)))}
+  function show(event={}){const item={icon:event.icon||'✨',message:event.message||'',duration:event.duration||3600,type:event.type||'celebration'},key=keyOf(item),now=Date.now();if((key===lastShownKey&&now-lastShownAt<DUPLICATE_WINDOW_MS)||queue.some(e=>keyOf(e)===key))return false;if(queue.length>=MAX_QUEUE)queue.shift();queue.push(item);next();return true}
 
   async function poll(){
     if(polling||document.hidden||!navigator.onLine)return;
@@ -40,5 +41,5 @@
   window.addEventListener('online',start);window.addEventListener('offline',stop);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start()});
   setTimeout(start,1500);
-  window.StudyVillageLiveEvents={show,poll,lane:'top-announcement'};
+  window.StudyVillageLiveEvents={show,poll,lane:'top-announcement',maxQueue:MAX_QUEUE};
 })();
