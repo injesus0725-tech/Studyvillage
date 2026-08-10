@@ -4,38 +4,44 @@
 
 ## 현재 버전
 
-**v0.3.2 — Firebase Cloud Adapter**
+**v0.4.0 — Classroom Server Foundation**
 
-- 이름 + 비밀번호 로그인 구조 유지
-- Firebase Authentication 연결 어댑터 추가
-- Cloud Firestore 플레이어 기록 어댑터 추가
-- Firebase가 비활성화되어 있으면 기존 로컬 저장으로 자동 대체
-- 사용자 UID 기준 Firestore 보안 규칙 추가
-- Firebase 프로젝트별 설정 파일 분리
-- 수수께끼 10문제 / 개인 기록판 / 이동 / NPC 기능 유지
+기본 운영 방향을 Firebase 중심에서 **교실 선생님 컴퓨터를 서버로 사용하는 구조**로 변경했습니다.
 
-## Firebase 파일
+- 선생님 컴퓨터에서 Node 서버 실행
+- SQLite 파일에 학생 계정 및 기록 저장
+- 학생 기기는 같은 학교 네트워크에서 선생님 컴퓨터로 접속
+- 이름 + 비밀번호 로그인 API
+- 비밀번호는 SQLite에 평문 저장하지 않고 `scrypt` 해시 + salt로 저장
+- 플레이어 기록 API
+- 랭킹 API
+- 서버 상태 확인 API
+- 서버가 없을 때만 브라우저 localStorage fallback
+- Windows용 `server/start-classroom.bat` 실행 스크립트 추가
 
-- `firebase-config.js`: 현재 비활성 상태의 프로젝트 설정 자리
-- `firebase-config.example.js`: 설정 예시
-- `firebase-service.js`: Authentication + Firestore 어댑터
-- `firestore.rules`: 로그인한 사용자가 자기 기록만 읽고 쓰도록 제한
+## 서버 파일
 
-Firebase 프로젝트를 만든 뒤 웹 앱 설정값을 `firebase-config.js`에 넣고 `enabled: true`로 바꾸면 클라우드 모드를 활성화할 수 있도록 준비되어 있습니다.
+- `server/server.js`: Express + SQLite 교실 서버
+- `server/package.json`: 서버 의존성
+- `server/start-classroom.bat`: Windows에서 서버 실행
+- `server/studyvillage.db`: 첫 서버 실행 시 자동 생성되는 실제 학생 데이터 파일
 
-## 기록 구조
+## 기본 접속 방식
 
-- `totalScore`: 누적 점수
-- `attempts`: 퀴즈 완료 횟수
-- `bestScore`: 최고 점수
-- `lastScore`: 최근 점수
-- `updatedAt`: 마지막 기록 시각
+선생님 컴퓨터에서 서버가 실행되면 선생님 PC에서는 다음 주소로 접속합니다.
 
-## 실행 상태
+`http://localhost:3000`
 
-현재 저장소에는 클라우드 연결 코드까지 준비되어 있지만, 실제 Firebase 프로젝트 설정값은 아직 입력하지 않았습니다. 따라서 지금은 로컬 모드로 동작합니다. 실제 배포/접속 경로가 확보되는 순간 별도로 안내합니다.
+학생들은 같은 교실/학교 네트워크에서 선생님 컴퓨터의 내부 IP 주소와 3000번 포트로 접속하는 구조입니다.
+
+## 현재 진행 상태
+
+서버의 계정/기록/랭킹 API와 프론트엔드 인증·데이터 서비스 라우팅까지 만들어졌습니다.
+다음 단계에서는 기존 게임의 점수 저장 흐름을 서버 데이터 서비스에 완전히 연결하고, 실제 실행 테스트가 가능한 패키징 구조를 다듬습니다.
 
 ## 다음 개발 예정
 
-- v0.3.3: Firebase 프로젝트 연결 후 여러 기기 공용 계정/기록
-- 이후: QR 접속, 실시간 순위, 교사용 관리 기능, 학습 보상
+- v0.4.1: 게임 기록을 SQLite 서버 저장으로 완전 연결
+- v0.4.2: 교사용 관리자/랭킹 화면
+- v0.4.3: 학생 QR 접속 주소 표시
+- 이후: 교실용 실행 프로그램 패키징, 학습 보상, 참여 기록 확장
