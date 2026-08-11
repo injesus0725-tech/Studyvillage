@@ -19,3 +19,15 @@ window.StudyVillageAuth=(()=>{
   window.addEventListener('online',invalidateServer);window.addEventListener('offline',()=>{serverAvailable=false;serverCheck=null});window.addEventListener('studyvillage:connection-change',e=>{serverAvailable=e.detail?.online===true?true:e.detail?.online===false?false:null;serverCheck=null});
   return{login,restoreSession,checkServer,authHeaders,clearSession,invalidateServer,restoreSentinel:RESTORE_SENTINEL,mode:()=>serverAvailable?'classroom-server':'local'};
 })();
+
+(()=>{
+  const password=document.querySelector('#player-password');
+  if(!password||document.querySelector('#player-password-visibility'))return;
+  const label=document.createElement('label');
+  label.id='player-password-visibility';
+  label.style.cssText='display:flex;align-items:center;gap:6px;margin:2px 0 0;font-size:13px;cursor:pointer;user-select:none';
+  label.innerHTML='<input type="checkbox" aria-label="비밀번호 보기"> <span>비밀번호 보기</span>';
+  const checkbox=label.querySelector('input');
+  checkbox.addEventListener('change',()=>{password.type=checkbox.checked?'text':'password'});
+  password.closest('.name-entry')?.after(label);
+})();
