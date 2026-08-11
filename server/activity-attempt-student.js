@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluateAttempt } from './activity-attempt-policy.js';
 import { readActivityAttemptPolicies } from './activity-attempt-settings.js';
-import { readExtraAttempts, setExtraAttempts } from './activity-attempt-exceptions.js';
+import { readExtraAttempts, consumeExtraAttempts } from './activity-attempt-exceptions.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
@@ -35,7 +35,7 @@ export function installActivityAttemptStudentRoutes(app,{requireSession}){
         if(!latestDecision.allowed)return{ok:false,code:'attempt-limit-reached',activityId,policyId,attempts:latestDecision.attempts,remaining:latestDecision.remaining,extraAttempts:latestDecision.extraAttempts,policy:latestDecision.policy};
         const nextAttempts=(latest?.attempts||0)+1,nextBest=Math.max(latest?.best_score||0,score),nextTotal=(latest?.total_score||0)+score,nextGained=latestDecision.awardXp?baseXp:0;
         db.prepare(`INSERT INTO activity_records(player_name,activity_id,attempts,best_score,last_score,total_score,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(player_name,activity_id) DO UPDATE SET attempts=excluded.attempts,best_score=excluded.best_score,last_score=excluded.last_score,total_score=excluded.total_score,updated_at=excluded.updated_at`).run(name,activityId,nextAttempts,nextBest,score,nextTotal,now);
-        if(latestDecision.usingExtra){const consumed=setExtraAttempts((key,value)=>setSetting(db,key,value),name,policyId,latestExtra-1);if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
+        if(latestDecision.usingExtra){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,policyId,1,`${activityId} 활동 추가 도전 사용`);if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
         if(nextGained)db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name);else db.prepare('UPDATE players SET updated_at=? WHERE name=?').run(now,name);
         logActivity(db,name,`activity-${activityId}`,`${score}점${nextGained?` · +${nextGained}XP`:' · XP 추가 없음'}${latestDecision.usingExtra?' · 추가 도전권 1회 사용':''}`);
         return{ok:true,gainedXp:nextGained,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId,policy:latestDecision.policy};
