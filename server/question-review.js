@@ -4,6 +4,7 @@ import { auditQuestionSet, summarizeQuestionAudits } from './question-audit.js';
 import { installQuestionHistoryRoutes } from './question-history.js';
 import { installQuestionOverrideRoutes } from './question-overrides.js';
 import { changeStars, starBalanceFor, starLedgerFor } from './star-ledger.js';
+import { installItemShopRoutes } from './item-shop.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -14,6 +15,7 @@ function writeQueue(setSetting,rows){setSetting(STORE_KEY,JSON.stringify(rows.sl
 export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSetting}){
   installQuestionHistoryRoutes(app,{requireAdmin,getSetting,setSetting});
   installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSetting});
+  installItemShopRoutes(app,{requireAdmin});
 
   app.get('/api/admin/stars/:name',requireAdmin,(req,res)=>{
     try{const name=clean(req.params.name,12),balance=starBalanceFor(name);if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,name,balance,entries:starLedgerFor(name,{limit:req.query.limit})})}
