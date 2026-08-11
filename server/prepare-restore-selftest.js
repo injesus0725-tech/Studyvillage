@@ -21,6 +21,17 @@ assert.equal(good.ok,true,'valid backup should pass restore preparation');
 assert.equal(good.starMirrorCount,1,'star mirror should be counted');
 assert.equal(JSON.stringify(base),before,'restore preparation must not mutate input');
 
+const legacy=structuredClone(base);
+legacy.version=8;
+const legacyBefore=JSON.stringify(legacy);
+const migrated=prepareStudyvillageRestore(legacy);
+assert.equal(migrated.ok,true,'supported legacy backup should migrate and pass');
+assert.equal(migrated.fromVersion,8,'legacy source version should be reported');
+assert.equal(migrated.toVersion,9,'legacy backup should migrate to current version');
+assert.equal(migrated.migrated,true,'legacy backup should report migration');
+assert.equal(migrated.starMirrorCount,1,'legacy migration should preserve star mirror settings');
+assert.equal(JSON.stringify(legacy),legacyBefore,'legacy restore preparation must not mutate input');
+
 const broken=structuredClone(base);
 broken.settings[0].value=JSON.stringify({balance:-1,entries:[]});
 const bad=prepareStudyvillageRestore(broken);
