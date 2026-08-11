@@ -1,10 +1,12 @@
 /* v1.9 classroom runtime polling budget guard.
-   Development-only selftest: prevents accidental high-frequency admin polling from creeping into normal classroom runtime. */
+   Development-only selftest: prevents accidental high-frequency polling from creeping into normal classroom runtime. */
 import fs from 'node:fs';
 
 const checks=[
-  {file:'admin-presence.js',minimumMs:8000,requiresHiddenGuard:true},
-  {file:'admin-score-alerts.js',minimumMs:20000,requiresHiddenGuard:true}
+  {file:'admin-presence.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:false},
+  {file:'admin-score-alerts.js',minimumMs:20000,requiresHiddenGuard:true,requiresOnlineGuard:false},
+  {file:'presence.js',minimumMs:12000,requiresHiddenGuard:true,requiresOnlineGuard:true},
+  {file:'live-events.js',minimumMs:2500,requiresHiddenGuard:true,requiresOnlineGuard:true}
 ];
 
 for(const check of checks){
@@ -13,6 +15,8 @@ for(const check of checks){
   if(!matches.length)throw new Error(`${check.file}: polling interval not found`);
   if(matches.some(ms=>ms<check.minimumMs))throw new Error(`${check.file}: polling interval is too aggressive (${matches.join(',')}ms)`);
   if(check.requiresHiddenGuard&&!/document\.hidden/.test(source))throw new Error(`${check.file}: background/hidden-page polling guard is missing`);
+  if(check.requiresOnlineGuard&&!/navigator\.onLine/.test(source))throw new Error(`${check.file}: offline polling guard is missing`);
+  if(!/polling|pinging|loading/.test(source))throw new Error(`${check.file}: overlapping request guard is missing`);
 }
 
 console.log('runtime polling budget selftest passed');
