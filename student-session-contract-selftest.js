@@ -14,4 +14,5 @@ if(!index.includes('<script src="student-session.js"></script>'))throw new Error
 const files=pkg.build?.files||[];
 if(!files.includes('student-session.js'))throw new Error('student-session.js must be packaged');
 if(/clearCheckpoint|localStorage\.clear|sessionStorage\.clear/.test(session))throw new Error('student switch must not clear saved activity checkpoints or all browser storage');
+require('./student-cross-device-data-contract-selftest.js');
 console.log('student session switch contract self-test passed');
