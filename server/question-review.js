@@ -7,6 +7,7 @@ import { changeStars, starBalanceFor, starLedgerFor } from './star-ledger.js';
 import { installItemShopRoutes } from './item-shop.js';
 import { installActivityAttemptSettingRoutes } from './activity-attempt-settings.js';
 import { installActivityAttemptOverviewRoutes } from './activity-attempt-overview.js';
+import { installActivityAttemptExceptionRoutes } from './activity-attempt-exceptions.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -20,6 +21,7 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
   installItemShopRoutes(app,{requireAdmin});
   installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting});
   installActivityAttemptOverviewRoutes(app,{requireAdmin});
+  installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetting,setSetting});
 
   app.get('/api/admin/stars/:name',requireAdmin,(req,res)=>{
     try{const name=clean(req.params.name,12),balance=starBalanceFor(name);if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,name,balance,entries:starLedgerFor(name,{limit:req.query.limit})})}
