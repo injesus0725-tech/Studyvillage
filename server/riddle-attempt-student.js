@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeAttemptPolicy } from './activity-attempt-policy.js';
 import { readActivityAttemptPolicies } from './activity-attempt-settings.js';
-import { readExtraAttempts, setExtraAttempts } from './activity-attempt-exceptions.js';
+import { readExtraAttempts, consumeExtraAttempts } from './activity-attempt-exceptions.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const POLICY_ID='riddle-demo';
@@ -33,12 +33,12 @@ export function installRiddleAttemptStudentRoutes(app,{requireSession}){
       const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policy=normalizeAttemptPolicy(policies[POLICY_ID]||{});
       const unlimited=policy.mode==='unlimited',baseRemaining=unlimited?Number.POSITIVE_INFINITY:Math.max(0,Number(policy.limit||1)-Number(current.attempts||0));
       const extraBefore=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID),extraNeeded=newAttempts?Math.max(0,newAttempts-(Number.isFinite(baseRemaining)?baseRemaining:newAttempts)):0;
-      if(extraNeeded>extraBefore)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId:POLICY_ID,attempts:current.attempts,remaining:Number.isFinite(baseRemaining)?baseRemaining: null,extraAttempts:extraBefore,policy});
+      if(extraNeeded>extraBefore)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId:POLICY_ID,attempts:current.attempts,remaining:Number.isFinite(baseRemaining)?baseRemaining:null,extraAttempts:extraBefore,policy});
       const tx=db.transaction(()=>{
         const latest=db.prepare('SELECT * FROM players WHERE name=?').get(name);if(!latest)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
         if(latest.attempts!==current.attempts)throw Object.assign(new Error('record-changed'),{code:'record-changed'});
         const latestExtra=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID);if(extraNeeded>latestExtra)throw Object.assign(new Error('attempt-limit-reached'),{code:'attempt-limit-reached'});
-        if(extraNeeded)setExtraAttempts((key,value)=>setSetting(db,key,value),name,POLICY_ID,latestExtra-extraNeeded);
+        if(extraNeeded){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,POLICY_ID,extraNeeded,'수수께끼 추가 도전 사용');if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
         const awardXp=newAttempts>0&&(policy.xpMode==='every-attempt'||current.attempts===0),gained=awardXp?20+Math.floor(incoming.lastScore/10):0,now=new Date().toISOString();
         const nextTotal=Math.max(Number(current.total_score)||0,incoming.totalScore),nextBest=Math.max(Number(current.best_score)||0,incoming.bestScore),nextAttempts=Math.max(Number(current.attempts)||0,incoming.attempts),nextLast=newAttempts>0?incoming.lastScore:Number(current.last_score)||0;
         db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,xp=xp+?,updated_at=? WHERE name=?').run(nextTotal,nextAttempts,nextBest,nextLast,gained,now,name);
