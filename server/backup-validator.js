@@ -4,7 +4,7 @@
 import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
 import { parseOwnedItems, wardrobeLimits } from './item-ownership.js';
 
-const LIMITS={players:500,settings:500,activities:50000,activityRecords:50000,errorReports:10000,scoreLedger:200000,scoreAlertReviews:200000,scoreCorrections:50000};
+const LIMITS={players:500,settings:2000,activities:50000,activityRecords:50000,errorReports:10000,scoreLedger:200000,scoreAlertReviews:200000,scoreCorrections:50000};
 const integer=(v,min,max)=>Number.isInteger(Number(v))&&Number(v)>=min&&Number(v)<=max;
 const text=(v,max)=>typeof v==='string'&&v.length<=max;
 const safeId=v=>typeof v==='string'&&/^[a-z0-9-]{1,80}$/.test(v);
