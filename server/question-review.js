@@ -9,6 +9,7 @@ import { installActivityAttemptSettingRoutes } from './activity-attempt-settings
 import { installActivityAttemptOverviewRoutes } from './activity-attempt-overview.js';
 import { installActivityAttemptExceptionRoutes } from './activity-attempt-exceptions.js';
 import { installScoreAlertReadRoute } from './score-alert-route.js';
+import { installAdminScoreHistoryRoutes } from './admin-score-history.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -24,6 +25,7 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
   installActivityAttemptOverviewRoutes(app,{requireAdmin});
   installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetting,setSetting});
   installScoreAlertReadRoute(app,{requireAdmin});
+  installAdminScoreHistoryRoutes(app,{requireAdmin});
 
   app.get('/api/admin/stars/:name',requireAdmin,(req,res)=>{
     try{const name=clean(req.params.name,12),balance=starBalanceFor(name);if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,name,balance,entries:starLedgerFor(name,{limit:req.query.limit})})}
