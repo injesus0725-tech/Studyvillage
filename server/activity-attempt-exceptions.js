@@ -1,16 +1,30 @@
 /* v1.9 per-student extra activity attempts.
-   Extra attempts are stored in settings so backup/restore preserves them.
-   This module only manages grants; student enforcement is connected separately. */
+   Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
+const HISTORY_KEY='activity-attempt-extra-history:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
-const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
+const clean=(v,n=160)=>String(v??'').trim().slice(0,n);
 const keyFor=(name,activityId)=>`${PREFIX}${encodeURIComponent(clean(name,12))}:${activityId}`;
 
 export function readExtraAttempts(getSetting,name,activityId){
   const id=clean(activityId,40);if(!SAFE_ACTIVITY.test(id))return 0;
   const n=Number(getSetting(keyFor(name,id))||0);
   return Number.isInteger(n)&&n>0?Math.min(1000,n):0;
+}
+
+export function readExtraAttemptHistory(getSetting,{limit=200,name='',activityId=''}={}){
+  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
+  const safeName=clean(name,12),safeActivity=clean(activityId,40),max=Math.max(1,Math.min(1000,Number(limit)||200));
+  return rows.filter(r=>(!safeName||r.name===safeName)&&(!safeActivity||r.activityId===safeActivity)).slice(-max).reverse();
+}
+
+export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type,amount,before,after,detail=''}={}){
+  const safeName=clean(name,12),id=clean(activityId,40),change=Number(amount),beforeValue=Number(before),afterValue=Number(after);
+  if(!safeName||!SAFE_ACTIVITY.test(id)||!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-history-entry'};
+  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
+  const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:Number.isFinite(change)?change:afterValue-beforeValue,before:Number.isFinite(beforeValue)?beforeValue:0,after:Number.isFinite(afterValue)?afterValue:0,detail:clean(detail,240),createdAt:new Date().toISOString()};
+  rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows.slice(-1000)));return{ok:true,entry};
 }
 
 export function setExtraAttempts(setSetting,name,activityId,count){
@@ -22,13 +36,25 @@ export function setExtraAttempts(setSetting,name,activityId,count){
   return{ok:true,name:clean(name,12),activityId:id,extraAttempts:n};
 }
 
-export function grantExtraAttempts(getSetting,setSetting,name,activityId,amount=1){
+export function grantExtraAttempts(getSetting,setSetting,name,activityId,amount=1,{recordHistory=true}={}){
   const add=Number(amount);if(!Number.isInteger(add)||add<1||add>100)return{ok:false,code:'invalid-grant'};
-  const current=readExtraAttempts(getSetting,name,activityId),next=Math.min(1000,current+add);
-  return setExtraAttempts(setSetting,name,activityId,next);
+  const current=readExtraAttempts(getSetting,name,activityId),next=Math.min(1000,current+add),result=setExtraAttempts(setSetting,name,activityId,next);
+  if(result.ok&&recordHistory)appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type:'grant',amount:next-current,before:current,after:next,detail:'교사가 추가 도전 허용'});
+  return result;
+}
+
+export function consumeExtraAttempts(getSetting,setSetting,name,activityId,amount=1,detail='학생 활동에 사용'){
+  const use=Number(amount);if(!Number.isInteger(use)||use<1||use>100)return{ok:false,code:'invalid-consume'};
+  const current=readExtraAttempts(getSetting,name,activityId);if(current<use)return{ok:false,code:'insufficient-extra-attempts',extraAttempts:current};
+  const next=current-use,result=setExtraAttempts(setSetting,name,activityId,next);
+  if(result.ok)appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type:'consume',amount:-use,before:current,after:next,detail});
+  return{...result,used:use};
 }
 
 export function installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetting,setSetting}){
+  app.get('/api/admin/activity-attempt-extra-history',requireAdmin,(req,res)=>{
+    res.json({ok:true,entries:readExtraAttemptHistory(getSetting,{limit:req.query.limit,name:req.query.name,activityId:req.query.activityId})});
+  });
   app.get('/api/admin/activity-attempt-extra/:name/:activityId',requireAdmin,(req,res)=>{
     const name=clean(req.params.name,12),activityId=clean(req.params.activityId,40);
     if(!name)return res.status(400).json({ok:false,code:'player-required'});
@@ -41,8 +67,9 @@ export function installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetti
     res.json(result);
   });
   app.put('/api/admin/activity-attempt-extra/:name/:activityId',requireAdmin,(req,res)=>{
-    const result=setExtraAttempts(setSetting,req.params.name,req.params.activityId,req.body?.extraAttempts);
+    const name=clean(req.params.name,12),activityId=clean(req.params.activityId,40),before=readExtraAttempts(getSetting,name,activityId),result=setExtraAttempts(setSetting,name,activityId,req.body?.extraAttempts);
     if(!result.ok)return res.status(400).json(result);
+    appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type:'set',amount:result.extraAttempts-before,before,after:result.extraAttempts,detail:'교사가 추가 도전 횟수 직접 수정'});
     res.json(result);
   });
 }
