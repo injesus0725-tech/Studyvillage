@@ -14,6 +14,8 @@ for(const [setKey,set] of Object.entries(sets)){
     assert.ok(question&&typeof question==='object',`${label}: question required`);
     assert.ok(Array.isArray(question.options)&&question.options.length>=2,`${label}: at least two options required`);
     assert.ok(question.options.every(option=>typeof option==='string'&&option.trim().length>0),`${label}: options must be non-empty strings`);
+    const normalizedOptions=question.options.map(option=>option.trim());
+    assert.equal(new Set(normalizedOptions).size,normalizedOptions.length,`${label}: duplicate options are not allowed`);
     assert.ok(Number.isInteger(question.answer)&&question.answer>=0&&question.answer<question.options.length,`${label}: answer must point to an option`);
   }
 }
