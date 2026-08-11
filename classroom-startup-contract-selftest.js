@@ -10,5 +10,7 @@ for(const token of ['requestSingleInstanceLock','second-instance','showErrorBox'
 }
 assert.match(source,/Windows에서 컴퓨터를 직접 재부팅/,'컴퓨터 재부팅은 사용자가 직접 하는 안내여야 합니다.');
 assert.match(source,/자동으로 재부팅하지는 않습니다/,'Studyvillage가 자동 재부팅하지 않는다는 안내가 유지되어야 합니다.');
+assert.match(source,/app\.on\('window-all-closed'/,'Studyvillage 창을 모두 닫으면 앱 종료 흐름이 유지되어야 합니다.');
+assert.ok(!/shutdown\s*\(|reboot\s*\(|Restart-Computer|shutdown\.exe/i.test(source),'Studyvillage가 PC 종료/재부팅 명령을 실행하면 안 됩니다.');
 
-console.log('classroom startup contract: ok');
+console.log('classroom startup/shutdown contract: ok');
