@@ -2,10 +2,11 @@
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
-   No automatic earning or spending rules are installed here. */
+   Item shop student routes are installed here; the shop remains disabled until teacher configuration is connected. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { installItemShopRoutes } from './item-shop.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
@@ -96,4 +97,5 @@ export function installStarLedgerRoutes(app,{requireSession}){
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
     catch(err){res.status(500).json({ok:false,code:'star-ledger-read-failed',message:clean(err?.message||err,160)})}
   });
+  installItemShopRoutes(app,{requireSession});
 }
