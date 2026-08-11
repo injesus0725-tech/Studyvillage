@@ -17,5 +17,15 @@ export function installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSe
       res.json({ok:true,override:overrides[k],history:entry});
     }catch(err){if(previous)overrides[k]=previous;else delete overrides[k];write(setSetting,overrides);res.status(500).json({ok:false,code:'question-edit-save-failed',message:clean(err?.message||err,240)})}
   });
-  app.delete('/api/admin/question-overrides/:activityId/:questionNumber',requireAdmin,(req,res)=>{const overrides=read(getSetting),k=key(req.params.activityId,req.params.questionNumber);if(!overrides[k])return res.status(404).json({ok:false,code:'not-found'});delete overrides[k];write(setSetting,overrides);res.json({ok:true})});
+  app.post('/api/admin/question-overrides/:activityId/:questionNumber/revert',requireAdmin,(req,res)=>{
+    const activityId=clean(req.params.activityId,80),questionNumber=Number(req.params.questionNumber),reason=clean(req.body?.reason,240),after=safeQuestionSnapshot(req.body?.baseQuestion),overrides=read(getSetting),k=key(activityId,questionNumber),previous=overrides[k];
+    if(!activityId||!Number.isInteger(questionNumber)||questionNumber<1||!reason||!previous||!after.options.length||after.answer===null||after.answer<0||after.answer>=after.options.length)return res.status(previous?400:404).json({ok:false,code:previous?'invalid-input':'not-found'});
+    const before=safeQuestionSnapshot(previous.question);
+    try{
+      delete overrides[k];write(setSetting,overrides);
+      const entry=recordQuestionHistory({getSetting,setSetting,activityId,questionNumber,reason,before,after});
+      res.json({ok:true,history:entry});
+    }catch(err){overrides[k]=previous;write(setSetting,overrides);res.status(500).json({ok:false,code:'question-revert-failed',message:clean(err?.message||err,240)})}
+  });
+  app.delete('/api/admin/question-overrides/:activityId/:questionNumber',requireAdmin,(_req,res)=>res.status(405).json({ok:false,code:'use-history-safe-revert'}));
 }
