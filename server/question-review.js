@@ -12,6 +12,7 @@ import { installScoreAlertReadRoute } from './score-alert-route.js';
 import { installAdminScoreHistoryRoutes } from './admin-score-history.js';
 import { installRestorePreflightRoute } from './restore-preflight.js';
 import { installRestoreValidationMiddleware } from './restore-validation-middleware.js';
+import { installNetworkAccessRoute } from './network-access.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -30,6 +31,7 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
   installAdminScoreHistoryRoutes(app,{requireAdmin});
   installRestorePreflightRoute(app,{requireAdmin});
   installRestoreValidationMiddleware(app,{requireAdmin});
+  installNetworkAccessRoute(app,{port:Number(process.env.PORT)||3000});
 
   app.get('/api/admin/stars/:name',requireAdmin,(req,res)=>{
     try{const name=clean(req.params.name,12),balance=starBalanceFor(name);if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,name,balance,entries:starLedgerFor(name,{limit:req.query.limit})})}
