@@ -9,6 +9,7 @@ import QRCode from 'qrcode';
 import { fileURLToPath } from 'node:url';
 import { installActivityStateRoutes } from './activity-state.js';
 import { installQuestionReviewRoutes } from './question-review.js';
+import { installStarLedgerRoutes } from './star-ledger.js';
 import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
@@ -50,6 +51,7 @@ const getSetting=k=>db.prepare('SELECT value FROM settings WHERE key=?').get(k)?
 function ensureAdminPassword(){if(getSetting('admin_hash')&&getSetting('admin_salt'))return;const initial=process.env.STUDYVILLAGE_ADMIN_PASSWORD||'teacher1234',salt=crypto.randomBytes(16).toString('hex');setSetting('admin_salt',salt);setSetting('admin_hash',hashPassword(initial,salt));console.log('초기 관리자 비밀번호: teacher1234 (첫 로그인 후 변경 권장)')};ensureAdminPassword();
 installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin});
 installQuestionReviewRoutes(app,{getSetting,setSetting,requireAdmin});
+installStarLedgerRoutes(app,{requireSession});
 app.post('/api/login',(req,res)=>{const name=String(req.body?.name||'').trim().replace(/\s+/g,' ').slice(0,12),password=String(req.body?.password||'');if(!name||password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-input'});let row=db.prepare('SELECT * FROM players WHERE name=?').get(name),isNew=false;const now=new Date().toISOString();if(!row){const salt=crypto.randomBytes(16).toString('hex');db.prepare('INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)').run(name,hashPassword(password,salt),salt,1,now,now,now);isNew=true;logActivity(name,'account-created','첫 계정 생성')}else{const a=Buffer.from(row.password_hash,'hex'),c=Buffer.from(hashPassword(password,row.password_salt),'hex');if(!(a.length===c.length&&crypto.timingSafeEqual(a,c)))return res.status(401).json({ok:false,code:'wrong-password'});db.prepare('UPDATE players SET login_count=login_count+1,last_login_at=?,updated_at=? WHERE name=?').run(now,now,name);logActivity(name,'login','마을 접속')}row=db.prepare('SELECT * FROM players WHERE name=?').get(name);res.json({ok:true,isNew,token:createSession(name),player:safePlayer(row)})});
 app.get('/api/player/me',requireSession,(req,res)=>{const r=db.prepare('SELECT * FROM players WHERE name=?').get(req.session.name);if(!r)return res.status(404).json({ok:false});res.json({ok:true,player:safePlayer(r)})});
 app.get('/api/player/me/score-ledger',requireSession,(req,res)=>{try{const limit=Math.max(1,Math.min(300,Number(req.query.limit)||100)),entries=db.prepare(`SELECT id,scope,activity_id AS activityId,field,before_value AS beforeValue,after_value AS afterValue,delta,source,created_at AS createdAt FROM score_ledger WHERE player_name=? ORDER BY id DESC LIMIT ?`).all(req.session.name,limit);res.json({ok:true,entries})}catch(err){res.status(500).json({ok:false,code:'score-ledger-read-failed',message:String(err?.message||err).slice(0,160)})}});
