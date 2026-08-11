@@ -1,9 +1,10 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 
 let mainWindow;
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
 
 async function waitForServer(url, timeoutMs = 15000) {
   const started = Date.now();
@@ -57,10 +58,25 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow).catch(error => {
-  console.error(error);
+if (!gotSingleInstanceLock) {
   app.quit();
-});
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+
+  app.whenReady().then(createWindow).catch(error => {
+    console.error(error);
+    dialog.showErrorBox(
+      'Studyvillage를 시작하지 못했습니다',
+      '교실 서버를 시작하지 못했습니다. 앱을 모두 닫은 뒤 다시 실행해 주세요. 계속되면 PC를 재시작한 뒤 다시 시도해 주세요.'
+    );
+    app.quit();
+  });
+}
 
 app.on('window-all-closed', () => {
   app.quit();
