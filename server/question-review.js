@@ -1,6 +1,7 @@
 /* v1.9 teacher-only question review queue.
    Question data is never changed here. Review state is stored in settings so existing backup/restore preserves it automatically. */
 import { auditQuestionSet, summarizeQuestionAudits } from './question-audit.js';
+import { installQuestionHistoryRoutes } from './question-history.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -9,6 +10,8 @@ function readQueue(getSetting){try{const rows=JSON.parse(getSetting(STORE_KEY)||
 function writeQueue(setSetting,rows){setSetting(STORE_KEY,JSON.stringify(rows.slice(0,500)))}
 
 export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSetting}){
+  installQuestionHistoryRoutes(app,{requireAdmin,getSetting,setSetting});
+
   app.post('/api/admin/question-reviews/scan',requireAdmin,(req,res)=>{
     try{
       const sets=Array.isArray(req.body?.sets)?req.body.sets.slice(0,100):[];
