@@ -7,6 +7,7 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { installItemShopRoutes } from './item-shop.js';
+import { installActivityAttemptStudentRoutes } from './activity-attempt-student.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
@@ -97,5 +98,6 @@ export function installStarLedgerRoutes(app,{requireSession}){
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
     catch(err){res.status(500).json({ok:false,code:'star-ledger-read-failed',message:clean(err?.message||err,160)})}
   });
+  installActivityAttemptStudentRoutes(app,{requireSession});
   installItemShopRoutes(app,{requireSession});
 }
