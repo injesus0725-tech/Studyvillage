@@ -10,6 +10,7 @@ import { installActivityAttemptOverviewRoutes } from './activity-attempt-overvie
 import { installActivityAttemptExceptionRoutes } from './activity-attempt-exceptions.js';
 import { installScoreAlertReadRoute } from './score-alert-route.js';
 import { installAdminScoreHistoryRoutes } from './admin-score-history.js';
+import { installRestorePreflightRoute } from './restore-preflight.js';
 
 const STORE_KEY='question-review:queue-v1';
 const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
@@ -26,6 +27,7 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
   installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetting,setSetting});
   installScoreAlertReadRoute(app,{requireAdmin});
   installAdminScoreHistoryRoutes(app,{requireAdmin});
+  installRestorePreflightRoute(app,{requireAdmin});
 
   app.get('/api/admin/stars/:name',requireAdmin,(req,res)=>{
     try{const name=clean(req.params.name,12),balance=starBalanceFor(name);if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,name,balance,entries:starLedgerFor(name,{limit:req.query.limit})})}
@@ -41,17 +43,19 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
 
   app.post('/api/admin/question-reviews/scan',requireAdmin,(req,res)=>{
     try{
-      const sets=Array.isArray(req.body?.sets)?req.body.sets.slice(0,100):[];
-      const audits=sets.map(set=>auditQuestionSet(set)),now=new Date().toISOString();
-      const existing=new Map(readQueue(getSetting).map(row=>[row.reviewKey,row]));
-      for(const audit of audits)for(const issue of audit.issues||[]){
-        const reviewKey=keyFor(audit.activityId,issue),old=existing.get(reviewKey)||{};
-        existing.set(reviewKey,{reviewKey,activityId:audit.activityId,subject:audit.subject||'',topic:audit.topic||'',questionNumber:Number(issue.question)||null,severity:clean(issue.severity,20),code:clean(issue.code,80),message:clean(issue.message,500),status:old.status||'pending',teacherNote:old.teacherNote||'',detectedAt:old.detectedAt||now,reviewedAt:old.reviewedAt||null});
+      const sets=Array.isArray(req.body?.sets)?req.body.sets:[],previous=readQueue(getSetting),prevByKey=new Map(previous.map(row=>[row.key,row])),next=[];
+      for(const set of sets){
+        const activityId=clean(set?.activityId,40),questions=Array.isArray(set?.questions)?set.questions:[];
+        if(!activityId||!questions.length)continue;
+        const result=auditQuestionSet({activityId,questions});
+        for(const issue of result.issues||[]){const key=keyFor(activityId,issue),old=prevByKey.get(key);next.push({key,activityId,question:Number(issue.question)||0,code:clean(issue.code,80),message:clean(issue.message,240),severity:clean(issue.severity,40)||'warning',status:old?.status||'needs-review',note:clean(old?.note,240),updatedAt:new Date().toISOString()})}
       }
-      writeQueue(setSetting,[...existing.values()]);
-      res.json({ok:true,summary:summarizeQuestionAudits(audits),audits});
-    }catch(err){res.status(500).json({ok:false,code:'question-scan-failed',message:clean(err?.message||err,240)})}
+      writeQueue(setSetting,next);res.json({ok:true,summary:summarizeQuestionAudits(next),items:next});
+    }catch(err){res.status(500).json({ok:false,code:'question-review-scan-failed',message:clean(err?.message||err)})}
   });
-  app.get('/api/admin/question-reviews',requireAdmin,(_req,res)=>{try{const reviews=readQueue(getSetting).sort((a,b)=>(a.status==='pending'?0:1)-(b.status==='pending'?0:1)||String(b.detectedAt||'').localeCompare(String(a.detectedAt||'')));res.json({ok:true,pendingCount:reviews.filter(r=>r.status==='pending').length,reviews})}catch(err){res.status(500).json({ok:false,code:'question-review-read-failed',message:clean(err?.message||err,240)})}});
-  app.post('/api/admin/question-reviews/:key/review',requireAdmin,(req,res)=>{const status=clean(req.body?.status,30),note=clean(req.body?.note,240),key=String(req.params.key||'');if(!['confirmed','dismissed','pending'].includes(status))return res.status(400).json({ok:false,code:'invalid-status'});try{const rows=readQueue(getSetting),index=rows.findIndex(row=>row.reviewKey===key);if(index<0)return res.status(404).json({ok:false,code:'not-found'});const reviewedAt=status==='pending'?null:new Date().toISOString();rows[index]={...rows[index],status,teacherNote:note,reviewedAt};writeQueue(setSetting,rows);res.json({ok:true,status,reviewedAt})}catch(err){res.status(500).json({ok:false,code:'question-review-update-failed',message:clean(err?.message||err,240)})}});
+  app.get('/api/admin/question-reviews',requireAdmin,(req,res)=>{const rows=readQueue(getSetting);res.json({ok:true,summary:summarizeQuestionAudits(rows),items:rows})});
+  app.post('/api/admin/question-reviews/:key',requireAdmin,(req,res)=>{
+    const key=clean(req.params.key,200),status=clean(req.body?.status,40),note=clean(req.body?.note,240);if(!['needs-review','confirmed','fixed','ignored'].includes(status))return res.status(400).json({ok:false,code:'invalid-review-status'});
+    const rows=readQueue(getSetting),row=rows.find(x=>x.key===key);if(!row)return res.status(404).json({ok:false,code:'review-not-found'});row.status=status;row.note=note;row.updatedAt=new Date().toISOString();writeQueue(setSetting,rows);res.json({ok:true,item:row});
+  });
 }
