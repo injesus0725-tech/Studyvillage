@@ -40,7 +40,7 @@ function writeStarMirror(db,name){
   const entries=db.prepare('SELECT before_value AS beforeValue,after_value AS afterValue,delta,kind,reference_id AS referenceId,detail,created_at AS createdAt FROM star_ledger WHERE player_name=? ORDER BY id DESC LIMIT 500').all(name).reverse();
   setSetting(db,mirrorKey(name),JSON.stringify({balance:Math.max(0,Number(player.stars)||0),entries}));
 }
-export function shopState(){let db;try{db=openDb();ensureSchema(db);return{enabled:getSetting(db,ENABLED_KEY)==='true',prices:readPrices(db),items:Object.keys(DEFAULT_PRICES).map(id=>({id,name:ITEM_NAMES[id],price:readPrices(db)[id]}))}}finally{try{db?.close()}catch{}}}
+export function shopState(){let db;try{db=openDb();ensureSchema(db);const prices=readPrices(db);return{enabled:getSetting(db,ENABLED_KEY)==='true',prices,items:Object.keys(DEFAULT_PRICES).map(id=>({id,name:ITEM_NAMES[id],price:prices[id]}))}}finally{try{db?.close()}catch{}}}
 export function purchaseItem(playerName,itemId){
   const name=clean(playerName,12),id=clean(itemId,80);if(!name||!(id in DEFAULT_PRICES))return{ok:false,code:'invalid-item'};
   let db;try{db=openDb();ensureSchema(db);const tx=db.transaction(()=>{
@@ -55,10 +55,12 @@ export function purchaseItem(playerName,itemId){
     return{ok:true,itemId:id,itemName:ITEM_NAMES[id],price,balance:after,ownedItems:next,createdAt:now};
   });return tx()}finally{try{db?.close()}catch{}}
 }
-export function installItemShopRoutes(app,{requireSession,requireAdmin}){
-  app.get('/api/shop',requireSession,(_req,res)=>{try{res.json({ok:true,...shopState()})}catch(err){res.status(500).json({ok:false,code:'shop-read-failed',message:clean(err?.message||err,160)})}});
-  app.post('/api/shop/purchase',requireSession,(req,res)=>{try{const result=purchaseItem(req.session.name,req.body?.itemId);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'purchase-failed',message:clean(err?.message||err,160)})}});
-  app.get('/api/admin/shop',requireAdmin,(_req,res)=>{try{res.json({ok:true,...shopState()})}catch(err){res.status(500).json({ok:false,code:'shop-read-failed',message:clean(err?.message||err,160)})}});
+export function installItemShopRoutes(app,{requireSession,requireAdmin}={}){
+  if(typeof requireSession==='function'){
+    app.get('/api/shop',requireSession,(_req,res)=>{try{res.json({ok:true,...shopState()})}catch(err){res.status(500).json({ok:false,code:'shop-read-failed',message:clean(err?.message||err,160)})}});
+    app.post('/api/shop/purchase',requireSession,(req,res)=>{try{const result=purchaseItem(req.session.name,req.body?.itemId);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'purchase-failed',message:clean(err?.message||err,160)})}});
+  }
+  if(typeof requireAdmin==='function')app.get('/api/admin/shop',requireAdmin,(_req,res)=>{try{res.json({ok:true,...shopState()})}catch(err){res.status(500).json({ok:false,code:'shop-read-failed',message:clean(err?.message||err,160)})}});
 }
 
 export const defaultShopPrices=DEFAULT_PRICES;
