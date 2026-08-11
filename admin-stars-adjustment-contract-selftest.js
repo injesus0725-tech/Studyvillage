@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('admin-stars.js','utf8');
+assert.ok(src.includes('adjusting=false'),'별 조정 중복 방지 상태가 필요합니다.');
+assert.ok(src.includes('if(adjusting)return'),'별 지급/차감 연속 실행을 막아야 합니다.');
+assert.ok(src.includes('setAdjusting(true)'),'별 저장 시작 시 버튼을 잠가야 합니다.');
+assert.ok(src.includes('finally{setAdjusting(false)}'),'성공/실패 후 버튼 잠금을 반드시 풀어야 합니다.');
+assert.ok(src.includes("add.disabled=value")&&src.includes("subtract.disabled=value"),'별 지급과 차감 버튼을 함께 잠가야 합니다.');
+assert.ok(src.includes("confirm(`${name} 학생의 별을"),'별 변경 전 교사 최종 확인을 유지해야 합니다.');
+assert.ok(src.includes("reason=prompt('별 변경 이유"),'별 변경 사유 기록을 유지해야 합니다.');
+console.log('admin stars adjustment contract self-test passed');
