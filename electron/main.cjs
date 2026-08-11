@@ -72,7 +72,7 @@ if (!gotSingleInstanceLock) {
     console.error(error);
     dialog.showErrorBox(
       'Studyvillage를 시작하지 못했습니다',
-      '교실 서버를 시작하지 못했습니다. 앱을 모두 닫은 뒤 다시 실행해 주세요. 계속되면 PC를 재시작한 뒤 다시 시도해 주세요.'
+      '교실 서버를 시작하지 못했습니다. 앱을 모두 닫은 뒤 다시 실행해 주세요. 계속되면 선생님이 Windows에서 컴퓨터를 직접 재부팅한 뒤 다시 시도해 주세요. Studyvillage가 컴퓨터를 자동으로 재부팅하지는 않습니다.'
     );
     app.quit();
   });
