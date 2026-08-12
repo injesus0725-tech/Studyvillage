@@ -1,8 +1,12 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('activity-records.js','utf8');
-assert.ok(src.includes('let loadPromise=null'),'학생 기록 조회 진행 상태를 추적해야 합니다.');
-assert.ok(src.includes('if(loadPromise)return loadPromise'),'학생 기록 조회가 겹치면 기존 요청을 재사용해야 합니다.');
+assert.ok(src.includes('let loadPromise=null,authExpired=false'),'학생 기록 조회 진행 상태와 인증 만료 상태를 추적해야 합니다.');
+assert.ok(src.includes('if(authExpired||loadPromise)return loadPromise'),'인증이 끝났거나 기록 조회가 겹치면 새 요청을 만들면 안 됩니다.');
 assert.ok(src.includes('finally{loadPromise=null}'),'학생 기록 조회가 끝나면 중복 방지 상태를 해제해야 합니다.');
 assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'학생 기록 조회 제한시간을 유지해야 합니다.');
+assert.ok(src.includes("[me,history,starHistory].some(r=>r.status===401)"),'점수·별·학생 정보 중 하나라도 인증 만료면 즉시 감지해야 합니다.');
+assert.ok(src.includes("window.StudyVillageAuth?.clearSession?.()"),'학생 기록 조회에서 인증 만료 시 세션을 정리해야 합니다.');
+assert.ok(src.includes("window.dispatchEvent(new CustomEvent('studyvillage:session-expired'))"),'학생 기록 조회의 인증 만료를 다른 반복 통신에도 알려야 합니다.');
+assert.ok(src.includes("window.addEventListener('studyvillage:session-ready',()=>{authExpired=false})"),'다시 로그인하면 학생 기록 조회가 정상 재개되어야 합니다.');
 console.log('student record refresh safety contract self-test passed');
