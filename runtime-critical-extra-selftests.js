@@ -33,6 +33,7 @@ const tests=[
   'student-customize-immediate-equip-contract-selftest.js',
   'student-delete-data-cleanup-contract-selftest.js',
   'student-destructive-action-session-contract-selftest.js',
+  'student-first-activity-fresh-account-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
   'student-record-reset-boundary-contract-selftest.js',
   'student-recreate-admin-view-contract-selftest.js',
