@@ -9,5 +9,10 @@ assert.ok((src.match(/saving=true;status\.textContent=/g)||[]).length>=2,'수정
 assert.ok((src.match(/finally\{saving=false\}/g)||[]).length>=2,'성공·실패 후 저장 잠금이 반드시 풀려야 합니다.');
 assert.ok(src.includes('원본은 보존되고 수정 이력이 남습니다.'),'문제 수정 전 최종 확인 안내를 유지해야 합니다.');
 assert.ok(src.includes('원본 복귀도 수정 이력에 남습니다.'),'원본 복귀 전 최종 확인 안내를 유지해야 합니다.');
+assert.ok(src.includes('renderPromise=null'),'문제 목록 갱신 중복 상태를 추적해야 합니다.');
+assert.ok(src.includes('if(renderPromise)return renderPromise'),'이미 목록을 갱신 중이면 같은 작업을 재사용해야 합니다.');
+assert.ok(src.includes("refreshButton.disabled=true;refreshButton.textContent='목록 갱신 중…'"),'목록 갱신 중에는 새로고침 버튼을 잠가야 합니다.');
+assert.ok(src.includes("refreshButton.disabled=false;refreshButton.textContent='문제 목록 새로고침'"),'목록 갱신 후 새로고침 버튼을 복구해야 합니다.');
+assert.ok(src.includes('finally{renderPromise=null}'),'목록 갱신이 끝나면 중복 상태를 해제해야 합니다.');
 
 console.log('admin question editor save safety contract self-test passed');
