@@ -5,4 +5,7 @@ assert.ok(src.includes("const game=document.querySelector('#game-screen')"),'liv
 assert.ok(src.includes("game.classList.contains('active')"),'live event polling must require the active student game when available');
 assert.ok(src.includes("if(game){const observer=new MutationObserver"),'live events must react when the game opens or closes');
 assert.ok(src.includes("resumeFromLatest();else stop()"),'leaving the game must stop polling and returning must resume from the latest broadcast');
+assert.ok(src.includes('if(r.status===401){authExpired=true;stop();return}'),'live event polling must stop after student authentication expires');
+assert.ok(src.includes('function resumeFromLatest(){authExpired=false;cursor=null;start(true)}'),'a new student session must re-enable live event polling from the latest cursor');
+assert.ok(src.includes("window.addEventListener('online',()=>{if(!authExpired)resumeFromLatest()})"),'network reconnect alone must not restart polling for an expired session');
 console.log('student live events screen contract self-test passed');
