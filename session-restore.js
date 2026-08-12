@@ -20,6 +20,6 @@
   }
   function retryRestore(){if(!initialAttemptDone||retryUsed||finished||name.value||password.value||!title.classList.contains('active'))return;restore({retry:true})}
   setTimeout(()=>restore(),250);
-  window.addEventListener('online',retryRestore,{once:true});
-  window.addEventListener('focus',retryRestore,{once:true});
+  window.addEventListener('online',retryRestore);
+  window.addEventListener('focus',retryRestore);
 })();
