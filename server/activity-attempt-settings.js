@@ -16,7 +16,7 @@ export function readActivityAttemptPolicies(getSetting){
 
 export function installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting}){
   app.get('/api/activity-attempt-policy/:activityId',(req,res)=>{
-    const activityId=clean(req.params.activityId,40);
+    const activityId=String(req.params.activityId??'').trim();
     if(!SAFE_ACTIVITY.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity-id'});
     const policies=readActivityAttemptPolicies(getSetting),policy=normalizeAttemptPolicy(policies[activityId]||{});
     res.json({ok:true,activityId,policy});
