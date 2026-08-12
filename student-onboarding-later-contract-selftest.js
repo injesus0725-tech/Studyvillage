@@ -7,4 +7,6 @@ assert.ok(src.includes('else finish(true)'),'안내를 끝까지 본 경우에�
 assert.ok(src.includes("const blockedKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' '])"),'안내 중 캐릭터 이동·상호작용 키를 막아야 합니다.');
 assert.ok(src.includes("if(blockedKeys.has(e.key)){e.preventDefault();e.stopImmediatePropagation()}"),'안내 중 키 입력이 게임 화면으로 전달되면 안 됩니다.');
 assert.ok(src.includes("if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish(false);return}"),'Esc는 안내만 닫고 뒤 게임 입력으로 전달되면 안 됩니다.');
+assert.ok(src.includes('⭐ 별 상점'),'학생 첫 안내에 현재 별 상점 기능이 반영되어야 합니다.');
+assert.ok(src.includes('별 장부'),'학생 첫 안내에서 별 기록 확인 위치를 알려줘야 합니다.');
 console.log('student onboarding later contract self-test passed');
