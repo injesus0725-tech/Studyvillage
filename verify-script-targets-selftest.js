@@ -21,4 +21,10 @@ assert.deepStrictEqual(
   `verify가 존재하지 않는 JS 파일을 참조합니다: ${missing.join(', ')}`
 );
 
+assert.strictEqual(
+  commands.filter(command=>command==='node verify-chain-integrity-selftest.js').length,
+  1,
+  'verify 체인 자체를 검사하는 안전검사가 정확히 한 번 실행되어야 합니다.'
+);
+
 console.log('verify script targets self-test passed');
