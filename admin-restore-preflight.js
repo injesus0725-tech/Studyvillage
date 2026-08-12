@@ -13,7 +13,7 @@
     const timeout=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);
     try{
       preflighting=true;
-      const preflight=await originalFetch('/api/admin/restore-preflight',{
+      const preflight=await originalFetch('/api/admin/restore/preflight',{
         method:'POST',
         headers:init?.headers,
         body:init?.body,
