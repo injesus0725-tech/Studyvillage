@@ -7,7 +7,7 @@
     {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:null},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
     {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'수수께끼와 여러 학습 퀴즈에 도전하는 공간입니다.',action:'quiz'},
-    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'학습과 성장으로 해금한 캐릭터 아이템을 확인하고 바로 꾸밀 수 있습니다.',action:'customize'}
+    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize'}
   ];
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
   const exit=overlay.querySelector('#interior-exit'),icon=overlay.querySelector('#interior-icon'),title=overlay.querySelector('#interior-title'),text=overlay.querySelector('#interior-text'),actions=overlay.querySelector('#interior-action-wrap');
@@ -25,5 +25,5 @@
   function interact(e){if(open)return;if(performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
   talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);
-  function loop(){if(!open){const b=nearest();if(b&&hint){hint.textContent=`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}}requestAnimationFrame(loop)}requestAnimationFrame(loop);
+  function loop(){const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b&&hint){hint.textContent=`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}}requestAnimationFrame(loop)}requestAnimationFrame(loop);
 })();
