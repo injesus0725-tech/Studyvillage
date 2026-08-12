@@ -1,7 +1,7 @@
 /* v1.9 teacher star balance/ledger adjustment panel with bounded request waits. */
 (()=>{
   const headers=json=>{const token=sessionStorage.getItem('studyvillage-admin-token')||'';return token?{Authorization:`Bearer ${token}`,...(json?{'Content-Type':'application/json'}:{})}:{...(json?{'Content-Type':'application/json'}:{})}};
-  const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
   let panel,select,balance,list,status,adjusting=false,studentsLoading=null,selectedLoadSeq=0;
   async function timedFetch(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
