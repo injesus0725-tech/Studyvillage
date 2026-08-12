@@ -1,4 +1,4 @@
-/* v0.9.2 first-visit student guide */
+/* v0.9.58 first-visit student guide */
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
@@ -28,7 +28,7 @@
   function open(){index=0;render();overlay.hidden=false}
   function finish(markSeen=true){overlay.hidden=true;if(markSeen)localStorage.setItem(playerKey(),'1')}
   next.addEventListener('click',()=>{if(index<steps.length-1){index++;render()}else finish(true)});
-  skip.addEventListener('click',()=>finish(true));
+  skip.addEventListener('click',()=>finish(false));
   overlay.addEventListener('click',e=>{if(e.target===overlay)finish(false)});
   window.addEventListener('keydown',e=>{if(!overlay.hidden&&e.key==='Escape')finish(false)},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
