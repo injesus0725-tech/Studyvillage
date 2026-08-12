@@ -11,6 +11,7 @@ const tests=[
   'activity-score-input-bounds-contract-selftest.js',
   'activity-save-failure-rollback-contract-selftest.js',
   'activity-save-rollback-contract-selftest.js',
+  'activity-submission-cache-scope-contract-selftest.js',
   'activity-taxonomy-selftest.js',
   'activity-save-transaction-contract-selftest.js',
   'activity-xp-idempotency-contract-selftest.js',
