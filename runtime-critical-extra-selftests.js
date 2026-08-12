@@ -13,6 +13,7 @@ const tests=[
   'question-content-selftest.js',
   'restore-executor-single-run-contract-selftest.js',
   'restore-preflight-fail-closed-contract-selftest.js',
+  'restore-runtime-state-reset-contract-selftest.js',
   'restore-star-ledger-reset-contract-selftest.js',
   'restore-validation-wiring-contract-selftest.js',
   'shop-price-validation-parity-contract-selftest.js',
