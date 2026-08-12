@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { installItemShopRoutes } from './item-shop.js';
 
 function fakeApp(){
@@ -26,5 +27,9 @@ for(const expected of [
 
 assert.equal(routes.find(route=>route.path==='/api/shop')?.handlers[0],requireSession,'student shop route must use student session auth');
 assert.equal(routes.find(route=>route.path==='/api/admin/shop')?.handlers[0],requireAdmin,'teacher shop route must use admin auth');
+
+const starLedgerSource=fs.readFileSync(new URL('./star-ledger.js',import.meta.url),'utf8');
+assert.match(starLedgerSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must accept both auth guards');
+assert.match(starLedgerSource,/installItemShopRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must pass both auth guards to item shop');
 
 console.log('item shop route contract: ok');
