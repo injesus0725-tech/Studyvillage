@@ -1,4 +1,4 @@
-/* v0.9.58 first-visit student guide */
+/* v0.9.59 first-visit student guide */
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
@@ -23,6 +23,7 @@
   const overlay=document.createElement('div');overlay.className='welcome-guide';overlay.hidden=true;overlay.innerHTML=`<section class="welcome-card" role="dialog" aria-modal="true" aria-label="마을 이용 안내"><div id="guide-icon" class="guide-icon"></div><h2 id="guide-title"></h2><p id="guide-text"></p><div id="guide-dots" class="guide-dots"></div><div class="guide-actions"><button id="guide-skip" class="guide-skip">나중에 보기</button><button id="guide-next" class="guide-next">다음 ▶</button></div></section>`;document.body.appendChild(overlay);
   const icon=overlay.querySelector('#guide-icon'),title=overlay.querySelector('#guide-title'),text=overlay.querySelector('#guide-text'),dots=overlay.querySelector('#guide-dots'),next=overlay.querySelector('#guide-next'),skip=overlay.querySelector('#guide-skip');
   const profileName=document.querySelector('#profile-name');
+  const blockedKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' ']);
   function playerKey(){const n=(profileName?.textContent||'student').trim();return`studyvillage-guide-seen:${n}`}
   function render(){const s=steps[index];icon.textContent=s.icon;title.textContent=s.title;text.textContent=s.text;dots.innerHTML=steps.map((_,i)=>`<span class="${i===index?'active':''}"></span>`).join('');next.textContent=index===steps.length-1?'마을 시작하기 ✓':'다음 ▶'}
   function open(){index=0;render();overlay.hidden=false}
@@ -30,7 +31,7 @@
   next.addEventListener('click',()=>{if(index<steps.length-1){index++;render()}else finish(true)});
   skip.addEventListener('click',()=>finish(false));
   overlay.addEventListener('click',e=>{if(e.target===overlay)finish(false)});
-  window.addEventListener('keydown',e=>{if(!overlay.hidden&&e.key==='Escape')finish(false)},true);
+  window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish(false);return}if(blockedKeys.has(e.key)){e.preventDefault();e.stopImmediatePropagation()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
   let shown=false;const observer=new MutationObserver(()=>{if(shown||!game.classList.contains('active'))return;shown=true;setTimeout(()=>{if(!localStorage.getItem(playerKey()))open()},350)});observer.observe(game,{attributes:true,attributeFilter:['class']});
 })();
