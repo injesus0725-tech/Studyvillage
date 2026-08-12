@@ -11,6 +11,7 @@ const tests=[
   'backup-size-bounds-contract-selftest.js',
   'error-reporter-polling-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
+  'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
   'restore-executor-single-run-contract-selftest.js',
   'restore-preflight-fail-closed-contract-selftest.js',
