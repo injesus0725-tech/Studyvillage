@@ -42,14 +42,15 @@ export function installActivityAttemptStudentRoutes(app,{requireSession}){
       if(!decision.allowed)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId,policyId,attempts:decision.attempts,remaining:decision.remaining,extraAttempts:decision.extraAttempts,policy:decision.policy});
       const now=new Date().toISOString(),baseXp=20+Math.floor(score/10);
       const tx=db.transaction(()=>{
-        const latest=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId),latestExtra=readExtraAttempts(key=>getSetting(db,key),name,policyId),latestDecision=evaluateWithExtra(policy,latest||{},latestExtra);
-        if(!latestDecision.allowed)return{ok:false,code:'attempt-limit-reached',activityId,policyId,attempts:latestDecision.attempts,remaining:latestDecision.remaining,extraAttempts:latestDecision.extraAttempts,policy:latestDecision.policy};
+        const latestPolicies=readActivityAttemptPolicies(key=>getSetting(db,key)),latestPolicyId=policyIdFor(activityId,latestPolicies),latestPolicy=latestPolicies[latestPolicyId]||{};
+        const latest=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId),latestExtra=readExtraAttempts(key=>getSetting(db,key),name,latestPolicyId),latestDecision=evaluateWithExtra(latestPolicy,latest||{},latestExtra);
+        if(!latestDecision.allowed)return{ok:false,code:'attempt-limit-reached',activityId,policyId:latestPolicyId,attempts:latestDecision.attempts,remaining:latestDecision.remaining,extraAttempts:latestDecision.extraAttempts,policy:latestDecision.policy};
         const nextAttempts=(latest?.attempts||0)+1,nextBest=Math.max(latest?.best_score||0,score),nextTotal=(latest?.total_score||0)+score,nextGained=latestDecision.awardXp?baseXp:0;
         db.prepare(`INSERT INTO activity_records(player_name,activity_id,attempts,best_score,last_score,total_score,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(player_name,activity_id) DO UPDATE SET attempts=excluded.attempts,best_score=excluded.best_score,last_score=excluded.last_score,total_score=excluded.total_score,updated_at=excluded.updated_at`).run(name,activityId,nextAttempts,nextBest,score,nextTotal,now);
-        if(latestDecision.usingExtra){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,policyId,1,`${activityId} 활동 추가 도전 사용`);if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
+        if(latestDecision.usingExtra){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,latestPolicyId,1,`${activityId} 활동 추가 도전 사용`);if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
         if(nextGained)db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name);else db.prepare('UPDATE players SET updated_at=? WHERE name=?').run(now,name);
         logActivity(db,name,`activity-${activityId}`,`${score}점${nextGained?` · +${nextGained}XP`:' · XP 추가 없음'}${latestDecision.usingExtra?' · 추가 도전권 1회 사용':''}`);
-        return{ok:true,gainedXp:nextGained,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId,policy:latestDecision.policy};
+        return{ok:true,gainedXp:nextGained,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId:latestPolicyId,policy:latestDecision.policy};
       });
       const result=tx();
       if(!result.ok)return res.status(409).json(result);
