@@ -3,23 +3,25 @@
 (()=>{
   const name=document.querySelector('#player-name'),password=document.querySelector('#player-password'),start=document.querySelector('#start-button'),title=document.querySelector('#title-screen'),message=document.querySelector('#name-error');
   if(!name||!password||!start||!title||!window.StudyVillageAuth?.restoreSession)return;
-  let restoring=false,finished=false,retryUsed=false,initialAttemptDone=false;
+  let restoring=false,finished=false,retryUsed=false,initialAttemptDone=false,listenersAttached=false;
+  function removeRetryListeners(){if(!listenersAttached)return;window.removeEventListener('online',retryRestore);window.removeEventListener('focus',retryRestore);listenersAttached=false}
   async function restore({retry=false}={}){
     if(restoring||finished||!title.classList.contains('active')||name.value||password.value)return;
     if(retry&&retryUsed)return;
-    if(retry)retryUsed=true;
+    if(retry){retryUsed=true;removeRetryListeners()}
     restoring=true;
     try{
       const result=await window.StudyVillageAuth.restoreSession();
       initialAttemptDone=true;
       if(!result?.ok||!result.name)return;
-      if(!title.classList.contains('active')||name.value||password.value){finished=true;return}
+      if(!title.classList.contains('active')||name.value||password.value){finished=true;removeRetryListeners();return}
       if(message)message.textContent='이전 접속을 확인했어요. 마을로 다시 들어갑니다…';
-      name.value=result.name;password.value=window.StudyVillageAuth.restoreSentinel||'__studyvillage_restore__';finished=true;start.click();setTimeout(()=>{password.value=''},400);
+      name.value=result.name;password.value=window.StudyVillageAuth.restoreSentinel||'__studyvillage_restore__';finished=true;removeRetryListeners();start.click();setTimeout(()=>{password.value=''},400);
     }finally{restoring=false}
   }
   function retryRestore(){if(!initialAttemptDone||retryUsed||finished||name.value||password.value||!title.classList.contains('active'))return;restore({retry:true})}
   setTimeout(()=>restore(),250);
   window.addEventListener('online',retryRestore);
   window.addEventListener('focus',retryRestore);
+  listenersAttached=true;
 })();
