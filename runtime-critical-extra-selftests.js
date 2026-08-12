@@ -6,6 +6,7 @@ const tests=[
   'backup-cross-reference-integrity-contract-selftest.js',
   'backup-equipment-ownership-contract-selftest.js',
   'backup-future-version-safety-contract-selftest.js',
+  'backup-migration-determinism-contract-selftest.js',
   'error-reporter-polling-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
   'question-content-selftest.js',
