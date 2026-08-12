@@ -15,5 +15,10 @@ assert.ok(src.includes('historyLoading=false'),'수정 이력 조회 중 상태�
 assert.ok(src.includes('if(historyLoading)return'),'수정 이력 조회가 겹치면 안 됩니다.');
 assert.ok(src.includes("button.textContent='수정 이력 불러오는 중…'"),'수정 이력 조회 중임을 교사에게 보여줘야 합니다.');
 assert.ok(src.includes("button.textContent='수정 이력 보기'"),'수정 이력 조회가 끝나면 버튼 문구를 복구해야 합니다.');
+assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'문제 검토 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
+assert.ok(src.includes('async function timedFetch'),'문제 검토 요청은 공통 제한시간 함수를 사용해야 합니다.');
+assert.ok((src.match(/timedFetch\(/g)||[]).length>=7,'검사·목록·상태 저장·수정 이력·초기 확인 요청은 제한시간 보호를 받아야 합니다.');
+assert.ok(src.includes("err?.name==='AbortError'?'검사 시간 초과':'검사 실패'"),'문제 검사 시간 초과를 교사가 구분할 수 있어야 합니다.');
+assert.ok(src.includes("err?.name==='AbortError'?'문제 검토 상태 저장 시간이 초과되었습니다.'"),'검토 상태 저장 시간 초과를 교사에게 안내해야 합니다.');
 
 console.log('admin question review save safety contract self-test passed');
