@@ -6,6 +6,7 @@ const tests=[
   'activity-policy-change-extra-attempt-contract-selftest.js',
   'activity-policy-change-xp-contract-selftest.js',
   'activity-policy-latest-save-contract-selftest.js',
+  'activity-response-latest-policy-contract-selftest.js',
   'activity-retry-idempotency-contract-selftest.js',
   'activity-score-input-bounds-contract-selftest.js',
   'activity-save-failure-rollback-contract-selftest.js',
