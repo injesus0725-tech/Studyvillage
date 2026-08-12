@@ -24,6 +24,7 @@ const tests=[
   'student-building-interaction-safety-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',
+  'student-destructive-action-session-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js'
 ];
 for(const file of tests){
