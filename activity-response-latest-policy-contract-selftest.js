@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
+const txStart=src.indexOf('const tx=db.transaction(()=>{'),txEnd=src.indexOf('const result=tx();',txStart),tx=src.slice(txStart,txEnd);
+assert.ok(tx.includes("return{ok:false,code:'attempt-limit-reached',activityId,policyId:latestPolicyId"),'final rejection must expose latest policy id');
+assert.ok(tx.includes('policy:latestDecision.policy'),'final rejection/success must expose evaluated latest policy');
+assert.ok(tx.includes('extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra'),'success response must expose post-save extra-attempt balance');
+assert.ok(tx.includes('record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now}'),'success response must reflect committed record values');
+const resultPos=src.indexOf('const result=tx();',txEnd);
+assert.ok(src.indexOf('rememberSubmission(name,activityId,submissionId,result)',resultPos)>resultPos,'only final transaction result may enter retry cache');
+console.log('activity response latest policy contract self-test passed');
