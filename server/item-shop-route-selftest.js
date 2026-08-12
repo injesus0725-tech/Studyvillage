@@ -31,6 +31,8 @@ assert.equal(routes.find(route=>route.path==='/api/admin/shop')?.handlers[0],req
 const starLedgerSource=fs.readFileSync(new URL('./star-ledger.js',import.meta.url),'utf8');
 assert.match(starLedgerSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must accept both auth guards');
 assert.match(starLedgerSource,/installItemShopRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must pass both auth guards to item shop');
+assert.match(starLedgerSource,/import \{ installRestoreValidationMiddleware \} from '\.\/restore-validation-middleware\.js';/,'star ledger must import restore validation middleware');
+assert.match(starLedgerSource,/installRestoreValidationMiddleware\(app,\{requireAdmin\}\)/,'restore validation middleware must be installed before legacy restore route registration');
 
 const serverSource=fs.readFileSync(new URL('./server.js',import.meta.url),'utf8');
 assert.match(serverSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin\}\)/,'server must pass both auth guards into star ledger routes');
