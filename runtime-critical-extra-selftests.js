@@ -31,6 +31,7 @@ const tests=[
   'student-cross-device-profile-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',
   'student-destructive-action-session-contract-selftest.js',
+  'student-record-reset-boundary-contract-selftest.js',
   'student-session-restore-retry-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js'
 ];
