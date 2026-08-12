@@ -14,6 +14,7 @@ const tests=[
   'shop-price-validation-parity-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
+  'star-backup-ledger-integrity-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',
