@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 
 let mainWindow;
+let classroomServer;
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 
 async function waitForServer(url, timeoutMs = 15000) {
@@ -28,7 +29,7 @@ async function startServer() {
   await import(pathToFileURL(hookPath).href);
   const serverPath = path.join(__dirname, '..', 'server', 'server.js');
   const serverModule = await import(pathToFileURL(serverPath).href);
-  serverModule.startClassroomServer();
+  classroomServer = serverModule.startClassroomServer();
 }
 
 async function createWindow() {
@@ -77,6 +78,10 @@ if (!gotSingleInstanceLock) {
     app.quit();
   });
 }
+
+app.on('before-quit', () => {
+  if (classroomServer?.listening) classroomServer.close();
+});
 
 app.on('window-all-closed', () => {
   app.quit();
