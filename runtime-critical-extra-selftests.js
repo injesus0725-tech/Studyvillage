@@ -1,6 +1,7 @@
 const {spawnSync}=require('child_process');
 const tests=[
   'activity-taxonomy-selftest.js',
+  'activity-save-transaction-contract-selftest.js',
   'avatar-motion-runtime-safety-contract-selftest.js',
   'error-reporter-polling-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
