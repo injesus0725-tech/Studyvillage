@@ -9,5 +9,7 @@ assert.ok(src.includes("DRAFT_KEY='studyvillage-admin-live-draft:v1'"),'작성 �
 assert.ok(src.includes('sessionStorage.setItem(DRAFT_KEY,text)'),'방송 초안을 브라우저 세션에 보관해야 합니다.');
 assert.ok(src.includes('if(clearDraftOnSuccess&&d.recipients>0)clearDraft()'),'실제 전송 성공 후에만 초안을 지워야 합니다.');
 assert.ok(src.includes("if(e.key==='Enter'&&!e.isComposing)"),'한글 입력 조합 중 Enter로 잘못 전송되면 안 됩니다.');
+assert.ok(src.includes('confirmSend&&!confirm(`현재 접속한 학생들에게 방송을 보낼까요?'),'실제 교사 방송은 전송 전에 내용을 확인해야 합니다.');
+assert.ok(src.includes('clearDraftOnSuccess:true,confirmSend:true'),'버튼과 Enter 전송 모두 확인 절차를 사용해야 합니다.');
 
 console.log('admin live events send safety contract self-test passed');
