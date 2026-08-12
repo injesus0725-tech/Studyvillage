@@ -13,5 +13,8 @@ assert.ok(src.includes('if(confirmSend&&!confirm(`${confirmationText}'),'실제 
 assert.ok(src.includes('clearDraftOnSuccess:true,confirmSend:true'),'버튼과 Enter 전송 모두 확인 절차를 사용해야 합니다.');
 assert.ok(src.includes("title=\"현재 접속 중인 학생에게 테스트 알림을 보냅니다.\""),'테스트 버튼이 실제 학생에게 전송됨을 미리 알려야 합니다.');
 assert.ok(src.includes("confirmationText:'테스트 알림도 현재 접속한 학생들에게 실제로 전송됩니다. 보내볼까요?'"),'테스트 방송도 실제 전송 전에 확인해야 합니다.');
+assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'교사 방송 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
+assert.ok(src.includes("err?.name==='AbortError'?'방송 전송 시간이 초과되었습니다. 다시 시도해 주세요.'"),'방송 전송 시간 초과를 일반 연결 실패와 구분해야 합니다.');
+assert.ok(src.includes("err?.name==='AbortError'?'접속 인원 확인 시간 초과':'접속 인원 확인 안 됨'"),'방송 대상 인원 확인 시간 초과도 구분해 보여줘야 합니다.');
 
 console.log('admin live events send safety contract self-test passed');
