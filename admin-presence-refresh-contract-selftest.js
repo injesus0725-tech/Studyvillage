@@ -6,4 +6,8 @@ assert.ok(src.includes("refresh?.addEventListener('click',load)"),'새로고침 
 assert.ok(src.includes('setInterval(load,10000)'),'자동 확인 간격은 10초를 유지해야 합니다.');
 assert.ok(src.includes('if(!token()||app.hidden||document.hidden||loading)return'),'숨겨진 화면이나 중복 요청에서는 불필요한 조회를 막아야 합니다.');
 assert.ok(src.includes('마지막 확인'),'교사가 접속 현황의 최신 확인 시각을 볼 수 있어야 합니다.');
+assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'접속 현황 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
+assert.ok(src.includes("err?.name==='AbortError'?'확인 시간 초과':'연결 확인 실패'"),'접속 현황 시간 초과를 교사가 일반 연결 실패와 구분할 수 있어야 합니다.');
+assert.ok(src.includes("count.textContent='확인 실패'"),'접속 현황 확인 실패 시 이전 접속 인원 숫자를 그대로 보여주면 안 됩니다.');
+assert.ok(src.includes('finally{clearTimeout(timeout);loading=false'),'성공·실패 후 제한시간 타이머와 조회 잠금을 정리해야 합니다.');
 console.log('admin presence refresh contract self-test passed');
