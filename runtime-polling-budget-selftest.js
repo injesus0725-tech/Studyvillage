@@ -7,7 +7,8 @@ const checks=[
   {file:'admin-score-alerts.js',minimumMs:20000,requiresHiddenGuard:true,requiresOnlineGuard:false},
   {file:'presence.js',minimumMs:12000,requiresHiddenGuard:true,requiresOnlineGuard:true},
   {file:'live-events.js',minimumMs:2500,requiresHiddenGuard:true,requiresOnlineGuard:true},
-  {file:'error-reporter.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:true}
+  {file:'error-reporter.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:true},
+  {file:'customize.js',minimumMs:3000,requiresHiddenGuard:true,requiresOnlineGuard:true}
 ];
 
 for(const check of checks){
