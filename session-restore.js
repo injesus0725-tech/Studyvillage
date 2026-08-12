@@ -12,12 +12,11 @@
     restoring=true;
     try{
       const result=await window.StudyVillageAuth.restoreSession();
-      initialAttemptDone=true;
       if(!result?.ok||!result.name)return;
       if(!title.classList.contains('active')||name.value||password.value){finished=true;removeRetryListeners();return}
       if(message)message.textContent='이전 접속을 확인했어요. 마을로 다시 들어갑니다…';
       name.value=result.name;password.value=window.StudyVillageAuth.restoreSentinel||'__studyvillage_restore__';finished=true;removeRetryListeners();start.click();setTimeout(()=>{password.value=''},400);
-    }finally{restoring=false}
+    }finally{if(!retry)initialAttemptDone=true;restoring=false}
   }
   function retryRestore(){if(!initialAttemptDone||retryUsed||finished||name.value||password.value||!title.classList.contains('active'))return;restore({retry:true})}
   setTimeout(()=>restore(),250);
