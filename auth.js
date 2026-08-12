@@ -1,4 +1,4 @@
-/* v0.9.52 authentication router.
+/* v0.9.53 authentication router.
    Server availability cache is invalidated on browser connection changes so a temporary outage cannot leave login/data flows stuck in the old mode. */
 window.StudyVillageAuth=(()=>{
   const prefix='studyvillage-account:',KNOWN_NAMES_KEY='studyvillage-known-student-names',SESSION_TOKEN_KEY='studyvillage-session-token',SESSION_NAME_KEY='studyvillage-session-name',RESTORE_SENTINEL='__studyvillage_restore__',SERVER_CHECK_TIMEOUT_MS=3000,REQUEST_TIMEOUT_MS=5000,encoder=new TextEncoder();
@@ -10,7 +10,7 @@ window.StudyVillageAuth=(()=>{
   function rememberName(name){const normalized=String(name||'').trim().toLowerCase();if(!normalized)return;const names=knownNames();names.add(normalized);localStorage.setItem(KNOWN_NAMES_KEY,JSON.stringify([...names].slice(-100)))}
   function confirmUnfamiliarName(name){if(knownNames().has(name.trim().toLowerCase()))return true;return confirm(`처음 사용하는 이름이에요.\n\n“${name}”이(가) 내 이름이 맞나요?\n\n이름을 잘못 입력하면 새 학생 계정이 만들어질 수 있어요.`)}
   function saveSession(name,token){sessionGeneration++;sessionName=name;sessionToken=token;restoredPlayer=null;sessionStorage.setItem(SESSION_NAME_KEY,name);sessionStorage.setItem(SESSION_TOKEN_KEY,token)}
-  function clearSession(){sessionGeneration++;sessionName=null;sessionToken=null;restoredPlayer=null;sessionStorage.removeItem(SESSION_NAME_KEY);sessionStorage.removeItem(SESSION_TOKEN_KEY)}
+  function clearSession(){const hadSession=!!(sessionName||sessionToken);sessionGeneration++;sessionName=null;sessionToken=null;restoredPlayer=null;sessionStorage.removeItem(SESSION_NAME_KEY);sessionStorage.removeItem(SESSION_TOKEN_KEY);if(hadSession)window.dispatchEvent(new CustomEvent('studyvillage:session-cleared'))}
   function invalidateServer(){serverAvailable=null;serverCheck=null}
   async function timedFetch(url,options={},timeoutMs=REQUEST_TIMEOUT_MS){const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timeout)}}
   async function checkServer(force=false){if(!force&&serverAvailable!==null)return serverAvailable;if(serverCheck&&!force)return serverCheck;const work=(async()=>{try{const response=await timedFetch('/api/health',{cache:'no-store'},SERVER_CHECK_TIMEOUT_MS);serverAvailable=response.ok}catch{serverAvailable=false}return serverAvailable})();serverCheck=work;try{return await work}finally{if(serverCheck===work)serverCheck=null}}
