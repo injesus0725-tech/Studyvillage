@@ -1,0 +1,17 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const pwStart=src.indexOf("app.post('/api/admin/player/:name/reset-password'");
+const recordStart=src.indexOf('const resetStudentRecord=db.transaction');
+const deleteStart=src.indexOf('const deleteStudentData=db.transaction');
+assert.ok(pwStart>=0&&recordStart>pwStart&&deleteStart>recordStart,'student admin actions must all exist');
+const pwBlock=src.slice(pwStart,recordStart);
+const recordBlock=src.slice(recordStart,deleteStart);
+const deleteBlock=src.slice(deleteStart,src.indexOf("app.get('/api/admin/classroom-info'",deleteStart));
+assert.ok(pwBlock.includes('password_hash=?,password_salt=?'),'password reset must only rotate credentials');
+assert.ok(!pwBlock.includes('DELETE FROM activity_records'),'password reset must not erase learning records');
+assert.ok(recordBlock.includes('total_score=0,attempts=0,best_score=0,last_score=0,xp=0'),'record reset must clear learning progress');
+assert.ok(recordBlock.includes("DELETE FROM activity_records WHERE player_name=?"),'record reset must clear per-activity progress');
+assert.ok(!recordBlock.includes('DELETE FROM players'),'record reset must preserve account');
+assert.ok(deleteBlock.includes("DELETE FROM players WHERE name=?"),'delete must remove account itself');
+console.log('student admin action boundary contract self-test passed');
