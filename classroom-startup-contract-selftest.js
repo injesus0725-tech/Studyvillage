@@ -15,6 +15,7 @@ assert.match(source,/자동으로 재부팅하지는 않습니다/,'Studyvillage
 assert.match(source,/app\.on\('window-all-closed'/,'Studyvillage 창을 모두 닫으면 앱 종료 흐름이 유지되어야 합니다.');
 assert.ok(!/shutdown\s*\(|reboot\s*\(|Restart-Computer|shutdown\.exe/i.test(source),'Studyvillage가 PC 종료/재부팅 명령을 실행하면 안 됩니다.');
 assert.ok(server.includes("db.pragma('journal_mode = WAL')"),'교실 동시 저장 안정성을 위해 SQLite WAL 모드를 유지해야 합니다.');
+assert.match(server,/db\.pragma\(['"]busy_timeout\s*=\s*\d+['"]\)/,'교실 동시 저장 중 잠깐의 SQLite 잠금을 기다리는 busy_timeout 설정이 유지되어야 합니다.');
 assert.ok(server.includes('db.transaction('),'중요한 여러 기록 변경은 SQLite transaction으로 보호되어야 합니다.');
 
 console.log('classroom startup/shutdown/sqlite safety contract: ok');
