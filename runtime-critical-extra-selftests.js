@@ -18,6 +18,7 @@ const tests=[
   'restore-runtime-state-reset-contract-selftest.js',
   'restore-star-ledger-reset-contract-selftest.js',
   'restore-validation-wiring-contract-selftest.js',
+  'session-token-lifecycle-contract-selftest.js',
   'shop-price-validation-parity-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
