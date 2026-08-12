@@ -12,5 +12,8 @@ assert.ok(src.includes('문을 닫을까요?'),'활동 닫기에는 교사 확�
 assert.ok(src.includes('문을 다시 열까요?'),'활동 다시 열기에도 교사 확인이 필요합니다.');
 assert.ok(src.includes('if(!confirm(message))return'),'열기·닫기 변경은 확인 후 실행되어야 합니다.');
 assert.ok(src.includes("'\\"':'&quot;'"),'활동 이름의 따옴표는 HTML에 안전하게 표시되어야 합니다.');
+assert.ok((src.match(/r\.status===401/g)||[]).length>=2,'활동 상태 조회와 변경 모두 관리자 세션 만료를 처리해야 합니다.');
+assert.ok(src.includes('관리자 로그인이 만료되었습니다. 다시 로그인해 주세요.'),'활동 관리에서 세션 만료를 명확히 안내해야 합니다.');
+assert.ok(src.includes('finally{pending.delete(id);b.disabled=false;load()}'),'세션 만료 뒤에도 활동 버튼 잠금을 풀어야 합니다.');
 
 console.log('admin activity state confirmation contract self-test passed');
