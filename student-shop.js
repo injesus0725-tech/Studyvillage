@@ -3,6 +3,7 @@
   const panel=document.querySelector('#customize-panel');if(!panel)return;
   const icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱'};
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
   const shop=document.createElement('section');shop.className='inventory-group student-shop';shop.innerHTML='<div class="student-shop-head"><h3>⭐ 별 상점</h3><strong id="student-shop-balance">0별</strong></div><p id="student-shop-status" class="record-message">상점 정보를 불러오는 중이에요.</p><div id="student-shop-items" class="inventory-items"></div>';
   const inventory=document.querySelector('#inventory-list');inventory?.before(shop);
@@ -13,7 +14,7 @@
     const owned=new Set(Array.isArray(data.ownedItems)?data.ownedItems:[]);balance.textContent=`${Math.max(0,Number(data.balance)||0)}별`;list.innerHTML='';
     if(!data.enabled){status.textContent='지금은 선생님이 상점을 닫아 두었어요.';list.hidden=true;return}
     list.hidden=false;status.textContent='별로 원하는 아이템을 살 수 있어요. 구매 기록은 내 별 장부에 남아요.';
-    for(const item of data.items||[]){const bought=owned.has(item.id),b=document.createElement('button');b.type='button';b.className=`inventory-item ${bought?'selected':''}`;b.disabled=bought||busy;b.innerHTML=`<span>${icons[item.id]||'🎁'}</span><strong>${item.name}</strong><small>${bought?'구매 완료':`${Number(item.price)||0}별 · 구매`}</small>`;if(!bought)b.onclick=()=>purchase(item);list.appendChild(b)}
+    for(const item of data.items||[]){const bought=owned.has(item.id),b=document.createElement('button');b.type='button';b.className=`inventory-item ${bought?'selected':''}`;b.disabled=bought||busy;b.innerHTML=`<span>${icons[item.id]||'🎁'}</span><strong>${esc(item.name)}</strong><small>${bought?'구매 완료':`${Number(item.price)||0}별 · 구매`}</small>`;if(!bought)b.onclick=()=>purchase(item);list.appendChild(b)}
   }
   async function load(){if(loading)return null;loading=true;try{const r=await timedFetch('/api/shop',{headers:headers(),cache:'no-store'}),d=await r.json();if(!r.ok||!d.ok)throw new Error();render(d);return d}catch(err){status.textContent=err?.name==='AbortError'?'상점 정보를 불러오는 시간이 초과됐어요.':'상점 정보를 불러오지 못했어요.';return null}finally{loading=false}}
   async function equipPurchased(itemId){const state=await load();const item=(state?.items||[]).find(x=>x.id===itemId);if(!item)return false;window.dispatchEvent(new CustomEvent('studyvillage:equip-purchased-item',{detail:{itemId,itemName:item.name}}));return true}
