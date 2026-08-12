@@ -5,6 +5,7 @@ const tests=[
   'activity-score-input-bounds-contract-selftest.js',
   'activity-taxonomy-selftest.js',
   'activity-save-transaction-contract-selftest.js',
+  'activity-xp-idempotency-contract-selftest.js',
   'admin-credential-lifecycle-contract-selftest.js',
   'admin-default-password-contract-selftest.js',
   'admin-login-password-safety-contract-selftest.js',
