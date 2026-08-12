@@ -1,4 +1,4 @@
-/* Keep the visible student HUD in sync after server-confirmed activity saves. */
+/* Keep the visible student HUD in sync after server-confirmed activity saves and serialize riddle result retries. */
 (()=>{
   function applyPlayer(player={}){
     const score=document.querySelector('#profile-score');
@@ -13,4 +13,20 @@
     const player=event.detail?.player;
     if(player)applyPlayer(player);
   });
+
+  const quizNext=document.querySelector('#quiz-next');
+  let retryingRiddleResult=false;
+  quizNext?.addEventListener('click',event=>{
+    if(quizNext.textContent!=='결과 다시 저장하기 ↻'||typeof quizNext.onclick!=='function')return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if(retryingRiddleResult)return;
+    retryingRiddleResult=true;
+    quizNext.disabled=true;
+    const retry=quizNext.onclick;
+    Promise.resolve(retry.call(quizNext,event)).finally(()=>{
+      retryingRiddleResult=false;
+      quizNext.disabled=false;
+    });
+  },true);
 })();
