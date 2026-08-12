@@ -10,8 +10,10 @@ assert.ok(commands.length>20,'verify chain unexpectedly short');
 const duplicates=commands.filter((cmd,i)=>commands.indexOf(cmd)!==i);
 assert.deepStrictEqual(duplicates,[],'verify chain must not execute the same command twice');
 
-const critical='node runtime-critical-extra-selftests.js';
-assert.strictEqual(commands.filter(v=>v===critical).length,1,'runtime critical extra selftests must run exactly once');
+for(const critical of [
+  'node runtime-critical-extra-selftests.js',
+  'node server-session-memory-contract-selftest.js'
+])assert.strictEqual(commands.filter(v=>v===critical).length,1,`${critical} must run exactly once`);
 
 const runner=fs.readFileSync('runtime-critical-extra-selftests.js','utf8');
 const files=[...runner.matchAll(/'([^']+selftest\.js)'/g)].map(m=>m[1]);
