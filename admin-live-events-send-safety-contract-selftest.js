@@ -16,5 +16,8 @@ assert.ok(src.includes("confirmationText:'테스트 알림도 현재 접속한 �
 assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'교사 방송 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
 assert.ok(src.includes("err?.name==='AbortError'?'방송 전송 시간이 초과되었습니다. 다시 시도해 주세요.'"),'방송 전송 시간 초과를 일반 연결 실패와 구분해야 합니다.');
 assert.ok(src.includes("err?.name==='AbortError'?'접속 인원 확인 시간 초과':'접속 인원 확인 안 됨'"),'방송 대상 인원 확인 시간 초과도 구분해 보여줘야 합니다.');
+assert.ok((src.match(/r\.status===401/g)||[]).length>=2,'접속 인원 조회와 방송 전송 모두 관리자 세션 만료를 처리해야 합니다.');
+assert.ok(src.includes("alert('관리자 로그인이 만료되었습니다. 다시 로그인해 주세요.')"),'방송 전송 중 세션 만료를 교사에게 명확히 알려야 합니다.');
+assert.ok(src.includes('finally{setBusy(false)}'),'세션 만료 후에도 방송 버튼 잠금이 반드시 풀려야 합니다.');
 
 console.log('admin live events send safety contract self-test passed');
