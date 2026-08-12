@@ -7,6 +7,7 @@ const tests=[
   'error-reporter-polling-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
   'question-content-selftest.js',
+  'restore-star-ledger-reset-contract-selftest.js',
   'shop-price-validation-parity-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
