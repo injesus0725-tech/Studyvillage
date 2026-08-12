@@ -3,6 +3,7 @@ const tests=[
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-retry-idempotency-contract-selftest.js',
   'activity-score-input-bounds-contract-selftest.js',
+  'activity-save-failure-rollback-contract-selftest.js',
   'activity-save-rollback-contract-selftest.js',
   'activity-taxonomy-selftest.js',
   'activity-save-transaction-contract-selftest.js',
