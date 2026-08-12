@@ -10,7 +10,7 @@ assert.ok(shop.includes(`CustomEvent('${eventName}'`),'student shop must emit im
 assert.ok(shop.includes('itemId:d.itemId,itemName:found.name'),'shop immediate-equip event must carry purchased item identity');
 assert.ok(customize.includes(`addEventListener('${eventName}'`),'customize must listen for immediate-equip event');
 assert.ok(customize.includes('equipPurchasedNow(e.detail?.itemId,e.detail?.itemName)'),'customize listener must forward purchase identity');
-assert.ok(customize.includes("fetch('/api/shop/equipment'"),'purchased equipment must persist through shop equipment API');
+assert.ok(customize.includes("fetch('/api/shop/equipment'")||customize.includes("timedFetch('/api/shop/equipment'"),'purchased equipment must persist through shop equipment API');
 assert.ok(customize.includes('ownedSet().has(itemId)'),'immediate equip must verify permanent ownership before saving');
 assert.ok(shop.includes('REQUEST_TIMEOUT_MS=5000'),'student shop requests must not wait forever');
 assert.ok(shop.includes('async function timedFetch'),'student shop must use a shared bounded request helper');
@@ -18,5 +18,7 @@ assert.ok((shop.match(/timedFetch\(/g)||[]).length>=3,'shop load and purchase re
 assert.ok(shop.includes('if(loading)return null;loading=true'),'student shop refresh requests must not overlap');
 assert.ok(shop.includes("err?.name==='AbortError'?'구매 요청 시간이 초과됐어요. 잠시 후 별 장부를 확인해 주세요.'"),'purchase timeout must tell students to verify the ledger before retrying');
 assert.ok(shop.includes('if(!refreshed)await load()'),'purchase flow must avoid redundant successful refreshes while still recovering after failure');
+assert.ok(shop.includes("const esc=v=>String(v??'').replace"),'student shop must provide safe HTML escaping for display text');
+assert.ok(shop.includes('<strong>${esc(item.name)}</strong>'),'student shop item names must be escaped before innerHTML rendering');
 
 console.log('[Studyvillage] shop immediate-equip contract selftest passed');
