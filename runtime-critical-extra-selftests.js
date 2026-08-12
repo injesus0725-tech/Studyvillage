@@ -3,6 +3,7 @@ const tests=[
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-attempt-policy-safety-contract-selftest.js',
   'activity-latest-policy-consistency-contract-selftest.js',
+  'activity-policy-change-extra-attempt-contract-selftest.js',
   'activity-policy-latest-save-contract-selftest.js',
   'activity-retry-idempotency-contract-selftest.js',
   'activity-score-input-bounds-contract-selftest.js',
