@@ -25,5 +25,6 @@ for(const text of ['sessionGeneration=0','sessionGeneration++','expectedGenerati
   if(!auth.includes(text))throw new Error(`stale restore guard missing: ${text}`);
 }
 if(!auth.includes('rememberName(expectedName)'))throw new Error('restore must use the captured student name, not a possibly changed session name');
+require('./student-session-generation-contract-selftest.js');
 require('./student-cross-device-data-contract-selftest.js');
 console.log('student session switch contract self-test passed');
