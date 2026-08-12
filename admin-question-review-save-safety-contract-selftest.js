@@ -20,5 +20,9 @@ assert.ok(src.includes('async function timedFetch'),'문제 검토 요청은 공
 assert.ok((src.match(/timedFetch\(/g)||[]).length>=7,'검사·목록·상태 저장·수정 이력·초기 확인 요청은 제한시간 보호를 받아야 합니다.');
 assert.ok(src.includes("err?.name==='AbortError'?'검사 시간 초과':'검사 실패'"),'문제 검사 시간 초과를 교사가 구분할 수 있어야 합니다.');
 assert.ok(src.includes("err?.name==='AbortError'?'문제 검토 상태 저장 시간이 초과되었습니다.'"),'검토 상태 저장 시간 초과를 교사에게 안내해야 합니다.');
+assert.ok(src.includes('const controller=new AbortController()'),'문제 검토 요청 제한시간은 요청별 AbortController를 사용해야 합니다.');
+assert.ok(src.includes('timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS)'),'문제 검토 요청은 설정된 제한시간 뒤 중단되어야 합니다.');
+assert.ok(src.includes('finally{clearTimeout(timer)}'),'문제 검토 요청이 성공·실패·중단되더라도 제한시간 타이머를 정리해야 합니다.');
+assert.ok(src.includes('signal:controller.signal'),'실제 fetch 요청에 AbortController signal이 전달되어야 합니다.');
 
 console.log('admin question review save safety contract self-test passed');
