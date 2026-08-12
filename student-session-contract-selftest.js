@@ -1,5 +1,6 @@
 const fs=require('fs');
 const session=fs.readFileSync('student-session.js','utf8');
+const auth=fs.readFileSync('auth.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
 const required=[
@@ -20,5 +21,9 @@ if(!index.includes('<script src="student-session.js"></script>'))throw new Error
 const files=pkg.build?.files||[];
 if(!files.includes('student-session.js'))throw new Error('student-session.js must be packaged');
 if(/clearCheckpoint|localStorage\.clear|sessionStorage\.clear/.test(session))throw new Error('student switch must not clear saved activity checkpoints or all browser storage');
+for(const text of ['sessionGeneration=0','sessionGeneration++','expectedGeneration=sessionGeneration','expectedToken=sessionToken','expectedName=sessionName','expectedGeneration!==sessionGeneration']){
+  if(!auth.includes(text))throw new Error(`stale restore guard missing: ${text}`);
+}
+if(!auth.includes('rememberName(expectedName)'))throw new Error('restore must use the captured student name, not a possibly changed session name');
 require('./student-cross-device-data-contract-selftest.js');
 console.log('student session switch contract self-test passed');
