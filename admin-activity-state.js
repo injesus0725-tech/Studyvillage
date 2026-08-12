@@ -4,7 +4,7 @@
 (()=>{
   const app=document.querySelector('#admin-app');if(!app)return;
   const token=()=>sessionStorage.getItem('studyvillage-admin-token')||'';
-  const headers=()=>token()?{Authorization:`Bearer ${token}`}:{ };
+  const headers=()=>token()?{Authorization:`Bearer ${token()}`}:{ };
   const REQUEST_TIMEOUT_MS=5000,pending=new Set();let loading=false;
   const section=document.createElement('section');section.className='panel';section.innerHTML=`<div class="panel-head"><div><h2>🚪 활동 열기·닫기</h2><p>학생이 다시 들어올 수 있는 활동을 선생님이 직접 정합니다.</p></div><span id="activity-state-summary" class="overview-count">확인 중…</span></div><div id="activity-state-list" style="padding:8px 22px 22px"><p class="empty">활동 상태를 확인하는 중입니다.</p></div>`;
   const classPanel=[...app.querySelectorAll('.panel')].find(p=>p.textContent.includes('우리 반 활동 현황'));if(classPanel)classPanel.after(section);else app.prepend(section);
