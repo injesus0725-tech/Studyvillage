@@ -2,7 +2,7 @@
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
-   Item shop student routes are installed here; the shop remains disabled until teacher configuration is connected. */
+   Item shop student and teacher routes are installed here with their matching auth guards. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -94,7 +94,7 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
     return tx();
   }finally{try{db?.close()}catch{}}
 }
-export function installStarLedgerRoutes(app,{requireSession}){
+export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
   installStudentScoreHistoryRoutes(app,{requireSession});
   app.get('/api/player/me/stars',requireSession,(req,res)=>{
@@ -103,5 +103,5 @@ export function installStarLedgerRoutes(app,{requireSession}){
   });
   installRiddleAttemptStudentRoutes(app,{requireSession});
   installActivityAttemptStudentRoutes(app,{requireSession});
-  installItemShopRoutes(app,{requireSession});
+  installItemShopRoutes(app,{requireSession,requireAdmin});
 }
