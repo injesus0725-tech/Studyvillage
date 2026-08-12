@@ -1,4 +1,4 @@
-/* v0.9.5 building entrance + interior transition system */
+/* v0.9.6 building entrance + interior transition system */
 (()=>{
   const game=document.querySelector('#game-screen'),player=document.querySelector('#player'),hint=document.querySelector('#interaction-hint'),talk=document.querySelector('#talk-button');
   if(!game||!player)return;
@@ -21,9 +21,10 @@
     else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();setTimeout(()=>document.querySelector('#customize-button')?.click(),50)});
     else{const note=document.createElement('p');note.className='interior-coming';note.textContent='✨ 이 공간의 활동은 다음 업데이트에서 열립니다.';actions.appendChild(note)}
     document.body.classList.add('inside-building')}
-  function leave(){open=false;overlay.hidden=true;current=null;document.body.classList.remove('inside-building')}
+  function hideHint(){if(hint)hint.classList.remove('visible')}
+  function leave(){open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building')}
   function interact(e){if(open)return;if(performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
   talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);
-  function loop(){const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b&&hint){hint.textContent=`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}}requestAnimationFrame(loop)}requestAnimationFrame(loop);
+  function loop(){const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b&&hint){hint.textContent=`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}else hideHint()}else hideHint();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 })();
