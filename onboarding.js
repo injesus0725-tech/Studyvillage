@@ -1,4 +1,4 @@
-/* v0.9.59 first-visit student guide */
+/* v0.9.60 first-visit student guide */
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
@@ -16,8 +16,8 @@
   const steps=[
     {icon:'🌳',title:'우리 학습마을에 온 걸 환영해!',text:'마을을 돌아다니며 건물에 들어가 학습 활동에 참여해 보세요. 활동 기록과 성장 내용은 자동으로 저장됩니다.'},
     {icon:'🎮',title:'캐릭터를 움직여 보세요',text:'컴퓨터에서는 방향키 또는 WASD로 움직이고 Space 키로 상호작용해요. 태블릿에서는 화면 아래 방향 버튼과 상호작용 버튼을 사용하면 됩니다.'},
-    {icon:'🏫',title:'건물마다 할 일이 달라요',text:'책마루에서는 어휘 활동, 도전관에서는 퀴즈에 참여할 수 있어요. 꾸미기 상점에서는 학습으로 열린 아이템을 확인하고 장착할 수 있습니다.'},
-    {icon:'⭐',title:'배우면서 성장해요',text:'활동을 마치면 기록과 XP가 쌓여요. 위쪽의 ‘내 기록’에서 활동별 결과를 확인하고 ‘꾸미기’에서 새로 열린 아이템도 살펴보세요.'}
+    {icon:'🏫',title:'건물마다 할 일이 달라요',text:'책마루에서는 어휘 활동, 도전관에서는 퀴즈에 참여할 수 있어요. 꾸미기 화면에서는 가지고 있는 아이템을 장착하고 ⭐ 별 상점에서 새 아이템도 살 수 있습니다.'},
+    {icon:'⭐',title:'배우면서 성장해요',text:'활동을 마치면 기록과 XP가 쌓여요. 위쪽의 ‘내 기록’에서 활동별 결과와 별 장부를 확인하고, 모은 별은 꾸미기 화면의 ⭐ 별 상점에서 사용할 수 있어요.'}
   ];
   let index=0;
   const overlay=document.createElement('div');overlay.className='welcome-guide';overlay.hidden=true;overlay.innerHTML=`<section class="welcome-card" role="dialog" aria-modal="true" aria-label="마을 이용 안내"><div id="guide-icon" class="guide-icon"></div><h2 id="guide-title"></h2><p id="guide-text"></p><div id="guide-dots" class="guide-dots"></div><div class="guide-actions"><button id="guide-skip" class="guide-skip">나중에 보기</button><button id="guide-next" class="guide-next">다음 ▶</button></div></section>`;document.body.appendChild(overlay);
