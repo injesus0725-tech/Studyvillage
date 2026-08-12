@@ -1,0 +1,13 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const route="app.post('/api/admin/password',requireAdmin";
+const start=src.indexOf(route);
+assert.ok(start>=0,'admin password route must exist and require admin auth');
+const end=src.indexOf("app.get('/api/admin/players'",start);
+const block=src.slice(start,end);
+assert.ok(block.includes("p.length<6||p.length>72"),'admin password must enforce length bounds');
+assert.ok(block.includes("crypto.randomBytes(16).toString('hex')"),'admin password change must rotate salt');
+assert.ok(block.includes("setSetting('admin_hash',hashPassword(p,salt))"),'admin password change must store a fresh hash');
+assert.ok(block.includes('adminSessions.clear()'),'admin password change must invalidate every existing admin session');
+console.log('admin password session invalidation contract self-test passed');
