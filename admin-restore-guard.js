@@ -1,8 +1,8 @@
-/* v0.9.92 teacher backup restore guard.
+/* v0.9.93 teacher backup restore guard.
    Strict checks for current backups, including wardrobe ownership; supported legacy backups still reach the server migrator. */
 (()=>{
   const input=document.querySelector('#restore-file');if(!input)return;
-  const CURRENT_BACKUP_VERSION=8,MAX_FILE_BYTES=8*1024*1024,MAX_PLAYERS=500,MAX_SETTINGS=500,MAX_ACTIVITIES=50000,MAX_ACTIVITY_RECORDS=50000,MAX_ERRORS=10000,MAX_OWNED_ITEMS=500;
+  const CURRENT_BACKUP_VERSION=9,MAX_FILE_BYTES=8*1024*1024,MAX_PLAYERS=500,MAX_SETTINGS=500,MAX_ACTIVITIES=50000,MAX_ACTIVITY_RECORDS=50000,MAX_ERRORS=10000,MAX_OWNED_ITEMS=500;
   const isArray=Array.isArray,integer=(v,min,max)=>Number.isInteger(Number(v))&&Number(v)>=min&&Number(v)<=max,text=(v,max)=>typeof v==='string'&&v.length<=max,safeId=v=>typeof v==='string'&&/^[a-z0-9-]{1,80}$/.test(v);
   function reject(message){try{input.value=''}catch{}alert(`복원 파일을 사용할 수 없습니다.\n\n${message}\n\n기존 교실 데이터는 변경되지 않았습니다.`)}
   function countsOk(b){return b.players.length<=MAX_PLAYERS&&b.settings.length<=MAX_SETTINGS&&(!b.activities||b.activities.length<=MAX_ACTIVITIES)&&(!b.activityRecords||b.activityRecords.length<=MAX_ACTIVITY_RECORDS)&&(!b.errorReports||b.errorReports.length<=MAX_ERRORS)}
