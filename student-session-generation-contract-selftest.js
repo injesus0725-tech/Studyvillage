@@ -8,7 +8,8 @@ for(const token of [
   'sessionGeneration++',
   'const expectedToken=sessionToken,expectedName=sessionName,expectedGeneration=sessionGeneration',
   'expectedGeneration!==sessionGeneration||expectedToken!==sessionToken||expectedName!==sessionName',
-  'restoredPlayer=null'
+  'restoredPlayer=null',
+  "window.dispatchEvent(new CustomEvent('studyvillage:session-cleared'))"
 ]) assert.ok(auth.includes(token),`auth.js missing stale-session guard: ${token}`);
 
 assert.ok(session.includes('window.StudyVillageAuth.clearSession();'),'student switch must clear the active session');
