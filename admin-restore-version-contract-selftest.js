@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const guard=fs.readFileSync('admin-restore-guard.js','utf8');
+const migrator=fs.readFileSync('server/backup-migrator.js','utf8');
+const clientVersion=Number((guard.match(/CURRENT_BACKUP_VERSION=(\d+)/)||[])[1]);
+const serverVersion=Number((migrator.match(/CURRENT_BACKUP_VERSION=(\d+)/)||[])[1]);
+assert.ok(Number.isInteger(clientVersion),'admin restore guard backup version must be detectable');
+assert.ok(Number.isInteger(serverVersion),'server backup version must be detectable');
+assert.strictEqual(clientVersion,serverVersion,'teacher restore guard must accept the server current backup version');
+console.log('admin restore version contract self-test passed');
