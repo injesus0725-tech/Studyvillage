@@ -2,6 +2,7 @@ const {spawnSync}=require('child_process');
 const tests=[
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-attempt-policy-safety-contract-selftest.js',
+  'activity-extra-attempt-admin-safety-contract-selftest.js',
   'activity-latest-policy-consistency-contract-selftest.js',
   'activity-policy-change-extra-attempt-contract-selftest.js',
   'activity-policy-change-xp-contract-selftest.js',
