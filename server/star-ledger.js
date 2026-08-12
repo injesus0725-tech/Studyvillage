@@ -10,6 +10,7 @@ import { installItemShopRoutes } from './item-shop.js';
 import { installActivityAttemptStudentRoutes } from './activity-attempt-student.js';
 import { installRiddleAttemptStudentRoutes } from './riddle-attempt-student.js';
 import { installStudentScoreHistoryRoutes } from './student-score-history.js';
+import { installRestoreValidationMiddleware } from './restore-validation-middleware.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
@@ -96,6 +97,7 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
 }
 export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
+  installRestoreValidationMiddleware(app,{requireAdmin});
   installStudentScoreHistoryRoutes(app,{requireSession});
   app.get('/api/player/me/stars',requireSession,(req,res)=>{
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
