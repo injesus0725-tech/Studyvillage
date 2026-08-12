@@ -1,0 +1,13 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const start=src.indexOf('function ensureAdminPassword()');
+const end=src.indexOf('installActivityStateRoutes',start);
+assert.ok(start>=0&&end>start,'initial admin password setup must exist before routes');
+const block=src.slice(start,end);
+assert.ok(block.includes("getSetting('admin_hash')&&getSetting('admin_salt')"),'existing admin credentials must never be overwritten on restart');
+assert.ok(block.includes("process.env.STUDYVILLAGE_ADMIN_PASSWORD||'teacher1234'"),'deployment must support overriding the initial admin password through environment');
+assert.ok(block.includes("crypto.randomBytes(16).toString('hex')"),'initial admin password must use a random salt');
+assert.ok(block.includes("setSetting('admin_hash',hashPassword(initial,salt))"),'initial admin password must be stored as a hash, not plaintext');
+assert.ok(!block.includes("setSetting('admin_password'"),'plaintext admin password setting must not be stored');
+console.log('admin default password contract self-test passed');
