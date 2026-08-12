@@ -1,10 +1,14 @@
-/* v1.9 additive backup validation for mirrored star settings. Pure validation only; no DB writes. */
+/* v1.9 additive backup validation for mirrored star settings and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
+import { parseOwnedItems } from './item-ownership.js';
 
 const STAR_SETTING_PREFIX='compat:stars:';
 const MAX_STARS=1000000;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
+function equippedItemIds(value){
+  try{const equipment=JSON.parse(value||'{}');return Object.values(equipment||{}).filter(v=>typeof v==='string'&&v)}catch{return[]}
+}
 
 export function validateStudyvillageBackupWithStars(backup){
   const base=validateStudyvillageBackup(backup);
@@ -14,6 +18,10 @@ export function validateStudyvillageBackupWithStars(backup){
   for(const [name,player] of players){
     if(Object.prototype.hasOwnProperty.call(player||{},'stars')&&!validStars(player.stars)){
       return{ok:false,code:'invalid-player-stars',message:'학생 별 잔액이 정상 범위를 벗어났습니다.',playerName:name};
+    }
+    const owned=new Set(parseOwnedItems(player?.owned_items_json||'[]'));
+    for(const itemId of equippedItemIds(player?.equipment_json)){
+      if(!owned.has(itemId))return{ok:false,code:'equipped-item-not-owned',message:'장착된 아이템이 학생의 보유 아이템 목록에 없습니다.',playerName:name,itemId};
     }
   }
 
