@@ -13,5 +13,7 @@ assert.ok(src.includes('if(retry&&retryUsed)return;')&&src.includes('if(retry){r
 assert.ok(src.includes('function removeRetryListeners()'),'session restore must provide listener cleanup');
 assert.ok(src.includes("window.removeEventListener('online',retryRestore)")&&src.includes("window.removeEventListener('focus',retryRestore)"),'session restore must release both retry listeners');
 assert.ok((src.match(/removeRetryListeners\(\)/g)||[]).length>=4,'retry listeners must be released on retry use and terminal restore paths');
+assert.ok(src.includes('finally{if(!retry)initialAttemptDone=true;restoring=false}'),'the initial restore attempt must be marked complete even when restoreSession throws so recovery events can retry');
+assert.ok(!src.includes('const result=await window.StudyVillageAuth.restoreSession();\n      if(!retry)initialAttemptDone=true;'),'initial attempt completion must not depend on restoreSession resolving successfully');
 
 console.log('student session restore retry contract self-test passed');
