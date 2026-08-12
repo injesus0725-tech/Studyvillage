@@ -5,6 +5,7 @@ const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
 const required=[
   "button.id='admin-logout-button'",
   "button.textContent='🔒 로그아웃'",
+  "confirm('관리자 화면에서 로그아웃할까요?",
   "sessionStorage.removeItem('studyvillage-admin-token')",
   'location.reload()'
 ];
