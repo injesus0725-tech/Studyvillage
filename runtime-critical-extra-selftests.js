@@ -7,6 +7,7 @@ const tests=[
   'live-broadcast-safety-contract-selftest.js',
   'question-content-selftest.js',
   'shop-price-validation-parity-contract-selftest.js',
+  'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
