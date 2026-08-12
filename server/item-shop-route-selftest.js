@@ -32,4 +32,7 @@ const starLedgerSource=fs.readFileSync(new URL('./star-ledger.js',import.meta.ur
 assert.match(starLedgerSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must accept both auth guards');
 assert.match(starLedgerSource,/installItemShopRoutes\(app,\{requireSession,requireAdmin\}\)/,'star ledger installer must pass both auth guards to item shop');
 
+const serverSource=fs.readFileSync(new URL('./server.js',import.meta.url),'utf8');
+assert.match(serverSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin\}\)/,'server must pass both auth guards into star ledger routes');
+
 console.log('item shop route contract: ok');
