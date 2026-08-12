@@ -3,4 +3,8 @@ const assert=require('assert');
 const src=fs.readFileSync('data-service.js','utf8');
 assert.ok(src.includes("timedFetch('/api/ranking',{cache:'no-store',headers:window.StudyVillageAuth?.authHeaders?.()||{}})"),'student ranking reads must carry the current login authentication');
 assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'ranking reads must remain bounded by the shared request timeout');
+assert.ok(src.includes('return !!window.StudyVillageAuth?.authHeaders?.().Authorization'),'server-backed student data must require a live student session');
+assert.ok(src.includes('function handleAuthExpiry(response)'),'student data service must handle expired sessions centrally');
+assert.ok(src.includes('window.StudyVillageAuth?.clearSession?.()'),'expired student sessions must be cleared to stop repeated authenticated retries');
+assert.ok((src.match(/handleAuthExpiry\(r\)/g)||[]).length>=3,'profile reads, writes, and ranking reads must all use the auth-expiry guard');
 console.log('student ranking auth contract self-test passed');
