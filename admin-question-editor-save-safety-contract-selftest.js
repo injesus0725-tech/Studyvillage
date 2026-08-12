@@ -14,5 +14,9 @@ assert.ok(src.includes('if(renderPromise)return renderPromise'),'이미 목록�
 assert.ok(src.includes("refreshButton.disabled=true;refreshButton.textContent='목록 갱신 중…'"),'목록 갱신 중에는 새로고침 버튼을 잠가야 합니다.');
 assert.ok(src.includes("refreshButton.disabled=false;refreshButton.textContent='문제 목록 새로고침'"),'목록 갱신 후 새로고침 버튼을 복구해야 합니다.');
 assert.ok(src.includes('finally{renderPromise=null}'),'목록 갱신이 끝나면 중복 상태를 해제해야 합니다.');
+assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'문제 편집 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
+assert.ok(src.includes('async function timedFetch'),'문제 편집 네트워크 요청은 공통 제한시간 함수를 사용해야 합니다.');
+assert.ok((src.match(/timedFetch\(/g)||[]).length>=4,'수정본 조회·저장·원본 복귀 요청은 제한시간 보호를 받아야 합니다.');
+assert.ok(src.includes("err.name==='AbortError'?'서버 응답 시간이 초과되었습니다.'"),'저장 제한시간 초과를 교사가 이해할 수 있게 안내해야 합니다.');
 
 console.log('admin question editor save safety contract self-test passed');
