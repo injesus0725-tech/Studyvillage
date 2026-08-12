@@ -1,0 +1,10 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+assert.ok(src.includes("app.get('/api/admin/players',requireAdmin"),'admin player list must read current player rows');
+assert.ok(src.includes("app.get('/api/admin/presence',requireAdmin"),'admin presence must be derived from current players and presence map');
+assert.ok(src.includes("DELETE FROM star_ledger WHERE player_name=?"),'student deletion must remove star ledger rows');
+assert.ok(src.includes("DELETE FROM settings WHERE key=?").replace('\\','')||src.includes("db.prepare('DELETE FROM settings WHERE key=?').run(`compat:stars:${encodeURIComponent(name)}`)"),'student deletion must remove star mirror');
+assert.ok(src.includes("clearStudentSessions(name)"),'student deletion must clear old sessions/presence');
+assert.ok(src.includes("INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?)"),'recreated student must be inserted as a fresh row');
+console.log('student recreate admin view contract self-test passed');
