@@ -1,0 +1,28 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const start=src.indexOf('const resetStudentRecord=db.transaction');
+const end=src.indexOf("app.post('/api/admin/player/:name/reset-record'",start);
+assert.ok(start>=0&&end>start,'student record reset transaction must exist');
+const block=src.slice(start,end);
+for(const token of [
+  'total_score=0',
+  'attempts=0',
+  'best_score=0',
+  'last_score=0',
+  'xp=0',
+  "base_character='student-default'",
+  "equipment_json='{}'",
+  "DELETE FROM activity_records WHERE player_name=?",
+  "logActivity(n,'record-reset'"
+])assert.ok(block.includes(token),`student record reset guard missing: ${token}`);
+for(const forbidden of [
+  'password_hash=',
+  'password_salt=',
+  'login_count=0',
+  'last_login_at=',
+  'owned_items_json=',
+  'DELETE FROM star_ledger',
+  'compat:stars:'
+])assert.ok(!block.includes(forbidden),`record reset must not erase account/economy state: ${forbidden}`);
+console.log('student record reset boundary contract self-test passed');
