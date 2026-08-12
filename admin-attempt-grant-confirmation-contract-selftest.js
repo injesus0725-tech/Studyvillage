@@ -15,5 +15,8 @@ assert.ok(src.includes('async function load(){if(loading)return;loading=true'),'
 assert.ok(src.includes('async function loadHistory(){if(historyLoading)return;historyLoading=true'),'이력 새로고침 요청이 겹치면 안 됩니다.');
 assert.ok(src.includes("historyRefresh.disabled=true;historyRefresh.textContent='불러오는 중…'"),'이력 조회 중에는 새로고침 버튼을 잠가야 합니다.');
 assert.ok(src.includes("historyRefresh.disabled=false;historyRefresh.textContent='새로고침'"),'이력 조회 후 새로고침 버튼을 복구해야 합니다.');
+assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'도전 횟수 관리 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
+assert.ok(src.includes('async function timedFetch'),'도전 횟수 관리 요청은 공통 제한시간 함수를 사용해야 합니다.');
+assert.ok((src.match(/timedFetch\(/g)||[]).length>=6,'정책·현황·이력 조회와 저장·추가 지급은 제한시간 보호를 받아야 합니다.');
 
 console.log('admin attempt grant confirmation contract self-test passed');
