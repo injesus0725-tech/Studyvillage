@@ -1,0 +1,14 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const backupStart=src.indexOf("app.get('/api/admin/backup'");
+const backupEnd=src.indexOf("app.post('/api/admin/restore'",backupStart);
+assert.ok(backupStart>=0&&backupEnd>backupStart,'backup route must exist');
+const backup=src.slice(backupStart,backupEnd);
+assert.ok(backup.includes("settings:db.prepare('SELECT * FROM settings ORDER BY key').all()"),'backup must include settings so extra attempts are exported');
+const restoreStart=backupEnd;
+const restoreEnd=src.indexOf("app.get('/api/health'",restoreStart);
+const restore=src.slice(restoreStart,restoreEnd);
+assert.ok(restore.includes("for(const t of ['score_corrections','score_alert_reviews','score_ledger','star_ledger','activity_records','activity_log','error_reports','players','settings'])"),'restore must clear settings before reload');
+assert.ok(restore.includes("insert('INSERT INTO settings(key,value) VALUES(@key,@value)',b.settings)"),'restore must reload settings so extra attempts survive roundtrip');
+console.log('backup extra-attempt roundtrip contract self-test passed');
