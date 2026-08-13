@@ -18,5 +18,7 @@ assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.sett
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.settings,{key:historyKey,value:JSON.stringify(history)}]}).code,'duplicate-backup-setting-key');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([history[0],{...history[1],id:'1'}])}]}).code,'duplicate-extra-attempt-history-id');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([{...history[0],id:''}])}]}).code,'invalid-extra-attempt-history-id');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:mirror},{key:historyKey,value:JSON.stringify(history)}]}).code,'missing-extra-attempt-current-setting');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'}]}).ok,true,'migrated/legacy backups may contain a current extra-attempt value before history exists');
 
 console.log('star and extra-attempt backup cross-check self-test passed');
