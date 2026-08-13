@@ -1,4 +1,4 @@
-/* v1.12 additive backup validation for mirrored star settings, extra-attempt settings/history continuity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.13 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -15,9 +15,12 @@ function equippedItemIds(value){
 function validateExtraAttemptHistory(value,players){
   let rows;try{rows=JSON.parse(value)}catch{return{ok:false,code:'invalid-extra-attempt-history-json',message:'추가 도전권 사용 기록 JSON이 손상되었습니다.'}}
   if(!Array.isArray(rows)||rows.length>1000)return{ok:false,code:'invalid-extra-attempt-history-size',message:'추가 도전권 사용 기록의 개수 또는 형식이 올바르지 않습니다.'};
-  const lastByScope=new Map(),lastBalanceByScope=new Map();
+  const lastByScope=new Map(),lastBalanceByScope=new Map(),seenIds=new Set();
   for(const row of rows){
-    const name=String(row?.name||'').trim(),activityId=String(row?.activityId||''),type=String(row?.type||''),amount=Number(row?.amount),before=Number(row?.before),after=Number(row?.after),detail=String(row?.detail||''),createdAt=String(row?.createdAt||'');
+    const id=String(row?.id||''),name=String(row?.name||'').trim(),activityId=String(row?.activityId||''),type=String(row?.type||''),amount=Number(row?.amount),before=Number(row?.before),after=Number(row?.after),detail=String(row?.detail||''),createdAt=String(row?.createdAt||'');
+    if(!id||id.length>120)return{ok:false,code:'invalid-extra-attempt-history-id',message:'추가 도전권 기록 ID가 올바르지 않습니다.',playerName:name};
+    if(seenIds.has(id))return{ok:false,code:'duplicate-extra-attempt-history-id',message:'추가 도전권 기록 ID가 중복되어 있습니다.',historyId:id};
+    seenIds.add(id);
     if(!players.has(name))return{ok:false,code:'orphan-extra-attempt-history',message:'존재하지 않는 학생의 추가 도전권 기록이 포함되어 있습니다.',playerName:name};
     if(!SAFE_ACTIVITY.test(activityId))return{ok:false,code:'invalid-extra-attempt-history-activity',message:'추가 도전권 기록의 활동 ID가 올바르지 않습니다.',playerName:name};
     if(!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-extra-attempt-history-type',message:'추가 도전권 기록의 유형이 올바르지 않습니다.',playerName:name};
@@ -40,24 +43,23 @@ export function validateStudyvillageBackupWithStars(backup){
 
   const players=new Map((backup.players||[]).map(player=>[String(player?.name||'').trim(),player]));
   for(const [name,player] of players){
-    if(Object.prototype.hasOwnProperty.call(player||{},'stars')&&!validStars(player.stars)){
-      return{ok:false,code:'invalid-player-stars',message:'학생 별 잔액이 정상 범위를 벗어났습니다.',playerName:name};
-    }
+    if(Object.prototype.hasOwnProperty.call(player||{},'stars')&&!validStars(player.stars))return{ok:false,code:'invalid-player-stars',message:'학생 별 잔액이 정상 범위를 벗어났습니다.',playerName:name};
     const owned=new Set(parseOwnedItems(player?.owned_items_json||'[]'));
-    for(const itemId of equippedItemIds(player?.equipment_json)){
-      if(!owned.has(itemId))return{ok:false,code:'equipped-item-not-owned',message:'장착된 아이템이 학생의 보유 아이템 목록에 없습니다.',playerName:name,itemId};
-    }
+    for(const itemId of equippedItemIds(player?.equipment_json))if(!owned.has(itemId))return{ok:false,code:'equipped-item-not-owned',message:'장착된 아이템이 학생의 보유 아이템 목록에 없습니다.',playerName:name,itemId};
   }
 
   let starMirrorCount=0,extraAttemptSettingCount=0,extraAttemptHistoryCount=0,historyLastBalances=new Map();
-  const extraAttemptBalances=new Map();
+  const extraAttemptBalances=new Map(),seenSpecialSettings=new Set();
   for(const setting of backup.settings||[]){
     const key=String(setting?.key||'');
+    if(key===EXTRA_ATTEMPT_HISTORY_KEY||key.startsWith(EXTRA_ATTEMPT_PREFIX)||key.startsWith(STAR_SETTING_PREFIX)){
+      if(seenSpecialSettings.has(key))return{ok:false,code:'duplicate-backup-setting-key',message:'백업 설정 키가 중복되어 복원 결과를 신뢰할 수 없습니다.',settingKey:key};
+      seenSpecialSettings.add(key);
+    }
     if(key===EXTRA_ATTEMPT_HISTORY_KEY){
       const history=validateExtraAttemptHistory(String(setting?.value||''),players);
       if(!history.ok)return{...history,settingKey:key};
-      extraAttemptHistoryCount=history.count;historyLastBalances=history.lastBalanceByScope;
-      continue;
+      extraAttemptHistoryCount=history.count;historyLastBalances=history.lastBalanceByScope;continue;
     }
     if(key.startsWith(EXTRA_ATTEMPT_PREFIX)){
       extraAttemptSettingCount++;
@@ -70,44 +72,22 @@ export function validateStudyvillageBackupWithStars(backup){
       if(!SAFE_ACTIVITY.test(activityId))return{ok:false,code:'invalid-extra-attempt-activity',message:'추가 도전권 백업 설정의 활동 ID가 올바르지 않습니다.',settingKey:key};
       const amount=Number(setting?.value);
       if(!Number.isInteger(amount)||amount<0||amount>1000)return{ok:false,code:'invalid-extra-attempt-value',message:'추가 도전권 수량이 정상 범위를 벗어났습니다.',settingKey:key};
-      extraAttemptBalances.set(`${playerName}\u0000${activityId}`,amount);
-      continue;
+      extraAttemptBalances.set(`${playerName}\u0000${activityId}`,amount);continue;
     }
     if(!key.startsWith(STAR_SETTING_PREFIX))continue;
     starMirrorCount++;
     const encodedName=key.slice(STAR_SETTING_PREFIX.length);
     let playerName='';
-    try{playerName=decodeURIComponent(encodedName)}catch{
-      return{ok:false,code:'invalid-star-backup-key',message:'별 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key};
-    }
+    try{playerName=decodeURIComponent(encodedName)}catch{return{ok:false,code:'invalid-star-backup-key',message:'별 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key}}
     const player=players.get(playerName);
-    if(!player){
-      return{ok:false,code:'orphan-star-backup-setting',message:'존재하지 않는 학생의 별 백업 설정이 포함되어 있습니다.',settingKey:key};
-    }
+    if(!player)return{ok:false,code:'orphan-star-backup-setting',message:'존재하지 않는 학생의 별 백업 설정이 포함되어 있습니다.',settingKey:key};
     const star=validateStarMirrorValue(setting.value);
-    if(!star.ok){
-      return{
-        ok:false,
-        code:'invalid-star-backup-setting',
-        message:'별 잔액 또는 별 장부 백업 정보가 손상되었습니다.',
-        settingKey:key,
-        errors:star.errors
-      };
-    }
-    if(Object.prototype.hasOwnProperty.call(player,'stars')){
-      const mirror=JSON.parse(setting.value);
-      if(Number(player.stars)!==Number(mirror.balance)){
-        return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key};
-      }
-    }
+    if(!star.ok)return{ok:false,code:'invalid-star-backup-setting',message:'별 잔액 또는 별 장부 백업 정보가 손상되었습니다.',settingKey:key,errors:star.errors};
+    if(Object.prototype.hasOwnProperty.call(player,'stars')){const mirror=JSON.parse(setting.value);if(Number(player.stars)!==Number(mirror.balance))return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key}}
   }
   for(const [scope,lastBalance] of historyLastBalances){
     if(!extraAttemptBalances.has(scope))continue;
-    if(extraAttemptBalances.get(scope)!==lastBalance){
-      const [playerName,activityId]=scope.split('\u0000');
-      return{ok:false,code:'extra-attempt-current-balance-mismatch',message:'추가 도전권의 현재 잔여량과 마지막 사용 기록의 잔여량이 서로 다릅니다.',playerName,activityId};
-    }
+    if(extraAttemptBalances.get(scope)!==lastBalance){const [playerName,activityId]=scope.split('\u0000');return{ok:false,code:'extra-attempt-current-balance-mismatch',message:'추가 도전권의 현재 잔여량과 마지막 사용 기록의 잔여량이 서로 다릅니다.',playerName,activityId}}
   }
-
   return{...base,starMirrorCount,extraAttemptSettingCount,extraAttemptHistoryCount};
 }
