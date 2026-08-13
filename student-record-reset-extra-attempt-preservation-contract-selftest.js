@@ -1,0 +1,14 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const start=src.indexOf('const resetStudentRecord=db.transaction');
+const end=src.indexOf("app.post('/api/admin/player/:name/reset-record'",start);
+assert.ok(start>=0&&end>start,'student record reset transaction must exist');
+const block=src.slice(start,end);
+for(const token of ['total_score=0','attempts=0','xp=0','DELETE FROM activity_records WHERE player_name=?'])assert.ok(block.includes(token),`record reset core behavior missing: ${token}`);
+for(const forbidden of ['activity-attempt-extra:v1:','DELETE FROM settings','DELETE FROM players WHERE name=?'])assert.ok(!block.includes(forbidden),`record reset must preserve extra attempts/account: ${forbidden}`);
+const delStart=src.indexOf('const deleteStudentData=db.transaction');
+const delEnd=src.indexOf("app.delete('/api/admin/player/:name'",delStart);
+const del=src.slice(delStart,delEnd);
+assert.ok(del.includes('activity-attempt-extra:v1:'),'full account deletion must remove extra attempts');
+console.log('student record reset extra attempt preservation contract self-test passed');
