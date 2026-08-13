@@ -1,9 +1,11 @@
-/* v1.9 additive backup validation for mirrored star settings and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.10 additive backup validation for mirrored star settings, extra-attempt settings, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
 
 const STAR_SETTING_PREFIX='compat:stars:';
+const EXTRA_ATTEMPT_PREFIX='activity-attempt-extra:v1:';
+const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 function equippedItemIds(value){
@@ -25,9 +27,22 @@ export function validateStudyvillageBackupWithStars(backup){
     }
   }
 
-  let starMirrorCount=0;
+  let starMirrorCount=0,extraAttemptSettingCount=0;
   for(const setting of backup.settings||[]){
     const key=String(setting?.key||'');
+    if(key.startsWith(EXTRA_ATTEMPT_PREFIX)){
+      extraAttemptSettingCount++;
+      const rest=key.slice(EXTRA_ATTEMPT_PREFIX.length),split=rest.lastIndexOf(':');
+      if(split<=0)return{ok:false,code:'invalid-extra-attempt-backup-key',message:'추가 도전권 백업 설정의 키 형식이 손상되었습니다.',settingKey:key};
+      const encodedName=rest.slice(0,split),activityId=rest.slice(split+1);
+      let playerName='';
+      try{playerName=decodeURIComponent(encodedName)}catch{return{ok:false,code:'invalid-extra-attempt-backup-key',message:'추가 도전권 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key}}
+      if(!players.has(playerName))return{ok:false,code:'orphan-extra-attempt-backup-setting',message:'존재하지 않는 학생의 추가 도전권 설정이 포함되어 있습니다.',settingKey:key};
+      if(!SAFE_ACTIVITY.test(activityId))return{ok:false,code:'invalid-extra-attempt-activity',message:'추가 도전권 백업 설정의 활동 ID가 올바르지 않습니다.',settingKey:key};
+      const amount=Number(setting?.value);
+      if(!Number.isInteger(amount)||amount<0||amount>1000)return{ok:false,code:'invalid-extra-attempt-value',message:'추가 도전권 수량이 정상 범위를 벗어났습니다.',settingKey:key};
+      continue;
+    }
     if(!key.startsWith(STAR_SETTING_PREFIX))continue;
     starMirrorCount++;
     const encodedName=key.slice(STAR_SETTING_PREFIX.length);
@@ -57,5 +72,5 @@ export function validateStudyvillageBackupWithStars(backup){
     }
   }
 
-  return{...base,starMirrorCount};
+  return{...base,starMirrorCount,extraAttemptSettingCount};
 }
