@@ -75,6 +75,6 @@ const tests=[
 ];
 for(const file of tests){
   const result=spawnSync(process.execPath,[file],{stdio:'inherit'});
-  if(result.status!==0)process.exit(result.status||1;
+  if(result.status!==0)process.exit(result.status||1);
 }
 console.log('runtime critical extra selftests passed');
