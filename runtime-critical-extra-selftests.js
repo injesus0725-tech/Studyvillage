@@ -6,6 +6,7 @@ const tests=[
   'activity-extra-attempt-exact-student-name-contract-selftest.js',
   'activity-extra-attempt-history-bounds-contract-selftest.js',
   'activity-extra-attempt-history-write-integrity-contract-selftest.js',
+  'activity-extra-attempt-noop-set-history-contract-selftest.js',
   'activity-extra-attempt-saturation-history-contract-selftest.js',
   'activity-extra-attempt-student-scope-contract-selftest.js',
   'activity-invalid-submission-safe-fallback-contract-selftest.js',
