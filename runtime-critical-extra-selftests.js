@@ -30,6 +30,7 @@ const tests=[
   'admin-login-password-safety-contract-selftest.js',
   'admin-password-session-invalidation-contract-selftest.js',
   'avatar-motion-runtime-safety-contract-selftest.js',
+  'backup-canonical-player-name-contract-selftest.js',
   'backup-cross-reference-integrity-contract-selftest.js',
   'backup-equipment-ownership-contract-selftest.js',
   'backup-extra-attempt-canonical-player-name-contract-selftest.js',
@@ -74,6 +75,6 @@ const tests=[
 ];
 for(const file of tests){
   const result=spawnSync(process.execPath,[file],{stdio:'inherit'});
-  if(result.status!==0)process.exit(result.status||1);
+  if(result.status!==0)process.exit(result.status||1;
 }
 console.log('runtime critical extra selftests passed');
