@@ -1,4 +1,4 @@
-/* v1.16 per-student extra activity attempts.
+/* v1.17 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -31,9 +31,9 @@ export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId
   if(!Number.isInteger(delta)||afterValue-beforeValue!==delta)return{ok:false,code:'invalid-history-delta'};
   if(type==='grant'&&delta<=0)return{ok:false,code:'invalid-history-delta'};
   if(type==='consume'&&delta>=0)return{ok:false,code:'invalid-history-delta'};
-  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
+  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed.slice(-999)}catch{}
   const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
-  rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows.slice(-1000)));return{ok:true,entry};
+  rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows));return{ok:true,entry};
 }
 
 export function setExtraAttempts(setSetting,name,activityId,count){
@@ -89,6 +89,7 @@ export function installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetti
     const rawName=String(req.params.name??'').trim(),name=exactName(rawName),activityId=clean(req.params.activityId,40);
     if(!rawName)return res.status(400).json({ok:false,code:'player-required'});
     if(!name)return res.status(400).json({ok:false,code:'invalid-player-name'});
+    if(!SAFE_ACTIVITY.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity-id'});
     const before=readExtraAttempts(getSetting,name,activityId),result=setExtraAttempts(setSetting,name,activityId,req.body?.extraAttempts);
     if(!result.ok)return res.status(400).json(result);
     if(result.extraAttempts!==before)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId,type:'set',amount:result.extraAttempts-before,before,after:result.extraAttempts,detail:'교사가 추가 도전 횟수 직접 수정'});
