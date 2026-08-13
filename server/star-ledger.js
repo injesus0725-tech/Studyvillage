@@ -1,4 +1,4 @@
-/* v1.13 star currency foundation.
+/* v1.14 star currency foundation.
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
@@ -99,6 +99,11 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
   installRestoreValidationMiddleware(app,{requireAdmin});
   installStudentScoreHistoryRoutes(app,{requireSession});
+  app.post('/api/login',(req,res,next)=>{
+    const name=String(req.body?.name??'').trim().replace(/\s+/g,' ');
+    if(name.length>12)return res.status(400).json({ok:false,code:'invalid-input'});
+    next();
+  });
   app.get('/api/player/me/stars',requireSession,(req,res)=>{
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
     catch(err){res.status(500).json({ok:false,code:'star-ledger-read-failed',message:clean(err?.message||err,160)})}
