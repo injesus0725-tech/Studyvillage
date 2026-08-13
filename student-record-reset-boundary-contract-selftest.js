@@ -23,7 +23,13 @@ for(const forbidden of [
   'last_login_at=',
   'owned_items_json=',
   'DELETE FROM star_ledger',
+  'DELETE FROM score_ledger',
+  'DELETE FROM score_corrections',
+  'DELETE FROM score_alert_reviews',
   'compat:stars:',
-  'activity-attempt-extra:v1:'
-])assert.ok(!block.includes(forbidden),`record reset must not erase account/economy/extra-attempt state: ${forbidden}`);
-console.log('student record reset boundary contract self-test passed');
+  'activity-attempt-extra:v1:',
+  'removeExtraAttemptStudentData(',
+  'DELETE FROM players WHERE name=?'
+])assert.ok(!block.includes(forbidden),`record reset must preserve account/economy/audit/extra-attempt state: ${forbidden}`);
+assert.ok(src.includes("app.get('/api/player/me/score-ledger',requireSession"),'preserved score audit history must remain available to the student after reset');
+console.log('student record reset boundary and audit preservation contract self-test passed');
