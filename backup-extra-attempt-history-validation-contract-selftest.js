@@ -15,6 +15,8 @@ for(const token of [
   "!Number.isInteger(amount)",
   "!SAFE_ACTIVITY.test(activityId)",
   "!['grant','set','consume'].includes(type)",
+  "type==='grant'&&amount<=0",
+  "type==='consume'&&amount>=0",
   "after-before!==amount",
   "extraAttemptHistoryCount=history.count"
 ])assert.ok(src.includes(token),`extra-attempt history backup validation missing: ${token}`);
