@@ -55,6 +55,7 @@ const tests=[
   'student-first-activity-fresh-account-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
   'student-record-reset-boundary-contract-selftest.js',
+  'student-record-reset-extra-attempt-preservation-contract-selftest.js',
   'student-recreate-admin-view-contract-selftest.js',
   'student-recreate-clean-slate-contract-selftest.js',
   'student-session-restore-retry-contract-selftest.js',
