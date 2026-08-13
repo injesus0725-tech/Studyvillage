@@ -5,10 +5,13 @@ for(const token of [
   'export function removeExtraAttemptStudentData',
   "const prefix=`${PREFIX}${encodeURIComponent(playerName)}:`",
   "if(typeof getSetting!=='function'||typeof setSetting!=='function'||typeof deleteSetting!=='function'||typeof listSettingKeys!=='function')return{ok:false,code:'invalid-cleanup-adapter'}",
+  "const store=parseHistoryStore(getSetting);if(!store.ok)return store",
+  "const filtered=store.rows.filter(row=>String(row?.name||'')!==playerName)",
   "if(typeof key==='string'&&key.startsWith(prefix)){deleteSetting(key);removedSettings++}",
-  "const filtered=rows.filter(row=>String(row?.name||'')!==playerName)",
   "setSetting(HISTORY_KEY,JSON.stringify(filtered.slice(-1000)))",
-  'removedHistory:rows.length-filtered.length'
+  'removedHistory:store.rows.length-filtered.length'
 ])assert.ok(src.includes(token),`student extra-attempt cleanup guard missing: ${token}`);
-assert.ok(src.indexOf('deleteSetting(key)')<src.indexOf('const filtered=rows.filter'),'per-activity balances should be removed before history is rewritten');
-console.log('activity extra-attempt student delete history cleanup contract self-test passed');
+const fnStart=src.indexOf('export function removeExtraAttemptStudentData'),fnEnd=src.indexOf('\nexport function setExtraAttempts',fnStart),body=src.slice(fnStart,fnEnd);
+assert.ok(body.indexOf('const store=parseHistoryStore(getSetting);if(!store.ok)return store')<body.indexOf('deleteSetting(key)'),'corrupted history must stop cleanup before any balance key is deleted');
+assert.ok(body.indexOf('const filtered=store.rows.filter')<body.indexOf('deleteSetting(key)'),'history cleanup plan must be prepared before destructive balance deletion');
+console.log('activity extra-attempt fail-closed student delete history cleanup contract self-test passed');
