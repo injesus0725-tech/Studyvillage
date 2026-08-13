@@ -1,4 +1,4 @@
-/* v1.13 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.14 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -86,8 +86,9 @@ export function validateStudyvillageBackupWithStars(backup){
     if(Object.prototype.hasOwnProperty.call(player,'stars')){const mirror=JSON.parse(setting.value);if(Number(player.stars)!==Number(mirror.balance))return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key}}
   }
   for(const [scope,lastBalance] of historyLastBalances){
-    if(!extraAttemptBalances.has(scope))continue;
-    if(extraAttemptBalances.get(scope)!==lastBalance){const [playerName,activityId]=scope.split('\u0000');return{ok:false,code:'extra-attempt-current-balance-mismatch',message:'추가 도전권의 현재 잔여량과 마지막 사용 기록의 잔여량이 서로 다릅니다.',playerName,activityId}}
+    const [playerName,activityId]=scope.split('\u0000');
+    if(!extraAttemptBalances.has(scope))return{ok:false,code:'missing-extra-attempt-current-setting',message:'추가 도전권 사용 기록은 있지만 현재 잔여량 설정이 없어 복원 결과를 신뢰할 수 없습니다.',playerName,activityId};
+    if(extraAttemptBalances.get(scope)!==lastBalance)return{ok:false,code:'extra-attempt-current-balance-mismatch',message:'추가 도전권의 현재 잔여량과 마지막 사용 기록의 잔여량이 서로 다릅니다.',playerName,activityId};
   }
   return{...base,starMirrorCount,extraAttemptSettingCount,extraAttemptHistoryCount};
 }
