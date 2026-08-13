@@ -1,25 +1,23 @@
 const fs=require('fs');
 const assert=require('assert');
-const star=fs.readFileSync('server/star-ledger.js','utf8');
 const server=fs.readFileSync('server/server.js','utf8');
+const star=fs.readFileSync('server/star-ledger.js','utf8');
 for(const token of [
   "import { removeExtraAttemptStudentData } from './activity-attempt-exceptions.js'",
-  'function cleanupExtraAttemptsBeforeStudentDelete(req,res,next)',
+  'const deleteStudentData=db.transaction(name=>{',
+  'removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting:key=>db.prepare(\'DELETE FROM settings WHERE key=?\').run(key),listSettingKeys:prefix=>db.prepare(\'SELECT key FROM settings WHERE key LIKE ?\').all(`${prefix}%`).map(row=>row.key)},name)',
+  "throw Object.assign(new Error(cleanup.code),{cleanupCode:cleanup.code})",
+  "DELETE FROM activity_records WHERE player_name=?",
+  "DELETE FROM activity_log WHERE player_name=?",
+  "DELETE FROM error_reports WHERE player_name=?",
+  "DELETE FROM players WHERE name=?",
   "if(!name||name.length>12)return res.status(400).json({ok:false,code:'invalid-student'})",
-  "const deleteSetting=key=>db.prepare('DELETE FROM settings WHERE key=?').run(key)",
-  "const listSettingKeys=prefix=>db.prepare('SELECT key FROM settings WHERE key LIKE ?').all(`${prefix}%`).map(row=>row.key)",
-  'const cleanup=db.transaction(()=>{',
-  'removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name)',
-  "throw Object.assign(new Error(result.code),{cleanupCode:result.code})",
-  'cleanup();',
   "if(reason)return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason})",
-  "app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)"
-])assert.ok(star.includes(token),`pre-delete extra-attempt cleanup wiring missing: ${token}`);
-const middlewareRoute=star.indexOf("app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)");
-assert.ok(middlewareRoute>=0&&middlewareRoute<star.indexOf('installItemShopRoutes'),'student delete cleanup middleware must be installed during normal server route setup');
-assert.ok(server.includes("app.delete('/api/admin/player/:name',requireAdmin"),'final student delete route must still exist after cleanup middleware');
-const cleanupStart=star.indexOf('function cleanupExtraAttemptsBeforeStudentDelete'),cleanupEnd=star.indexOf('\nexport function installStarLedgerRoutes',cleanupStart),cleanupBlock=star.slice(cleanupStart,cleanupEnd);
-assert.ok(cleanupBlock.indexOf('const cleanup=db.transaction(()=>{')<cleanupBlock.indexOf('removeExtraAttemptStudentData('),'all extra-attempt pre-delete mutations must run inside a SQLite transaction');
-assert.ok(cleanupBlock.indexOf('throw Object.assign')<cleanupBlock.indexOf('cleanup();'),'failed cleanup must throw inside the transaction so partial mutations roll back');
-assert.ok(cleanupBlock.indexOf('cleanup();')<cleanupBlock.indexOf('return next();'),'final student deletion must run only after cleanup commits');
-console.log('student delete atomic extra-attempt pre-delete cleanup contract self-test passed');
+  'clearStudentSessions(name)'
+])assert.ok(server.includes(token),`atomic student deletion cleanup guard missing: ${token}`);
+const txStart=server.indexOf('const deleteStudentData=db.transaction(name=>{'),txEnd=server.indexOf("app.delete('/api/admin/player/:name'",txStart),tx=server.slice(txStart,txEnd);
+assert.ok(tx.indexOf('removeExtraAttemptStudentData(')<tx.indexOf("DELETE FROM players WHERE name=?"),'extra-attempt cleanup must happen inside the same transaction before deleting the player');
+assert.ok(tx.indexOf('throw Object.assign')<tx.indexOf("DELETE FROM players WHERE name=?"),'cleanup failure must abort the entire student deletion transaction');
+assert.ok(!star.includes("app.delete('/api/admin/player/:name'"),'star ledger must not install a separate student-delete cleanup middleware');
+assert.ok(!star.includes('cleanupExtraAttemptsBeforeStudentDelete')&&!star.includes('cleanupExtraAttemptsAfterStudentDelete'),'no split pre/post deletion cleanup path may remain');
+console.log('student delete fully atomic extra-attempt cleanup contract self-test passed');
