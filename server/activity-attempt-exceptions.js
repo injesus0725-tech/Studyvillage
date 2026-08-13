@@ -1,4 +1,4 @@
-/* v1.18 per-student extra activity attempts.
+/* v1.19 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -7,6 +7,10 @@ const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n);
 const exactName=v=>{const name=String(v??'').trim();return name&&name.length<=12?name:''};
 const keyFor=(name,activityId)=>`${PREFIX}${encodeURIComponent(name)}:${activityId}`;
+const parseHistoryStore=getSetting=>{
+  const raw=getSetting(HISTORY_KEY);if(raw===null||raw===undefined||raw==='')return{ok:true,rows:[]};
+  try{const parsed=JSON.parse(raw);return Array.isArray(parsed)?{ok:true,rows:parsed}:{ok:false,code:'invalid-history-store'}}catch{return{ok:false,code:'invalid-history-store'}}
+};
 
 export function readExtraAttempts(getSetting,name,activityId){
   const playerName=exactName(name),id=clean(activityId,40);if(!playerName||!SAFE_ACTIVITY.test(id))return 0;
@@ -15,7 +19,7 @@ export function readExtraAttempts(getSetting,name,activityId){
 }
 
 export function readExtraAttemptHistory(getSetting,{limit=200,name='',activityId=''}={}){
-  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed.slice(-1000)}catch{}
+  const store=parseHistoryStore(getSetting),rows=store.ok?store.rows.slice(-1000):[];
   const rawName=String(name??'').trim();
   if(rawName.length>12)return[];
   const safeName=rawName,safeActivity=clean(activityId,40),requestedLimit=Number(limit),max=Math.max(1,Math.min(1000,Number.isFinite(requestedLimit)?Math.floor(requestedLimit):200));
@@ -31,21 +35,21 @@ export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId
   if(!Number.isInteger(delta)||afterValue-beforeValue!==delta)return{ok:false,code:'invalid-history-delta'};
   if(type==='grant'&&delta<=0)return{ok:false,code:'invalid-history-delta'};
   if(type==='consume'&&delta>=0)return{ok:false,code:'invalid-history-delta'};
-  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed.slice(-999)}catch{}
-  const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
+  const store=parseHistoryStore(getSetting);if(!store.ok)return store;
+  const rows=store.rows.slice(-999),entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
   rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows));return{ok:true,entry};
 }
 
 export function removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name){
   const playerName=exactName(name);if(!playerName)return{ok:false,code:'invalid-player-name'};
   if(typeof getSetting!=='function'||typeof setSetting!=='function'||typeof deleteSetting!=='function'||typeof listSettingKeys!=='function')return{ok:false,code:'invalid-cleanup-adapter'};
+  const store=parseHistoryStore(getSetting);if(!store.ok)return store;
   const prefix=`${PREFIX}${encodeURIComponent(playerName)}:`,keys=listSettingKeys(prefix);
   if(!Array.isArray(keys))return{ok:false,code:'invalid-cleanup-keys'};
+  const filtered=store.rows.filter(row=>String(row?.name||'')!==playerName);
   let removedSettings=0;for(const key of keys){if(typeof key==='string'&&key.startsWith(prefix)){deleteSetting(key);removedSettings++}}
-  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
-  const filtered=rows.filter(row=>String(row?.name||'')!==playerName);
-  if(filtered.length!==rows.length)setSetting(HISTORY_KEY,JSON.stringify(filtered.slice(-1000)));
-  return{ok:true,name:playerName,removedSettings,removedHistory:rows.length-filtered.length};
+  if(filtered.length!==store.rows.length)setSetting(HISTORY_KEY,JSON.stringify(filtered.slice(-1000)));
+  return{ok:true,name:playerName,removedSettings,removedHistory:store.rows.length-filtered.length};
 }
 
 export function setExtraAttempts(setSetting,name,activityId,count){
