@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+const loginStart=src.indexOf("app.post('/api/login'");
+const loginEnd=src.indexOf("app.get('/api/player/me'",loginStart);
+assert.ok(loginStart>=0&&loginEnd>loginStart,'student login route must exist');
+const block=src.slice(loginStart,loginEnd);
+assert.ok(block.includes("const rawName=String(req.body?.name||'').trim().replace(/\\s+/g,' '),name=rawName"),'login must preserve the normalized full name before validation');
+assert.ok(block.includes("if(!name||name.length>12||password.length<4||password.length>72)return res.status(400).json({ok:false,code:'invalid-input'})"),'login/account creation must reject names over 12 characters instead of truncating them');
+assert.ok(!block.includes('.slice(0,12)'),'login/account creation must never silently truncate student names');
+console.log('student name length validation contract self-test passed');
