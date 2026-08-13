@@ -14,8 +14,11 @@ for(const token of [
   "DELETE FROM activity_log WHERE player_name=?",
   "DELETE FROM error_reports WHERE player_name=?",
   "DELETE FROM settings WHERE key=?",
+  "const extraPrefix=`activity-attempt-extra:v1:${encodeURIComponent(name)}:`",
+  "db.prepare('DELETE FROM settings WHERE key=?').run(row.key)",
   "DELETE FROM players WHERE name=?"
 ])assert.ok(del.includes(token),`student deletion clean-slate guard missing: ${token}`);
+assert.ok(del.indexOf('const extraPrefix=')<del.indexOf("DELETE FROM players WHERE name=?"),'old extra-attempt settings must be removed before same-name recreation');
 const loginStart=src.indexOf("app.post('/api/login'");
 const loginEnd=src.indexOf("app.get('/api/player/me'",loginStart);
 const login=src.slice(loginStart,loginEnd);
