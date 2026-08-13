@@ -4,10 +4,13 @@ import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
 
 const player={name:'민준',password_hash:'x',password_salt:'y',total_score:0,attempts:0,best_score:0,last_score:0,login_count:0,xp:0,base_character:'student-default',equipment_json:'{}',owned_items_json:'[]',created_at:'2026-01-01T00:00:00.000Z',updated_at:'2026-01-01T00:00:00.000Z',stars:10};
 const mirror=JSON.stringify({balance:10,entries:[]});
-const base={format:'studyvillage-backup',version:CURRENT_BACKUP_VERSION,players:[player],settings:[{key:`compat:stars:${encodeURIComponent(player.name)}`,value:mirror}],activities:[],activityRecords:[],errorReports:[],scoreLedger:[],scoreAlertReviews:[],scoreCorrections:[]};
 const starKey=`compat:stars:${encodeURIComponent(player.name)}`;
+const extraKey=`activity-attempt-extra:v1:${encodeURIComponent(player.name)}:riddle-1`;
+const base={format:'studyvillage-backup',version:CURRENT_BACKUP_VERSION,players:[player],settings:[{key:starKey,value:mirror},{key:extraKey,value:'3'}],activities:[],activityRecords:[],errorReports:[],scoreLedger:[],scoreAlertReviews:[],scoreCorrections:[]};
 
-assert.equal(validateStudyvillageBackupWithStars(base).ok,true);
+let result=validateStudyvillageBackupWithStars(base);
+assert.equal(result.ok,true);
+assert.equal(result.extraAttemptSettingCount,1);
 assert.equal(validateStudyvillageBackupWithStars({...base,players:[{...player,stars:-1}]}).code,'invalid-player-stars');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:'compat:stars:%E0%A4%A',value:mirror}]}).code,'invalid-star-backup-key');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:`compat:stars:${encodeURIComponent('없는학생')}`,value:mirror}]}).code,'orphan-star-backup-setting');
@@ -15,5 +18,9 @@ assert.equal(validateStudyvillageBackupWithStars({...base,players:[{...player,st
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:'not-json'}]}).code,'invalid-star-backup-setting');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:JSON.stringify({balance:10,entries:[{id:1,player_name:'민준',delta:3,before_balance:8,after_balance:10,kind:'award',created_at:'2026-01-01'}]})}]}).code,'invalid-star-backup-setting');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:JSON.stringify({balance:10,entries:[{id:2,player_name:'민준',delta:10,before_balance:0,after_balance:10,kind:'award',created_at:'2026-01-01'},{id:1,player_name:'민준',delta:0,before_balance:10,after_balance:10,kind:'adjust',created_at:'2026-01-02'}]})}]}).code,'invalid-star-backup-setting');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:`activity-attempt-extra:v1:${encodeURIComponent('없는학생')}:riddle-1`,value:'1'}]}).code,'orphan-extra-attempt-backup-setting');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:`activity-attempt-extra:v1:${encodeURIComponent(player.name)}:BAD!`,value:'1'}]}).code,'invalid-extra-attempt-activity');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1001'}]}).code,'invalid-extra-attempt-value');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:'activity-attempt-extra:v1:%E0%A4%A:riddle-1',value:'1'}]}).code,'invalid-extra-attempt-backup-key');
 
-console.log('star backup cross-check self-test passed');
+console.log('star and extra-attempt backup cross-check self-test passed');
