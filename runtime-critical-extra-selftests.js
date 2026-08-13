@@ -28,6 +28,7 @@ const tests=[
   'backup-cross-reference-integrity-contract-selftest.js',
   'backup-equipment-ownership-contract-selftest.js',
   'backup-extra-attempt-history-validation-contract-selftest.js',
+  'backup-extra-attempt-partial-state-contract-selftest.js',
   'backup-extra-attempt-roundtrip-contract-selftest.js',
   'backup-future-version-safety-contract-selftest.js',
   'backup-migration-determinism-contract-selftest.js',
