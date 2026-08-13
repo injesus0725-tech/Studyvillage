@@ -1,4 +1,4 @@
-/* v1.9 restore preparation helper. Pure transformation/validation only; no DB writes. */
+/* v1.10 restore preparation helper. Pure transformation/validation only; no DB writes. */
 import { migrateStudyvillageBackup } from './backup-migrator.js';
 import { validateStudyvillageBackupWithStars } from './backup-validator-with-stars.js';
 
@@ -16,6 +16,8 @@ export function prepareStudyvillageRestore(input){
     toVersion:migrated.toVersion,
     migrated:migrated.migrated,
     counts:validation.counts,
-    starMirrorCount:validation.starMirrorCount||0
+    starMirrorCount:validation.starMirrorCount||0,
+    extraAttemptSettingCount:validation.extraAttemptSettingCount||0,
+    extraAttemptHistoryCount:validation.extraAttemptHistoryCount||0
   };
 }
