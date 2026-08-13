@@ -8,6 +8,7 @@ const tests=[
   'activity-extra-attempt-history-write-integrity-contract-selftest.js',
   'activity-extra-attempt-noop-set-history-contract-selftest.js',
   'activity-extra-attempt-saturation-history-contract-selftest.js',
+  'activity-extra-attempt-student-delete-history-contract-selftest.js',
   'activity-extra-attempt-student-scope-contract-selftest.js',
   'activity-invalid-submission-safe-fallback-contract-selftest.js',
   'activity-latest-policy-consistency-contract-selftest.js',
