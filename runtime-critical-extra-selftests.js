@@ -4,6 +4,7 @@ const tests=[
   'activity-attempt-policy-safety-contract-selftest.js',
   'activity-extra-attempt-admin-safety-contract-selftest.js',
   'activity-extra-attempt-history-bounds-contract-selftest.js',
+  'activity-extra-attempt-history-write-integrity-contract-selftest.js',
   'activity-extra-attempt-saturation-history-contract-selftest.js',
   'activity-extra-attempt-student-scope-contract-selftest.js',
   'activity-invalid-submission-safe-fallback-contract-selftest.js',
