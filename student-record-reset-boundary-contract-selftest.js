@@ -23,6 +23,7 @@ for(const forbidden of [
   'last_login_at=',
   'owned_items_json=',
   'DELETE FROM star_ledger',
-  'compat:stars:'
-])assert.ok(!block.includes(forbidden),`record reset must not erase account/economy state: ${forbidden}`);
+  'compat:stars:',
+  'activity-attempt-extra:v1:'
+])assert.ok(!block.includes(forbidden),`record reset must not erase account/economy/extra-attempt state: ${forbidden}`);
 console.log('student record reset boundary contract self-test passed');
