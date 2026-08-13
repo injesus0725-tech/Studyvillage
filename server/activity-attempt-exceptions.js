@@ -22,8 +22,13 @@ export function readExtraAttemptHistory(getSetting,{limit=200,name='',activityId
 export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type,amount,before,after,detail=''}={}){
   const safeName=clean(name,12),id=clean(activityId,40),change=Number(amount),beforeValue=Number(before),afterValue=Number(after);
   if(!safeName||!SAFE_ACTIVITY.test(id)||!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-history-entry'};
+  if(!Number.isInteger(beforeValue)||!Number.isInteger(afterValue)||beforeValue<0||beforeValue>1000||afterValue<0||afterValue>1000)return{ok:false,code:'invalid-history-value'};
+  const delta=Number.isInteger(change)?change:afterValue-beforeValue;
+  if(!Number.isInteger(delta)||afterValue-beforeValue!==delta)return{ok:false,code:'invalid-history-delta'};
+  if(type==='grant'&&delta<0)return{ok:false,code:'invalid-history-delta'};
+  if(type==='consume'&&delta>=0)return{ok:false,code:'invalid-history-delta'};
   let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
-  const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:Number.isFinite(change)?change:afterValue-beforeValue,before:Number.isFinite(beforeValue)?beforeValue:0,after:Number.isFinite(afterValue)?afterValue:0,detail:clean(detail,240),createdAt:new Date().toISOString()};
+  const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
   rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows.slice(-1000)));return{ok:true,entry};
 }
 
