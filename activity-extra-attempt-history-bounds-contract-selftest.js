@@ -14,7 +14,7 @@ for(const token of [
   "beforeValue<0||beforeValue>1000||afterValue<0||afterValue>1000",
   "const delta=Number.isInteger(change)?change:afterValue-beforeValue",
   "afterValue-beforeValue!==delta",
-  "type==='grant'&&delta<0",
+  "type==='grant'&&delta<=0",
   "type==='consume'&&delta>=0"
 ])assert.ok(src.includes(token),`extra attempt history guard missing: ${token}`);
 assert.ok(src.includes("if(!safeName||!SAFE_ACTIVITY.test(id)||!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-history-entry'}"),'invalid audit history entries must be rejected');
