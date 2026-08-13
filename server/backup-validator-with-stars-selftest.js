@@ -30,5 +30,10 @@ assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:history
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:historyKey,value:JSON.stringify([{...history[0],activityId:'BAD!'}])}]}).code,'invalid-extra-attempt-history-activity');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:historyKey,value:JSON.stringify([{...history[0],type:'hack'}])}]}).code,'invalid-extra-attempt-history-type');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:historyKey,value:JSON.stringify([{...history[0],amount:3}])}]}).code,'extra-attempt-history-balance-mismatch');
+const discontinuous=[history[0],{...history[1],before:3,after:2,amount:-1}];
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'2'},{key:historyKey,value:JSON.stringify(discontinuous)}]}).code,'extra-attempt-history-discontinuity');
+const reversedTime=[history[0],{...history[1],createdAt:'2026-08-12T23:59:00.000Z'}];
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify(reversedTime)}]}).code,'extra-attempt-history-time-order');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'2'},{key:historyKey,value:JSON.stringify(history)}]}).code,'extra-attempt-current-balance-mismatch');
 
 console.log('star and extra-attempt backup cross-check self-test passed');
