@@ -9,8 +9,14 @@ for(const token of [
   "type:'grant'",
   "type:'set'",
   "type:'consume'",
-  "createdAt:new Date().toISOString()"
+  "createdAt:new Date().toISOString()",
+  "!Number.isInteger(beforeValue)||!Number.isInteger(afterValue)",
+  "beforeValue<0||beforeValue>1000||afterValue<0||afterValue>1000",
+  "const delta=Number.isInteger(change)?change:afterValue-beforeValue",
+  "afterValue-beforeValue!==delta",
+  "type==='grant'&&delta<0",
+  "type==='consume'&&delta>=0"
 ])assert.ok(src.includes(token),`extra attempt history guard missing: ${token}`);
 assert.ok(src.includes("if(!safeName||!SAFE_ACTIVITY.test(id)||!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-history-entry'}"),'invalid audit history entries must be rejected');
 assert.ok(src.includes("return rows.filter(r=>(!safeName||r.name===safeName)&&(!safeActivity||r.activityId===safeActivity))"),'history filters must isolate student/activity records');
-console.log('activity extra attempt history bounds contract self-test passed');
+console.log('activity extra attempt history bounds and integrity contract self-test passed');
