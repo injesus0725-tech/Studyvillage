@@ -32,6 +32,7 @@ const tests=[
   'avatar-motion-runtime-safety-contract-selftest.js',
   'backup-cross-reference-integrity-contract-selftest.js',
   'backup-equipment-ownership-contract-selftest.js',
+  'backup-extra-attempt-canonical-player-name-contract-selftest.js',
   'backup-extra-attempt-history-validation-contract-selftest.js',
   'backup-extra-attempt-partial-state-contract-selftest.js',
   'backup-extra-attempt-roundtrip-contract-selftest.js',
