@@ -1,4 +1,4 @@
-/* v1.11 per-student extra activity attempts.
+/* v1.12 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -15,7 +15,7 @@ export function readExtraAttempts(getSetting,name,activityId){
 
 export function readExtraAttemptHistory(getSetting,{limit=200,name='',activityId=''}={}){
   let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
-  const safeName=clean(name,12),safeActivity=clean(activityId,40),max=Math.max(1,Math.min(1000,Number(limit)||200));
+  const safeName=clean(name,12),safeActivity=clean(activityId,40),requestedLimit=Number(limit),max=Math.max(1,Math.min(1000,Number.isFinite(requestedLimit)?Math.floor(requestedLimit):200));
   if(safeActivity&&!SAFE_ACTIVITY.test(safeActivity))return[];
   return rows.filter(r=>(!safeName||r.name===safeName)&&(!safeActivity||r.activityId===safeActivity)).slice(-max).reverse();
 }
