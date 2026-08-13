@@ -1,4 +1,4 @@
-/* v1.15 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.16 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -9,6 +9,8 @@ const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
+const normalizePlayerName=value=>String(value??'').trim();
+const validExtraAttemptPlayerName=value=>{const name=normalizePlayerName(value);return !!name&&name.length<=12&&name===String(value??'').trim()};
 function equippedItemIds(value){
   try{const equipment=JSON.parse(value||'{}');return Object.values(equipment||{}).filter(v=>typeof v==='string'&&v)}catch{return[]}
 }
@@ -17,7 +19,8 @@ function validateExtraAttemptHistory(value,players){
   if(!Array.isArray(rows)||rows.length>1000)return{ok:false,code:'invalid-extra-attempt-history-size',message:'추가 도전권 사용 기록의 개수 또는 형식이 올바르지 않습니다.'};
   const lastByScope=new Map(),lastBalanceByScope=new Map(),seenIds=new Set();
   for(const row of rows){
-    const id=String(row?.id||''),name=String(row?.name||'').trim(),activityId=String(row?.activityId||''),type=String(row?.type||''),amount=Number(row?.amount),before=Number(row?.before),after=Number(row?.after),detail=String(row?.detail||''),createdAt=String(row?.createdAt||'');
+    const id=String(row?.id||''),rawName=String(row?.name??''),name=normalizePlayerName(rawName),activityId=String(row?.activityId||''),type=String(row?.type||''),amount=Number(row?.amount),before=Number(row?.before),after=Number(row?.after),detail=String(row?.detail||''),createdAt=String(row?.createdAt||'');
+    if(!validExtraAttemptPlayerName(rawName))return{ok:false,code:'invalid-extra-attempt-history-player',message:'추가 도전권 기록의 학생 이름 형식이 올바르지 않습니다.',playerName:name};
     if(!id||id.length>120)return{ok:false,code:'invalid-extra-attempt-history-id',message:'추가 도전권 기록 ID가 올바르지 않습니다.',playerName:name};
     if(seenIds.has(id))return{ok:false,code:'duplicate-extra-attempt-history-id',message:'추가 도전권 기록 ID가 중복되어 있습니다.',historyId:id};
     seenIds.add(id);
@@ -41,7 +44,7 @@ export function validateStudyvillageBackupWithStars(backup){
   const base=validateStudyvillageBackup(backup);
   if(!base.ok)return base;
 
-  const players=new Map((backup.players||[]).map(player=>[String(player?.name||'').trim(),player]));
+  const players=new Map((backup.players||[]).map(player=>[normalizePlayerName(player?.name),player]));
   for(const [name,player] of players){
     if(Object.prototype.hasOwnProperty.call(player||{},'stars')&&!validStars(player.stars))return{ok:false,code:'invalid-player-stars',message:'학생 별 잔액이 정상 범위를 벗어났습니다.',playerName:name};
     const owned=new Set(parseOwnedItems(player?.owned_items_json||'[]'));
@@ -68,6 +71,7 @@ export function validateStudyvillageBackupWithStars(backup){
       const encodedName=rest.slice(0,split),activityId=rest.slice(split+1);
       let playerName='';
       try{playerName=decodeURIComponent(encodedName)}catch{return{ok:false,code:'invalid-extra-attempt-backup-key',message:'추가 도전권 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key}}
+      if(!validExtraAttemptPlayerName(playerName)||encodeURIComponent(playerName)!==encodedName)return{ok:false,code:'invalid-extra-attempt-backup-player',message:'추가 도전권 백업 설정의 학생 이름이 현재 이름 규칙과 맞지 않습니다.',settingKey:key};
       if(!players.has(playerName))return{ok:false,code:'orphan-extra-attempt-backup-setting',message:'존재하지 않는 학생의 추가 도전권 설정이 포함되어 있습니다.',settingKey:key};
       if(!SAFE_ACTIVITY.test(activityId))return{ok:false,code:'invalid-extra-attempt-activity',message:'추가 도전권 백업 설정의 활동 ID가 올바르지 않습니다.',settingKey:key};
       const amount=Number(setting?.value);
