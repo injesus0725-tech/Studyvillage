@@ -1,4 +1,4 @@
-/* v1.16 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.17 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -10,7 +10,7 @@ const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 const normalizePlayerName=value=>String(value??'').trim();
-const validExtraAttemptPlayerName=value=>{const name=normalizePlayerName(value);return !!name&&name.length<=12&&name===String(value??'').trim()};
+const validExtraAttemptPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
 function equippedItemIds(value){
   try{const equipment=JSON.parse(value||'{}');return Object.values(equipment||{}).filter(v=>typeof v==='string'&&v)}catch{return[]}
 }
