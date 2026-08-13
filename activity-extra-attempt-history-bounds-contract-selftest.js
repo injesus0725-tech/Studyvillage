@@ -9,7 +9,8 @@ for(const token of [
   "const safeName=rawName,safeActivity=clean(activityId,40),requestedLimit=Number(limit),max=Math.max(1,Math.min(1000,Number.isFinite(requestedLimit)?Math.floor(requestedLimit):200))",
   "if(safeActivity&&!SAFE_ACTIVITY.test(safeActivity))return[]",
   ".slice(-max).reverse()",
-  "rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows.slice(-1000)))",
+  "if(Array.isArray(parsed))rows=parsed.slice(-999)",
+  "rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows))",
   "type:'grant'",
   "type:'set'",
   "type:'consume'",
@@ -26,4 +27,4 @@ assert.ok(src.includes("return rows.filter(r=>(!safeName||r.name===safeName)&&(!
 assert.ok(src.indexOf("if(rawName.length>12)return[]")<src.indexOf("return rows.filter"),'overlong student filters must fail closed before history filtering');
 assert.ok(src.indexOf("if(safeActivity&&!SAFE_ACTIVITY.test(safeActivity))return[]")<src.indexOf("return rows.filter"),'invalid activity filters must fail closed before history filtering');
 assert.ok(src.includes('Number.isFinite(requestedLimit)?Math.floor(requestedLimit):200'),'history limit must normalize finite values to integers and non-finite values to default');
-console.log('activity extra attempt history bounded read, exact filter, limit, and integrity contract self-test passed');
+console.log('activity extra attempt bounded read/write, exact filter, limit, and integrity contract self-test passed');
