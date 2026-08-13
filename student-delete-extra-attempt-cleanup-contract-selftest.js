@@ -1,15 +1,16 @@
 const fs=require('fs');
 const assert=require('assert');
-const src=fs.readFileSync('server/server.js','utf8');
-const start=src.indexOf('const deleteStudentData=db.transaction');
-const end=src.indexOf("app.delete('/api/admin/player/:name'",start);
-assert.ok(start>=0&&end>start,'student delete transaction must exist');
-const block=src.slice(start,end);
+const star=fs.readFileSync('server/star-ledger.js','utf8');
+const server=fs.readFileSync('server/server.js','utf8');
 for(const token of [
-  "const extraPrefix=`activity-attempt-extra:v1:${encodeURIComponent(name)}:`",
-  "SELECT key FROM settings WHERE key LIKE ? ESCAPE '\\'",
-  "db.prepare('DELETE FROM settings WHERE key=?').run(row.key)",
-  "DELETE FROM players WHERE name=?"
-])assert.ok(block.includes(token),`extra-attempt deletion cleanup missing: ${token}`);
-assert.ok(block.indexOf('const extraPrefix=')<block.indexOf("DELETE FROM players WHERE name=?"),'extra-attempt keys must be removed before deleting player');
-console.log('student delete extra attempt cleanup contract self-test passed');
+  "import { removeExtraAttemptStudentData } from './activity-attempt-exceptions.js'",
+  'function cleanupExtraAttemptsBeforeStudentDelete(req,res,next)',
+  "if(!name||name.length>12)return res.status(400).json({ok:false,code:'invalid-student'})",
+  "const deleteSetting=key=>db.prepare('DELETE FROM settings WHERE key=?').run(key)",
+  "const listSettingKeys=prefix=>db.prepare('SELECT key FROM settings WHERE key LIKE ?').all(`${prefix}%`).map(row=>row.key)",
+  'removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name)',
+  "app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)"
+])assert.ok(star.includes(token),`pre-delete extra-attempt cleanup wiring missing: ${token}`);
+assert.ok(star.indexOf("app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)")<star.indexOf('installItemShopRoutes'),'student delete cleanup middleware must be installed during normal server route setup');
+assert.ok(server.includes("app.delete('/api/admin/player/:name',requireAdmin"),'final student delete route must still exist after cleanup middleware');
+console.log('student delete extra-attempt pre-delete cleanup contract self-test passed');
