@@ -36,6 +36,7 @@ const tests=[
   'backup-extra-attempt-history-validation-contract-selftest.js',
   'backup-extra-attempt-partial-state-contract-selftest.js',
   'backup-extra-attempt-roundtrip-contract-selftest.js',
+  'backup-star-canonical-player-key-contract-selftest.js',
   'backup-future-version-safety-contract-selftest.js',
   'backup-migration-determinism-contract-selftest.js',
   'backup-size-bounds-contract-selftest.js',
