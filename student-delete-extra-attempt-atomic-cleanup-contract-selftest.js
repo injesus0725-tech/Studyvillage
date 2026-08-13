@@ -1,20 +1,23 @@
 const fs=require('fs');
 const assert=require('assert');
-const src=fs.readFileSync('server/star-ledger.js','utf8');
-const start=src.indexOf('function cleanupExtraAttemptsAfterStudentDelete');
-const end=src.indexOf('\nexport function installStarLedgerRoutes',start);
-assert.ok(start>=0&&end>start,'extra-attempt delete middleware must exist');
-const block=src.slice(start,end);
+const server=fs.readFileSync('server/server.js','utf8');
+const star=fs.readFileSync('server/star-ledger.js','utf8');
+const start=server.indexOf('const deleteStudentData=db.transaction(name=>{');
+const end=server.indexOf("app.delete('/api/admin/player/:name'",start);
+assert.ok(start>=0&&end>start,'unified student delete transaction must exist');
+const block=server.slice(start,end);
 for(const token of [
-  "if(!name||name.length>12)return res.status(400).json({ok:false,code:'invalid-student'})",
-  "if(!Array.isArray(parsed))return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason:'corrupt-history'})",
-  'const originalJson=res.json.bind(res);let cleanupDone=false',
-  "res.statusCode>=200&&res.statusCode<300&&body?.ok===true",
-  'const cleanup=cleanupDb.transaction(()=>{',
-  "cleanupDb.prepare('DELETE FROM settings WHERE key LIKE ?').run(`${prefix}%`)",
-  "run(EXTRA_ATTEMPT_HISTORY_KEY,filteredHistory)"
-])assert.ok(block.includes(token),`post-success student extra-attempt cleanup guard missing: ${token}`);
-assert.ok(block.indexOf('res.json=body=>')<block.indexOf('return next();'),'cleanup must be armed before the real delete route runs');
-assert.ok(block.indexOf("body?.ok===true")<block.indexOf('const cleanup=cleanupDb.transaction'),'cleanup must only run after a successful downstream delete response');
-assert.ok(src.includes("app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsAfterStudentDelete)"),'cleanup middleware must be registered on the real student delete route');
-console.log('student delete extra-attempt post-success cleanup contract self-test passed');
+  'removeExtraAttemptStudentData({getSetting,setSetting',
+  "deleteSetting:key=>db.prepare('DELETE FROM settings WHERE key=?').run(key)",
+  "listSettingKeys:prefix=>db.prepare('SELECT key FROM settings WHERE key LIKE ?').all(`${prefix}%`).map(row=>row.key)",
+  "throw Object.assign(new Error(cleanup.code),{cleanupCode:cleanup.code})",
+  "db.prepare('DELETE FROM activity_records WHERE player_name=?').run(name)",
+  "db.prepare('DELETE FROM activity_log WHERE player_name=?').run(name)",
+  "db.prepare('DELETE FROM error_reports WHERE player_name=?').run(name)",
+  "db.prepare('DELETE FROM players WHERE name=?').run(name)"
+])assert.ok(block.includes(token),`unified atomic student deletion guard missing: ${token}`);
+assert.ok(block.indexOf('removeExtraAttemptStudentData(')<block.indexOf("DELETE FROM players WHERE name=?"),'extra-attempt cleanup must run before player deletion in the same transaction');
+assert.ok(block.indexOf('throw Object.assign')<block.indexOf("DELETE FROM players WHERE name=?"),'cleanup failure must abort before any player deletion can commit');
+assert.ok(!star.includes('cleanupExtraAttemptsBeforeStudentDelete')&&!star.includes('cleanupExtraAttemptsAfterStudentDelete'),'split delete cleanup middleware must stay removed');
+assert.ok(!star.includes("app.delete('/api/admin/player/:name'"),'star ledger must not register a second student delete route');
+console.log('student delete unified atomic cleanup contract self-test passed');
