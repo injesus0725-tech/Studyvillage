@@ -1,4 +1,4 @@
-/* v1.14 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.15 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -26,7 +26,7 @@ function validateExtraAttemptHistory(value,players){
     if(!['grant','set','consume'].includes(type))return{ok:false,code:'invalid-extra-attempt-history-type',message:'추가 도전권 기록의 유형이 올바르지 않습니다.',playerName:name};
     if(!Number.isInteger(amount)||!Number.isInteger(before)||!Number.isInteger(after)||before<0||before>1000||after<0||after>1000)return{ok:false,code:'invalid-extra-attempt-history-value',message:'추가 도전권 기록의 수량이 정상 범위를 벗어났습니다.',playerName:name};
     if(detail.length>240||!createdAt||Number.isNaN(Date.parse(createdAt)))return{ok:false,code:'invalid-extra-attempt-history-metadata',message:'추가 도전권 기록의 설명 또는 시간이 올바르지 않습니다.',playerName:name};
-    if(type==='grant'&&amount<0)return{ok:false,code:'invalid-extra-attempt-history-delta',message:'추가 도전권 지급 기록의 변화량이 올바르지 않습니다.',playerName:name};
+    if(type==='grant'&&amount<=0)return{ok:false,code:'invalid-extra-attempt-history-delta',message:'추가 도전권 지급 기록의 변화량이 올바르지 않습니다.',playerName:name};
     if(type==='consume'&&amount>=0)return{ok:false,code:'invalid-extra-attempt-history-delta',message:'추가 도전권 사용 기록의 변화량이 올바르지 않습니다.',playerName:name};
     if(after-before!==amount)return{ok:false,code:'extra-attempt-history-balance-mismatch',message:'추가 도전권 기록의 전후 수량과 변화량이 서로 맞지 않습니다.',playerName:name};
     const scope=`${name}\u0000${activityId}`,previous=lastByScope.get(scope);
