@@ -1,4 +1,4 @@
-/* v1.17 per-student extra activity attempts.
+/* v1.18 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -34,6 +34,18 @@ export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId
   let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed.slice(-999)}catch{}
   const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
   rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows));return{ok:true,entry};
+}
+
+export function removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name){
+  const playerName=exactName(name);if(!playerName)return{ok:false,code:'invalid-player-name'};
+  if(typeof getSetting!=='function'||typeof setSetting!=='function'||typeof deleteSetting!=='function'||typeof listSettingKeys!=='function')return{ok:false,code:'invalid-cleanup-adapter'};
+  const prefix=`${PREFIX}${encodeURIComponent(playerName)}:`,keys=listSettingKeys(prefix);
+  if(!Array.isArray(keys))return{ok:false,code:'invalid-cleanup-keys'};
+  let removedSettings=0;for(const key of keys){if(typeof key==='string'&&key.startsWith(prefix)){deleteSetting(key);removedSettings++}}
+  let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
+  const filtered=rows.filter(row=>String(row?.name||'')!==playerName);
+  if(filtered.length!==rows.length)setSetting(HISTORY_KEY,JSON.stringify(filtered.slice(-1000)));
+  return{ok:true,name:playerName,removedSettings,removedHistory:rows.length-filtered.length};
 }
 
 export function setExtraAttempts(setSetting,name,activityId,count){
