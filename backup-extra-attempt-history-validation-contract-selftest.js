@@ -3,6 +3,10 @@ const assert=require('assert');
 const src=fs.readFileSync('server/backup-validator-with-stars.js','utf8');
 for(const token of [
   "const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1'",
+  "const validExtraAttemptPlayerName=value=>",
+  "code:'invalid-extra-attempt-history-player'",
+  "code:'invalid-extra-attempt-backup-player'",
+  "encodeURIComponent(playerName)!==encodedName",
   "code:'invalid-extra-attempt-history-json'",
   "code:'invalid-extra-attempt-history-size'",
   "code:'orphan-extra-attempt-history'",
@@ -21,4 +25,6 @@ for(const token of [
   "extraAttemptHistoryCount=history.count"
 ])assert.ok(src.includes(token),`extra-attempt history backup validation missing: ${token}`);
 assert.ok(src.indexOf("key===EXTRA_ATTEMPT_HISTORY_KEY")<src.indexOf("key.startsWith(EXTRA_ATTEMPT_PREFIX)"),'history key must be handled before generic extra-attempt prefix');
-console.log('backup extra attempt history validation contract self-test passed');
+assert.ok(src.indexOf("if(!validExtraAttemptPlayerName(rawName))")<src.indexOf("if(!players.has(name))"),'history player names must be validated before player lookup');
+assert.ok(src.indexOf("encodeURIComponent(playerName)!==encodedName")<src.indexOf("if(!players.has(playerName))"),'backup key names must be canonical before player lookup');
+console.log('backup extra attempt history and player-name validation contract self-test passed');
