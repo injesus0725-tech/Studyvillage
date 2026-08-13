@@ -1,4 +1,4 @@
-/* v1.9 per-student extra activity attempts.
+/* v1.10 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -25,7 +25,7 @@ export function appendExtraAttemptHistory(getSetting,setSetting,{name,activityId
   if(!Number.isInteger(beforeValue)||!Number.isInteger(afterValue)||beforeValue<0||beforeValue>1000||afterValue<0||afterValue>1000)return{ok:false,code:'invalid-history-value'};
   const delta=Number.isInteger(change)?change:afterValue-beforeValue;
   if(!Number.isInteger(delta)||afterValue-beforeValue!==delta)return{ok:false,code:'invalid-history-delta'};
-  if(type==='grant'&&delta<0)return{ok:false,code:'invalid-history-delta'};
+  if(type==='grant'&&delta<=0)return{ok:false,code:'invalid-history-delta'};
   if(type==='consume'&&delta>=0)return{ok:false,code:'invalid-history-delta'};
   let rows=[];try{const parsed=JSON.parse(getSetting(HISTORY_KEY)||'[]');if(Array.isArray(parsed))rows=parsed}catch{}
   const entry={id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,name:safeName,activityId:id,type,amount:delta,before:beforeValue,after:afterValue,detail:clean(detail,240),createdAt:new Date().toISOString()};
@@ -44,7 +44,7 @@ export function setExtraAttempts(setSetting,name,activityId,count){
 export function grantExtraAttempts(getSetting,setSetting,name,activityId,amount=1,{recordHistory=true}={}){
   const add=Number(amount);if(!Number.isInteger(add)||add<1||add>100)return{ok:false,code:'invalid-grant'};
   const current=readExtraAttempts(getSetting,name,activityId),next=Math.min(1000,current+add),result=setExtraAttempts(setSetting,name,activityId,next);
-  if(result.ok&&recordHistory)appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type:'grant',amount:next-current,before:current,after:next,detail:'교사가 추가 도전 허용'});
+  if(result.ok&&recordHistory&&next>current)appendExtraAttemptHistory(getSetting,setSetting,{name,activityId,type:'grant',amount:next-current,before:current,after:next,detail:'교사가 추가 도전 허용'});
   return result;
 }
 
