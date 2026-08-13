@@ -3,6 +3,7 @@ const tests=[
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-attempt-policy-safety-contract-selftest.js',
   'activity-extra-attempt-admin-safety-contract-selftest.js',
+  'activity-extra-attempt-exact-student-name-contract-selftest.js',
   'activity-extra-attempt-history-bounds-contract-selftest.js',
   'activity-extra-attempt-history-write-integrity-contract-selftest.js',
   'activity-extra-attempt-saturation-history-contract-selftest.js',
