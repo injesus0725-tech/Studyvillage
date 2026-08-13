@@ -1,4 +1,4 @@
-/* v1.15 per-student extra activity attempts.
+/* v1.16 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -47,17 +47,25 @@ export function setExtraAttempts(setSetting,name,activityId,count){
 }
 
 export function grantExtraAttempts(getSetting,setSetting,name,activityId,amount=1,{recordHistory=true}={}){
-  const add=Number(amount);if(!Number.isInteger(add)||add<1||add>100)return{ok:false,code:'invalid-grant'};
-  const current=readExtraAttempts(getSetting,name,activityId),next=Math.min(1000,current+add),result=setExtraAttempts(setSetting,name,activityId,next);
-  if(result.ok&&recordHistory&&next>current)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId,type:'grant',amount:next-current,before:current,after:next,detail:'교사가 추가 도전 허용'});
+  const rawName=String(name??'').trim(),playerName=exactName(rawName),id=clean(activityId,40),add=Number(amount);
+  if(!rawName)return{ok:false,code:'player-required'};
+  if(!playerName)return{ok:false,code:'invalid-player-name'};
+  if(!SAFE_ACTIVITY.test(id))return{ok:false,code:'invalid-activity-id'};
+  if(!Number.isInteger(add)||add<1||add>100)return{ok:false,code:'invalid-grant'};
+  const current=readExtraAttempts(getSetting,playerName,id),next=Math.min(1000,current+add),result=setExtraAttempts(setSetting,playerName,id,next);
+  if(result.ok&&recordHistory&&next>current)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId:id,type:'grant',amount:next-current,before:current,after:next,detail:'교사가 추가 도전 허용'});
   return result;
 }
 
 export function consumeExtraAttempts(getSetting,setSetting,name,activityId,amount=1,detail='학생 활동에 사용'){
-  const use=Number(amount);if(!Number.isInteger(use)||use<1||use>100)return{ok:false,code:'invalid-consume'};
-  const current=readExtraAttempts(getSetting,name,activityId);if(current<use)return{ok:false,code:'insufficient-extra-attempts',extraAttempts:current};
-  const next=current-use,result=setExtraAttempts(setSetting,name,activityId,next);
-  if(result.ok)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId,type:'consume',amount:-use,before:current,after:next,detail});
+  const rawName=String(name??'').trim(),playerName=exactName(rawName),id=clean(activityId,40),use=Number(amount);
+  if(!rawName)return{ok:false,code:'player-required'};
+  if(!playerName)return{ok:false,code:'invalid-player-name'};
+  if(!SAFE_ACTIVITY.test(id))return{ok:false,code:'invalid-activity-id'};
+  if(!Number.isInteger(use)||use<1||use>100)return{ok:false,code:'invalid-consume'};
+  const current=readExtraAttempts(getSetting,playerName,id);if(current<use)return{ok:false,code:'insufficient-extra-attempts',extraAttempts:current};
+  const next=current-use,result=setExtraAttempts(setSetting,playerName,id,next);
+  if(result.ok)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId:id,type:'consume',amount:-use,before:current,after:next,detail});
   return{...result,used:use};
 }
 
