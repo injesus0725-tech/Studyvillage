@@ -1,4 +1,4 @@
-/* v1.11 star currency foundation.
+/* v1.12 star currency foundation.
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
@@ -11,10 +11,10 @@ import { installActivityAttemptStudentRoutes } from './activity-attempt-student.
 import { installRiddleAttemptStudentRoutes } from './riddle-attempt-student.js';
 import { installStudentScoreHistoryRoutes } from './student-score-history.js';
 import { installRestoreValidationMiddleware } from './restore-validation-middleware.js';
-import { removeExtraAttemptStudentData } from './activity-attempt-exceptions.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
+const EXTRA_ATTEMPT_PREFIX='activity-attempt-extra:v1:',EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1';
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n);
 const mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
 
@@ -96,29 +96,40 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
     return tx();
   }finally{try{db?.close()}catch{}}
 }
-function cleanupExtraAttemptsBeforeStudentDelete(req,res,next){
+function cleanupExtraAttemptsAfterStudentDelete(req,res,next){
   const name=String(req.params?.name??'').trim();
   if(!name||name.length>12)return res.status(400).json({ok:false,code:'invalid-student'});
+  let filteredHistory=null;
   let db;
   try{
     db=openLiveDb();ensureSchema(db);
     if(!db.prepare('SELECT id FROM players WHERE name=?').get(name))return next();
-    const getSetting=key=>db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value??null;
-    const setSetting=(key,value)=>db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,value);
-    const deleteSetting=key=>db.prepare('DELETE FROM settings WHERE key=?').run(key);
-    const listSettingKeys=prefix=>db.prepare('SELECT key FROM settings WHERE key LIKE ?').all(`${prefix}%`).map(row=>row.key);
-    const cleanup=db.transaction(()=>{
-      const result=removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name);
-      if(!result.ok)throw Object.assign(new Error(result.code),{cleanupCode:result.code});
-      return result;
-    });
-    cleanup();
-    return next();
-  }catch(err){
-    const reason=clean(err?.cleanupCode||'',80);
-    if(reason)return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason});
-    return res.status(500).json({ok:false,code:'extra-attempt-cleanup-failed',message:clean(err?.message||err,160)});
-  }finally{try{db?.close()}catch{}}
+    const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(EXTRA_ATTEMPT_HISTORY_KEY)?.value;
+    if(raw!==undefined&&raw!==null){
+      let parsed;try{parsed=JSON.parse(raw)}catch{return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason:'corrupt-history'})}
+      if(!Array.isArray(parsed))return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason:'corrupt-history'});
+      filteredHistory=JSON.stringify(parsed.filter(row=>String(row?.name||'')!==name).slice(-1000));
+    }
+  }catch(err){return res.status(500).json({ok:false,code:'extra-attempt-cleanup-failed',message:clean(err?.message||err,160)})}
+  finally{try{db?.close()}catch{}}
+  const originalJson=res.json.bind(res);let cleanupDone=false;
+  res.json=body=>{
+    if(!cleanupDone&&res.statusCode>=200&&res.statusCode<300&&body?.ok===true){
+      cleanupDone=true;let cleanupDb;
+      try{
+        cleanupDb=openLiveDb();ensureSchema(cleanupDb);
+        const cleanup=cleanupDb.transaction(()=>{
+          const prefix=`${EXTRA_ATTEMPT_PREFIX}${encodeURIComponent(name)}:`;
+          cleanupDb.prepare('DELETE FROM settings WHERE key LIKE ?').run(`${prefix}%`);
+          if(filteredHistory!==null)cleanupDb.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(EXTRA_ATTEMPT_HISTORY_KEY,filteredHistory);
+        });
+        cleanup();
+      }catch(err){console.error('extra-attempt post-delete cleanup failed:',clean(err?.message||err,160))}
+      finally{try{cleanupDb?.close()}catch{}}
+    }
+    return originalJson(body);
+  };
+  return next();
 }
 export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
@@ -128,7 +139,7 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
     catch(err){res.status(500).json({ok:false,code:'star-ledger-read-failed',message:clean(err?.message||err,160)})}
   });
-  app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete);
+  app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsAfterStudentDelete);
   installRiddleAttemptStudentRoutes(app,{requireSession});
   installActivityAttemptStudentRoutes(app,{requireSession});
   installItemShopRoutes(app,{requireSession,requireAdmin});
