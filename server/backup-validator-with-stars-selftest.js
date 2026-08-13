@@ -20,5 +20,9 @@ assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKe
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([{...history[0],id:''}])}]}).code,'invalid-extra-attempt-history-id');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:mirror},{key:historyKey,value:JSON.stringify(history)}]}).code,'missing-extra-attempt-current-setting');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'}]}).ok,true,'migrated/legacy backups may contain a current extra-attempt value before history exists');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:historyKey,value:JSON.stringify({bad:true})}]}).code,'invalid-extra-attempt-history-size');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:historyKey,value:JSON.stringify(Array.from({length:1001},(_,i)=>({...history[0],id:String(i+1)})))}]}).code,'invalid-extra-attempt-history-size');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([{...history[0],detail:'x'.repeat(241)}])}]}).code,'invalid-extra-attempt-history-metadata');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([{...history[0],createdAt:'not-a-date'}])}]}).code,'invalid-extra-attempt-history-metadata');
 
 console.log('star and extra-attempt backup cross-check self-test passed');
