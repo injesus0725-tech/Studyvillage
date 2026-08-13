@@ -1,4 +1,4 @@
-/* v1.10 star currency foundation.
+/* v1.11 star currency foundation.
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
@@ -107,11 +107,18 @@ function cleanupExtraAttemptsBeforeStudentDelete(req,res,next){
     const setSetting=(key,value)=>db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,value);
     const deleteSetting=key=>db.prepare('DELETE FROM settings WHERE key=?').run(key);
     const listSettingKeys=prefix=>db.prepare('SELECT key FROM settings WHERE key LIKE ?').all(`${prefix}%`).map(row=>row.key);
-    const result=removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name);
-    if(!result.ok)return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason:result.code});
+    const cleanup=db.transaction(()=>{
+      const result=removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name);
+      if(!result.ok)throw Object.assign(new Error(result.code),{cleanupCode:result.code});
+      return result;
+    });
+    cleanup();
     return next();
-  }catch(err){return res.status(500).json({ok:false,code:'extra-attempt-cleanup-failed',message:clean(err?.message||err,160)})}
-  finally{try{db?.close()}catch{}}
+  }catch(err){
+    const reason=clean(err?.cleanupCode||'',80);
+    if(reason)return res.status(409).json({ok:false,code:'extra-attempt-cleanup-failed',reason});
+    return res.status(500).json({ok:false,code:'extra-attempt-cleanup-failed',message:clean(err?.message||err,160)});
+  }finally{try{db?.close()}catch{}}
 }
 export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
