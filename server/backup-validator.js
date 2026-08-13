@@ -1,4 +1,4 @@
-/* v1.9 server-side Studyvillage backup validator.
+/* v1.10 server-side Studyvillage backup validator.
    Backup version compatibility follows backup-migrator.js.
    Player customization, wardrobe ownership, and score audit history are checked before destructive restore. */
 import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
@@ -8,7 +8,7 @@ const LIMITS={players:500,settings:2000,activities:50000,activityRecords:50000,e
 const integer=(v,min,max)=>Number.isInteger(Number(v))&&Number(v)>=min&&Number(v)<=max;
 const text=(v,max)=>typeof v==='string'&&v.length<=max;
 const safeId=v=>typeof v==='string'&&/^[a-z0-9-]{1,80}$/.test(v);
-const canonicalPlayerName=v=>{const raw=String(v??''),name=raw.trim();return name&&name.length<=12&&name===raw?name:''};
+const canonicalPlayerName=v=>{const raw=String(v??''),name=raw.trim().replace(/\s+/g,' ');return name&&name.length<=12&&name===raw?name:''};
 function fail(code,message){return{ok:false,code,message}}
 function validEquipmentJson(value){if(typeof value!=='string'||value.length>2000)return false;try{const e=JSON.parse(value);if(!e||typeof e!=='object'||Array.isArray(e))return false;const allowed=new Set(['hat','glasses','bag','pet']);for(const key of Object.keys(e))if(!allowed.has(key))return false;for(const slot of allowed){const v=e[slot];if(v!==undefined&&v!==null&&!safeId(v))return false}return true}catch{return false}}
 function validOwnedItems(value){if(typeof value!=='string'||value.length>50000)return false;try{const raw=JSON.parse(value);if(!Array.isArray(raw)||raw.length>wardrobeLimits.maxOwnedItems)return false;const parsed=parseOwnedItems(value);return parsed.length===raw.length&&new Set(raw).size===raw.length}catch{return false}}
