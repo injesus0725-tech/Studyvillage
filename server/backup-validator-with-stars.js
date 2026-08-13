@@ -1,4 +1,4 @@
-/* v1.17 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.18 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -10,7 +10,7 @@ const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 const normalizePlayerName=value=>String(value??'').trim();
-const validExtraAttemptPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
+const validCanonicalPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
 function equippedItemIds(value){
   try{const equipment=JSON.parse(value||'{}');return Object.values(equipment||{}).filter(v=>typeof v==='string'&&v)}catch{return[]}
 }
@@ -20,7 +20,7 @@ function validateExtraAttemptHistory(value,players){
   const lastByScope=new Map(),lastBalanceByScope=new Map(),seenIds=new Set();
   for(const row of rows){
     const id=String(row?.id||''),rawName=String(row?.name??''),name=normalizePlayerName(rawName),activityId=String(row?.activityId||''),type=String(row?.type||''),amount=Number(row?.amount),before=Number(row?.before),after=Number(row?.after),detail=String(row?.detail||''),createdAt=String(row?.createdAt||'');
-    if(!validExtraAttemptPlayerName(rawName))return{ok:false,code:'invalid-extra-attempt-history-player',message:'추가 도전권 기록의 학생 이름 형식이 올바르지 않습니다.',playerName:name};
+    if(!validCanonicalPlayerName(rawName))return{ok:false,code:'invalid-extra-attempt-history-player',message:'추가 도전권 기록의 학생 이름 형식이 올바르지 않습니다.',playerName:name};
     if(!id||id.length>120)return{ok:false,code:'invalid-extra-attempt-history-id',message:'추가 도전권 기록 ID가 올바르지 않습니다.',playerName:name};
     if(seenIds.has(id))return{ok:false,code:'duplicate-extra-attempt-history-id',message:'추가 도전권 기록 ID가 중복되어 있습니다.',historyId:id};
     seenIds.add(id);
@@ -71,7 +71,7 @@ export function validateStudyvillageBackupWithStars(backup){
       const encodedName=rest.slice(0,split),activityId=rest.slice(split+1);
       let playerName='';
       try{playerName=decodeURIComponent(encodedName)}catch{return{ok:false,code:'invalid-extra-attempt-backup-key',message:'추가 도전권 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key}}
-      if(!validExtraAttemptPlayerName(playerName)||encodeURIComponent(playerName)!==encodedName)return{ok:false,code:'invalid-extra-attempt-backup-player',message:'추가 도전권 백업 설정의 학생 이름이 현재 이름 규칙과 맞지 않습니다.',settingKey:key};
+      if(!validCanonicalPlayerName(playerName)||encodeURIComponent(playerName)!==encodedName)return{ok:false,code:'invalid-extra-attempt-backup-player',message:'추가 도전권 백업 설정의 학생 이름이 현재 이름 규칙과 맞지 않습니다.',settingKey:key};
       if(!players.has(playerName))return{ok:false,code:'orphan-extra-attempt-backup-setting',message:'존재하지 않는 학생의 추가 도전권 설정이 포함되어 있습니다.',settingKey:key};
       if(!SAFE_ACTIVITY.test(activityId))return{ok:false,code:'invalid-extra-attempt-activity',message:'추가 도전권 백업 설정의 활동 ID가 올바르지 않습니다.',settingKey:key};
       const amount=Number(setting?.value);
@@ -83,6 +83,7 @@ export function validateStudyvillageBackupWithStars(backup){
     const encodedName=key.slice(STAR_SETTING_PREFIX.length);
     let playerName='';
     try{playerName=decodeURIComponent(encodedName)}catch{return{ok:false,code:'invalid-star-backup-key',message:'별 백업 설정의 학생 이름 형식이 손상되었습니다.',settingKey:key}}
+    if(!validCanonicalPlayerName(playerName)||encodeURIComponent(playerName)!==encodedName)return{ok:false,code:'invalid-star-backup-player',message:'별 백업 설정의 학생 이름이 현재 이름 규칙과 맞지 않습니다.',settingKey:key};
     const player=players.get(playerName);
     if(!player)return{ok:false,code:'orphan-star-backup-setting',message:'존재하지 않는 학생의 별 백업 설정이 포함되어 있습니다.',settingKey:key};
     const star=validateStarMirrorValue(setting.value);
