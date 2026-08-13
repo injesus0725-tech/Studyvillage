@@ -1,6 +1,7 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('server/server.js','utf8');
+const star=fs.readFileSync('server/star-ledger.js','utf8');
 const delStart=src.indexOf('const deleteStudentData=db.transaction');
 const delEnd=src.indexOf("app.delete('/api/admin/player/:name'",delStart);
 assert.ok(delStart>=0&&delEnd>delStart,'student deletion transaction must exist');
@@ -14,11 +15,16 @@ for(const token of [
   "DELETE FROM activity_log WHERE player_name=?",
   "DELETE FROM error_reports WHERE player_name=?",
   "DELETE FROM settings WHERE key=?",
-  "const extraPrefix=`activity-attempt-extra:v1:${encodeURIComponent(name)}:`",
-  "db.prepare('DELETE FROM settings WHERE key=?').run(row.key)",
   "DELETE FROM players WHERE name=?"
 ])assert.ok(del.includes(token),`student deletion clean-slate guard missing: ${token}`);
-assert.ok(del.indexOf('const extraPrefix=')<del.indexOf("DELETE FROM players WHERE name=?"),'old extra-attempt settings must be removed before same-name recreation');
+for(const token of [
+  "import { removeExtraAttemptStudentData } from './activity-attempt-exceptions.js'",
+  "if(!name||name.length>12)return res.status(400).json({ok:false,code:'invalid-student'})",
+  'removeExtraAttemptStudentData({getSetting,setSetting,deleteSetting,listSettingKeys},name)',
+  "app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)"
+])assert.ok(star.includes(token),`same-name recreation pre-delete cleanup missing: ${token}`);
+const cleanupPos=star.indexOf("app.delete('/api/admin/player/:name',requireAdmin,cleanupExtraAttemptsBeforeStudentDelete)");
+assert.ok(cleanupPos>=0,'extra-attempt cleanup middleware must be installed');
 const loginStart=src.indexOf("app.post('/api/login'");
 const loginEnd=src.indexOf("app.get('/api/player/me'",loginStart);
 const login=src.slice(loginStart,loginEnd);
@@ -26,4 +32,4 @@ assert.ok(login.includes("if(!row){const salt=crypto.randomBytes(16).toString('h
 assert.ok(login.includes("INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at)"),'recreated student must be inserted as a fresh player row');
 assert.ok(login.includes('isNew=true'),'recreated student must be treated as a new account');
 assert.ok(src.includes('clearStudentSessions(name)'),'deletion must invalidate old sessions before same-name recreation can continue safely');
-console.log('student recreate clean slate contract self-test passed');
+console.log('student recreate clean slate with extra-attempt history cleanup contract self-test passed');
