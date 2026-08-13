@@ -13,7 +13,10 @@ assert.ok(restore.includes("for(const t of ['score_corrections','score_alert_rev
 assert.ok(restore.includes("insert('INSERT INTO settings(key,value) VALUES(@key,@value)',b.settings)"),'restore must reload settings so extra attempts and history survive roundtrip');
 const exceptionSrc=fs.readFileSync('server/activity-attempt-exceptions.js','utf8');
 assert.ok(exceptionSrc.includes("const HISTORY_KEY='activity-attempt-extra-history:v1'"),'extra-attempt history must live in backed-up settings');
+assert.ok(exceptionSrc.includes("`${PREFIX}${encodeURIComponent(playerName)}:${activityId}`"),'runtime key must encode the exact validated player name');
 const validator=fs.readFileSync('server/backup-validator-with-stars.js','utf8');
 assert.ok(validator.includes("const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1'"),'restore validation must recognize extra-attempt history');
 assert.ok(validator.includes("key===EXTRA_ATTEMPT_HISTORY_KEY"),'history must be validated before generic extra-attempt settings');
-console.log('backup extra-attempt and history roundtrip contract self-test passed');
+assert.ok(validator.includes("encodeURIComponent(playerName)!==encodedName"),'restore must require canonical runtime-compatible player-name encoding');
+assert.ok(validator.includes("playerName.length>12"),'restore must enforce the same player-name bound as runtime');
+console.log('backup extra-attempt identity and history roundtrip contract self-test passed');
