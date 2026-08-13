@@ -58,6 +58,7 @@ const tests=[
   'student-cross-device-profile-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',
   'student-delete-data-cleanup-contract-selftest.js',
+  'student-delete-extra-attempt-atomic-cleanup-contract-selftest.js',
   'student-delete-extra-attempt-cleanup-contract-selftest.js',
   'student-destructive-action-session-contract-selftest.js',
   'student-first-activity-fresh-account-contract-selftest.js',
