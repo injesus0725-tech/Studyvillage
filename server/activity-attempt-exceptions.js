@@ -1,4 +1,4 @@
-/* v1.14 per-student extra activity attempts.
+/* v1.15 per-student extra activity attempts.
    Extra attempts and their history are stored in settings so backup/restore preserves them. */
 
 const PREFIX='activity-attempt-extra:v1:';
@@ -83,7 +83,7 @@ export function installActivityAttemptExceptionRoutes(app,{requireAdmin,getSetti
     if(!name)return res.status(400).json({ok:false,code:'invalid-player-name'});
     const before=readExtraAttempts(getSetting,name,activityId),result=setExtraAttempts(setSetting,name,activityId,req.body?.extraAttempts);
     if(!result.ok)return res.status(400).json(result);
-    appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId,type:'set',amount:result.extraAttempts-before,before,after:result.extraAttempts,detail:'교사가 추가 도전 횟수 직접 수정'});
+    if(result.extraAttempts!==before)appendExtraAttemptHistory(getSetting,setSetting,{name:result.name,activityId,type:'set',amount:result.extraAttempts-before,before,after:result.extraAttempts,detail:'교사가 추가 도전 횟수 직접 수정'});
     res.json(result);
   });
 }
