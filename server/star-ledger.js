@@ -1,4 +1,4 @@
-/* v1.14 star currency foundation.
+/* v1.15 star currency foundation.
    Creates a separate spendable star balance and immutable ledger.
    Star state is mirrored into settings so existing backups preserve it without changing the backup format.
    On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
@@ -102,6 +102,13 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   app.post('/api/login',(req,res,next)=>{
     const name=String(req.body?.name??'').trim().replace(/\s+/g,' ');
     if(name.length>12)return res.status(400).json({ok:false,code:'invalid-input'});
+    next();
+  });
+  app.post('/api/player/me/record',(req,res,next)=>{
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
+    const totalScore=clamp(req.body?.totalScore,0,100000000),attempts=clamp(req.body?.attempts,0,1000000),bestScore=clamp(req.body?.bestScore,0,1000),lastScore=clamp(req.body?.lastScore,0,1000);
+    const invalid=attempts===0&&(totalScore!==0||bestScore!==0||lastScore!==0)||attempts>0&&(bestScore<lastScore||totalScore<bestScore||totalScore>attempts*1000);
+    if(invalid)return res.status(400).json({ok:false,code:'invalid-record-relationship'});
     next();
   });
   app.get('/api/player/me/stars',requireSession,(req,res)=>{
