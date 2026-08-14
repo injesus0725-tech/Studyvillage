@@ -5,7 +5,7 @@ import fs from 'node:fs';
 const checks=[
   {file:'admin-presence.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:false},
   {file:'admin-score-alerts.js',minimumMs:20000,requiresHiddenGuard:true,requiresOnlineGuard:false},
-  {file:'admin-live-events.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:false,intervalNames:{AUDIENCE_REFRESH_MS:10000},overlapPattern:/audienceLoading/},
+  {file:'admin-live-events.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:false,overlapPattern:/audienceLoading/},
   {file:'presence.js',minimumMs:12000,requiresHiddenGuard:true,requiresOnlineGuard:true},
   {file:'live-events.js',minimumMs:2500,requiresHiddenGuard:true,requiresOnlineGuard:true},
   {file:'error-reporter.js',minimumMs:8000,requiresHiddenGuard:true,requiresOnlineGuard:true},
@@ -14,8 +14,11 @@ const checks=[
 
 for(const check of checks){
   const source=fs.readFileSync(new URL(`./${check.file}`,import.meta.url),'utf8');
-  const names=check.intervalNames||{};
-  const matches=[...source.matchAll(/setInterval\s*\([^,]+,\s*(?:([0-9]+)|([A-Z_]+))\s*\)/g)].map(m=>m[1]?Number(m[1]):names[m[2]]??(m[2]==='FLUSH_MS'?10000:NaN)).filter(Number.isFinite);
+  const names={};
+  for(const match of source.matchAll(/\b([A-Z][A-Z0-9_]*)\s*=\s*([0-9]+)\b/g))names[match[1]]=Number(match[2]);
+  const matches=[...source.matchAll(/setInterval\s*\([^,]+,\s*(?:([0-9]+)|([A-Z][A-Z0-9_]*))\s*\)/g)]
+    .map(m=>m[1]?Number(m[1]):names[m[2]])
+    .filter(Number.isFinite);
   if(!matches.length)throw new Error(`${check.file}: polling interval not found`);
   if(matches.some(ms=>ms<check.minimumMs))throw new Error(`${check.file}: polling interval is too aggressive (${matches.join(',')}ms)`);
   if(check.requiresHiddenGuard&&!/document\.hidden/.test(source))throw new Error(`${check.file}: background/hidden-page polling guard is missing`);
