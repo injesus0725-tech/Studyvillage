@@ -5,6 +5,6 @@ assert.ok(src.includes("const game=document.querySelector('#game-screen')"),'pre
 assert.ok(src.includes("game.classList.contains('active')"),'presence must require an active student game when available');
 assert.ok(src.includes("if(game){const observer=new MutationObserver"),'presence must react when the student game opens or closes');
 assert.ok(src.includes("else stop()"),'presence heartbeat must stop after leaving the student game');
-assert.ok(src.includes('if(r.status===401){authExpired=true;stop();return}'),'presence heartbeat must stop after student authentication expires');
+assert.ok(/if\(r\.status===401\)\{authExpired=true;stop\(\);(?:window\.StudyVillageAuth\?\.clearSession\?\.\(\);)?return\}/.test(src),'presence heartbeat must stop after student authentication expires');
 assert.ok(src.includes("window.addEventListener('studyvillage:session-ready',()=>{authExpired=false;start()})"),'a new student session must allow presence heartbeat to resume');
 console.log('student presence screen contract self-test passed');
