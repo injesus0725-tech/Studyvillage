@@ -1,4 +1,4 @@
-/* v1.10 star backup payload validator. Pure validation only; no DB writes. */
+/* v1.11 star backup payload validator. Pure validation only; no DB writes. */
 const MAX_STARS=1000000;
 const MAX_MIRROR_ENTRIES=500;
 
@@ -35,7 +35,7 @@ export function validateStarBackupPayload(data){
   const balances=Array.isArray(data?.balances)?data.balances:[];
   const ledger=Array.isArray(data?.ledger)?data.ledger:[];
   const errors=[];
-  const seenPlayers=new Set();
+  const seenPlayers=new Set(),balanceByPlayer=new Map();
 
   for(const row of balances){
     const name=String(row?.playerName||'').trim();
@@ -44,9 +44,11 @@ export function validateStarBackupPayload(data){
     if(name&&seenPlayers.has(name))errors.push(`duplicate-balance:${name}`);
     if(name)seenPlayers.add(name);
     if(!validInteger(stars))errors.push(`invalid-balance:${name||'unknown'}`);
+    if(name&&validInteger(stars))balanceByPlayer.set(name,stars);
   }
 
   let previousId=0;
+  const latestByPlayer=new Map();
   for(const row of ledger){
     const id=Number(row?.id);
     const before=Number(row?.before_value);
@@ -55,9 +57,16 @@ export function validateStarBackupPayload(data){
     const name=String(row?.player_name||'').trim();
     if(!Number.isInteger(id)||id<=0||id<=previousId)errors.push(`invalid-ledger-id:${id}`);else previousId=id;
     if(!name)errors.push(`ledger-player-name-missing:${id||'unknown'}`);
+    if(name&&!balanceByPlayer.has(name))errors.push(`orphan-ledger-player:${name}`);
     if(!validInteger(before)||!validInteger(after)||!Number.isInteger(delta)||after-before!==delta)errors.push(`invalid-ledger-values:${id||'unknown'}`);
+    const previous=latestByPlayer.get(name);
+    if(name&&previous&&previous.after!==before)errors.push(`ledger-discontinuity:${name}:${id||'unknown'}`);
+    if(name)latestByPlayer.set(name,{id,after});
     if(!String(row?.kind||'').trim())errors.push(`ledger-kind-missing:${id||'unknown'}`);
     if(!String(row?.created_at||'').trim())errors.push(`ledger-created-at-missing:${id||'unknown'}`);
+  }
+  for(const [name,latest] of latestByPlayer){
+    if(balanceByPlayer.has(name)&&balanceByPlayer.get(name)!==latest.after)errors.push(`ledger-balance-mismatch:${name}`);
   }
 
   return{ok:errors.length===0,errors:errors.slice(0,100),balanceCount:balances.length,ledgerCount:ledger.length};
