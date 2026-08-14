@@ -1,6 +1,7 @@
-/* v1.10 restore preparation helper. Pure transformation/validation only; no DB writes. */
+/* v1.11 restore preparation helper. Pure transformation/validation only; no DB writes. */
 import { migrateStudyvillageBackup } from './backup-migrator.js';
 import { validateStudyvillageBackupWithStars } from './backup-validator-with-stars.js';
+import { validateAggregatePlayerRecords } from './aggregate-player-record-validator.js';
 
 export function prepareStudyvillageRestore(input){
   const migrated=migrateStudyvillageBackup(input);
@@ -8,6 +9,13 @@ export function prepareStudyvillageRestore(input){
 
   const validation=validateStudyvillageBackupWithStars(migrated.backup);
   if(!validation.ok)return validation;
+
+  // Aggregate record relationship checks became an enforced write invariant in the current backup format.
+  // Preserve restore compatibility for older backups that predate that invariant.
+  if(migrated.fromVersion>=9){
+    const aggregateValidation=validateAggregatePlayerRecords(migrated.backup);
+    if(!aggregateValidation.ok)return aggregateValidation;
+  }
 
   return{
     ok:true,
