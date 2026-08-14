@@ -1,4 +1,4 @@
-/* v1.9 star backup payload validator. Pure validation only; no DB writes. */
+/* v1.10 star backup payload validator. Pure validation only; no DB writes. */
 const MAX_STARS=1000000;
 const MAX_MIRROR_ENTRIES=500;
 
@@ -18,12 +18,16 @@ export function validateStarMirrorValue(value){
   if(!Array.isArray(mirror.entries))errors.push('invalid-star-mirror-entries');
   const entries=Array.isArray(mirror.entries)?mirror.entries:[];
   if(entries.length>MAX_MIRROR_ENTRIES)errors.push('too-many-star-mirror-entries');
+  let previous=null;
   for(let index=0;index<entries.length;index++){
     const row=entries[index]||{},before=Number(row.beforeValue),after=Number(row.afterValue),delta=Number(row.delta);
     if(!validInteger(before)||!validInteger(after)||!Number.isInteger(delta)||after-before!==delta)errors.push(`invalid-star-mirror-values:${index}`);
+    if(previous&&previous.after!==before)errors.push(`star-mirror-discontinuity:${index}`);
     if(!String(row.kind||'').trim())errors.push(`star-mirror-kind-missing:${index}`);
     if(!String(row.createdAt||'').trim())errors.push(`star-mirror-created-at-missing:${index}`);
+    previous={after};
   }
+  if(entries.length&&validInteger(mirror.balance)&&Number(entries[entries.length-1]?.afterValue)!==Number(mirror.balance))errors.push('star-mirror-balance-history-mismatch');
   return{ok:errors.length===0,errors:errors.slice(0,100),entryCount:entries.length};
 }
 
