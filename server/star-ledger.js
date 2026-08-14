@@ -16,6 +16,7 @@ const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filenam
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n);
 const mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
+const validStarBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=MAX_STARS;
 
 function openLiveDb(){
   const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;
@@ -53,17 +54,18 @@ function readMirror(db,name){
 function liveSnapshot(db,name){
   const row=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!row)return null;
   const entries=db.prepare(`SELECT before_value AS beforeValue,after_value AS afterValue,delta,kind,reference_id AS referenceId,detail,created_at AS createdAt FROM star_ledger WHERE player_name=? ORDER BY id ASC LIMIT ?`).all(name,MAX_MIRROR_ENTRIES);
-  return{balance:Math.max(0,Number(row.stars)||0),entries};
+  return{balance:row.stars,entries};
 }
 function normalized(value){return JSON.stringify({balance:Number(value?.balance)||0,entries:(value?.entries||[]).map(e=>({beforeValue:Number(e?.beforeValue)||0,afterValue:Number(e?.afterValue)||0,delta:Number(e?.delta)||0,kind:clean(e?.kind,60)||'legacy',referenceId:clean(e?.referenceId,100)||null,detail:clean(e?.detail,240)||null,createdAt:clean(e?.createdAt,80)}))})}
 function writeMirror(db,name){
   const snap=liveSnapshot(db,name);if(!snap)return;
+  if(!validStarBalance(snap.balance))throw new Error('corrupt-star-balance');
   db.prepare(`INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).run(mirrorKey(name),normalized(snap));
 }
 function recoverFromMirror(db,name){
   const mirror=readMirror(db,name);if(!mirror)return false;
   const live=liveSnapshot(db,name);if(!live)return false;
-  if(normalized(live)===normalized(mirror))return false;
+  if(validStarBalance(live.balance)&&normalized(live)===normalized(mirror))return false;
   const tx=db.transaction(()=>{
     db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=?').run(mirror.balance,new Date().toISOString(),name);
     db.prepare('DELETE FROM star_ledger WHERE player_name=?').run(name);
@@ -75,7 +77,7 @@ function recoverFromMirror(db,name){
 
 export function ensureStarLedger(){let db;try{db=openLiveDb();ensureSchema(db);return true}finally{try{db?.close()}catch{}}}
 export function starBalanceFor(playerName){
-  let db;try{db=openLiveDb();ensureSchema(db);const name=clean(playerName,12);recoverFromMirror(db,name);const row=db.prepare('SELECT stars FROM players WHERE name=?').get(name);return row?Math.max(0,Number(row.stars)||0):null}finally{try{db?.close()}catch{}}
+  let db;try{db=openLiveDb();ensureSchema(db);const name=clean(playerName,12);recoverFromMirror(db,name);const row=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!row)return null;if(!validStarBalance(row.stars))throw new Error('corrupt-star-balance');return row.stars}finally{try{db?.close()}catch{}}
 }
 export function starLedgerFor(playerName,{limit=100}={}){
   let db;try{db=openLiveDb();ensureSchema(db);const name=clean(playerName,12);recoverFromMirror(db,name);return db.prepare(`SELECT id,before_value AS beforeValue,after_value AS afterValue,delta,kind,reference_id AS referenceId,detail,created_at AS createdAt FROM star_ledger WHERE player_name=? ORDER BY id DESC LIMIT ?`).all(name,Math.max(1,Math.min(300,Number(limit)||100)))}finally{try{db?.close()}catch{}}
@@ -87,7 +89,8 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
     db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);
     const tx=db.transaction(()=>{
       const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};
-      const before=Math.max(0,Number(player.stars)||0),after=before+change;if(after<0)return{ok:false,code:'insufficient-stars',balance:before};if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};
+      if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};
+      const before=player.stars,after=before+change;if(after<0)return{ok:false,code:'insufficient-stars',balance:before};if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};
       const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};
       const result=db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,change,clean(kind,60),clean(referenceId,100)||null,clean(detail,240)||null,now);
       writeMirror(db,name);return{ok:true,id:Number(result.lastInsertRowid),beforeValue:before,afterValue:after,delta:change,createdAt:now};
