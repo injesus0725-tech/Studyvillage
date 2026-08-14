@@ -1,4 +1,4 @@
-/* v1.18 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, and restore-time equipment ownership parity. Pure validation only; no DB writes. */
+/* v1.19 additive backup validation for mirrored star settings, extra-attempt settings/history integrity, restore-time equipment ownership parity, and item-purchase ledger semantics. Pure validation only; no DB writes. */
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
@@ -8,6 +8,7 @@ const EXTRA_ATTEMPT_PREFIX='activity-attempt-extra:v1:';
 const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
+const SHOP_ITEM_IDS=new Set(['cap-blue','crown-gold','glasses-round','backpack','pet-chick','pet-cat']);
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 const normalizePlayerName=value=>String(value??'').trim();
 const validCanonicalPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
@@ -45,9 +46,10 @@ export function validateStudyvillageBackupWithStars(backup){
   if(!base.ok)return base;
 
   const players=new Map((backup.players||[]).map(player=>[normalizePlayerName(player?.name),player]));
+  const ownedByPlayer=new Map();
   for(const [name,player] of players){
     if(Object.prototype.hasOwnProperty.call(player||{},'stars')&&!validStars(player.stars))return{ok:false,code:'invalid-player-stars',message:'학생 별 잔액이 정상 범위를 벗어났습니다.',playerName:name};
-    const owned=new Set(parseOwnedItems(player?.owned_items_json||'[]'));
+    const owned=new Set(parseOwnedItems(player?.owned_items_json||'[]'));ownedByPlayer.set(name,owned);
     for(const itemId of equippedItemIds(player?.equipment_json))if(!owned.has(itemId))return{ok:false,code:'equipped-item-not-owned',message:'장착된 아이템이 학생의 보유 아이템 목록에 없습니다.',playerName:name,itemId};
   }
 
@@ -88,7 +90,15 @@ export function validateStudyvillageBackupWithStars(backup){
     if(!player)return{ok:false,code:'orphan-star-backup-setting',message:'존재하지 않는 학생의 별 백업 설정이 포함되어 있습니다.',settingKey:key};
     const star=validateStarMirrorValue(setting.value);
     if(!star.ok)return{ok:false,code:'invalid-star-backup-setting',message:'별 잔액 또는 별 장부 백업 정보가 손상되었습니다.',settingKey:key,errors:star.errors};
-    if(Object.prototype.hasOwnProperty.call(player,'stars')){const mirror=JSON.parse(setting.value);if(Number(player.stars)!==Number(mirror.balance))return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key}}
+    const mirror=JSON.parse(setting.value),owned=ownedByPlayer.get(playerName)||new Set();
+    for(const entry of mirror.entries||[]){
+      if(String(entry?.kind||'')!=='item-purchase')continue;
+      const itemId=String(entry?.referenceId||'');
+      if(!SHOP_ITEM_IDS.has(itemId))return{ok:false,code:'invalid-item-purchase-reference',message:'아이템 구매 별 원장이 존재하지 않는 상점 아이템을 참조합니다.',playerName,itemId,settingKey:key};
+      if(Number(entry?.delta)>=0)return{ok:false,code:'invalid-item-purchase-delta',message:'아이템 구매 별 원장의 변화량이 차감 값이 아닙니다.',playerName,itemId,settingKey:key};
+      if(!owned.has(itemId))return{ok:false,code:'item-purchase-ownership-mismatch',message:'아이템 구매 별 원장이 있지만 현재 보유 아이템 목록에 해당 아이템이 없습니다.',playerName,itemId,settingKey:key};
+    }
+    if(Object.prototype.hasOwnProperty.call(player,'stars')&&Number(player.stars)!==Number(mirror.balance))return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key};
   }
   for(const [scope,lastBalance] of historyLastBalances){
     const [playerName,activityId]=scope.split('\u0000');
