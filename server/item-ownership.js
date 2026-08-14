@@ -1,4 +1,4 @@
-/* v0.9.95 lightweight permanent wardrobe ownership helpers.
+/* v0.9.96 lightweight permanent wardrobe ownership helpers.
    Ownership is stored as a compact JSON array of item IDs per player.
    Bought items stay owned even when unequipped; the shop can mark them as owned and the wardrobe can re-equip them later.
    Database adapter keeps all wardrobe persistence rules in one place so server/shop code does not duplicate JSON handling. */
@@ -22,7 +22,7 @@ export function parseOwnedItems(value){
   }catch{return[]}
 }
 
-function validateReplacementItems(value){
+export function validateOwnedItemsStrict(value){
   let raw=value;
   if(typeof value==='string'){try{raw=JSON.parse(value)}catch{return{ok:false,code:'invalid-owned-items-json',items:[]}}}
   if(!Array.isArray(raw))return{ok:false,code:'invalid-owned-items',items:[]};
@@ -38,7 +38,7 @@ function validateReplacementItems(value){
 
 export function serializeOwnedItems(items){return JSON.stringify(parseOwnedItems(items))}
 export function ownsItem(value,itemId){return parseOwnedItems(value).includes(String(itemId||''))}
-export function addOwnedItem(value,itemId){const id=String(itemId||'');if(!SAFE_ID.test(id))return{ok:false,code:'invalid-item-id',items:parseOwnedItems(value)};const validated=validateReplacementItems(value);if(!validated.ok)return{ok:false,code:'corrupt-owned-items',items:[]};const items=validated.items;if(items.includes(id))return{ok:true,alreadyOwned:true,items};if(items.length>=MAX_OWNED_ITEMS)return{ok:false,code:'wardrobe-full',items};items.push(id);return{ok:true,alreadyOwned:false,items}}
+export function addOwnedItem(value,itemId){const id=String(itemId||'');if(!SAFE_ID.test(id))return{ok:false,code:'invalid-item-id',items:parseOwnedItems(value)};const validated=validateOwnedItemsStrict(value);if(!validated.ok)return{ok:false,code:'corrupt-owned-items',items:[]};const items=validated.items;if(items.includes(id))return{ok:true,alreadyOwned:true,items};if(items.length>=MAX_OWNED_ITEMS)return{ok:false,code:'wardrobe-full',items};items.push(id);return{ok:true,alreadyOwned:false,items}}
 
 export function installWardrobeStorage(db){
   const columns=db.prepare('PRAGMA table_info(players)').all().map(row=>row.name);
@@ -49,7 +49,7 @@ export function installWardrobeStorage(db){
     get(name){const row=read.get(String(name||''));return row?parseOwnedItems(row.owned_items_json):null},
     owns(name,itemId){const row=read.get(String(name||''));return !!row&&ownsItem(row.owned_items_json,itemId)},
     grant(name,itemId){const player=String(name||''),row=read.get(player);if(!row)return{ok:false,code:'player-not-found',items:[]};const result=addOwnedItem(row.owned_items_json,itemId);if(!result.ok||result.alreadyOwned)return result;write.run(JSON.stringify(result.items),new Date().toISOString(),player);return result},
-    replace(name,items){const player=String(name||''),validated=validateReplacementItems(items);if(!validated.ok)return validated;const changed=write.run(JSON.stringify(validated.items),new Date().toISOString(),player);return{ok:changed.changes>0,code:changed.changes>0?undefined:'player-not-found',items:validated.items}}
+    replace(name,items){const player=String(name||''),validated=validateOwnedItemsStrict(items);if(!validated.ok)return validated;const changed=write.run(JSON.stringify(validated.items),new Date().toISOString(),player);return{ok:changed.changes>0,code:changed.changes>0?undefined:'player-not-found',items:validated.items}}
   });
 }
 
