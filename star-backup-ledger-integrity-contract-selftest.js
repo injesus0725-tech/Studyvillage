@@ -9,8 +9,12 @@ for(const token of [
   'star-mirror-discontinuity:',
   'star-mirror-balance-history-mismatch',
   'duplicate-balance:',
+  'balanceByPlayer=new Map()',
   'id<=previousId',
   'ledger-player-name-missing:',
+  'orphan-ledger-player:',
+  'ledger-discontinuity:',
+  'ledger-balance-mismatch:',
   'ledger-kind-missing:',
   'ledger-created-at-missing:'
 ])assert.ok(star.includes(token),`star backup ledger guard missing: ${token}`);
