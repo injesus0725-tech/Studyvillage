@@ -10,6 +10,12 @@ for(const token of [
   'if(!submissionId)return null',
   'if(!submissionId)return;'
 ])assert.ok(src.includes(token),`submission cache scope guard missing: ${token}`);
-assert.ok(src.indexOf('const name=req.session.name,cached=cachedSubmission')<src.indexOf('db=openDb()'),'retry cache should short-circuit before database writes');
-assert.ok(src.indexOf('rememberSubmission(name,activityId,submissionId,result)')>src.indexOf('if(!result.ok)return res.status(409).json(result)'),'only successful saves may enter retry cache');
+const routeStart=src.indexOf("app.post('/api/player/me/activity'");
+const cachedCall=src.indexOf('cachedSubmission(name,activityId,submissionId)',routeStart);
+const dbOpen=src.indexOf('db=openDb()',cachedCall);
+const txResult=src.indexOf('const result=tx();',dbOpen);
+const failedResult=src.indexOf('if(!result.ok)return res.status(409).json(result)',txResult);
+const remember=src.indexOf('rememberSubmission(name,activityId,submissionId,result)',failedResult);
+assert.ok(routeStart>=0&&cachedCall>=0&&dbOpen>cachedCall,'retry cache should short-circuit before database writes');
+assert.ok(txResult>=0&&failedResult>txResult&&remember>failedResult,'only successful saves may enter retry cache');
 console.log('activity submission cache scope contract self-test passed');
