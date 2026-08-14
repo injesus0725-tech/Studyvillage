@@ -1,4 +1,4 @@
-/* v0.9.94 lightweight permanent wardrobe ownership helpers.
+/* v0.9.95 lightweight permanent wardrobe ownership helpers.
    Ownership is stored as a compact JSON array of item IDs per player.
    Bought items stay owned even when unequipped; the shop can mark them as owned and the wardrobe can re-equip them later.
    Database adapter keeps all wardrobe persistence rules in one place so server/shop code does not duplicate JSON handling. */
@@ -38,7 +38,7 @@ function validateReplacementItems(value){
 
 export function serializeOwnedItems(items){return JSON.stringify(parseOwnedItems(items))}
 export function ownsItem(value,itemId){return parseOwnedItems(value).includes(String(itemId||''))}
-export function addOwnedItem(value,itemId){const id=String(itemId||'');if(!SAFE_ID.test(id))return{ok:false,code:'invalid-item-id',items:parseOwnedItems(value)};const items=parseOwnedItems(value);if(items.includes(id))return{ok:true,alreadyOwned:true,items};if(items.length>=MAX_OWNED_ITEMS)return{ok:false,code:'wardrobe-full',items};items.push(id);return{ok:true,alreadyOwned:false,items}}
+export function addOwnedItem(value,itemId){const id=String(itemId||'');if(!SAFE_ID.test(id))return{ok:false,code:'invalid-item-id',items:parseOwnedItems(value)};const validated=validateReplacementItems(value);if(!validated.ok)return{ok:false,code:'corrupt-owned-items',items:[]};const items=validated.items;if(items.includes(id))return{ok:true,alreadyOwned:true,items};if(items.length>=MAX_OWNED_ITEMS)return{ok:false,code:'wardrobe-full',items};items.push(id);return{ok:true,alreadyOwned:false,items}}
 
 export function installWardrobeStorage(db){
   const columns=db.prepare('PRAGMA table_info(players)').all().map(row=>row.name);
