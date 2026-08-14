@@ -16,6 +16,10 @@ for(const token of [
   'ledger-discontinuity:',
   'ledger-balance-mismatch:',
   'ledger-kind-missing:',
+  'SHOP_ITEM_IDS',
+  "kind!=='item-purchase'",
+  'item-purchase-reference',
+  'item-purchase-delta',
   'ledger-created-at-missing:'
 ])assert.ok(star.includes(token),`star backup ledger guard missing: ${token}`);
 for(const token of [
