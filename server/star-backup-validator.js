@@ -1,10 +1,17 @@
-/* v1.11 star backup payload validator. Pure validation only; no DB writes. */
+/* v1.12 star backup payload validator. Pure validation only; no DB writes. */
 const MAX_STARS=1000000;
 const MAX_MIRROR_ENTRIES=500;
+const SHOP_ITEM_IDS=new Set(['cap-blue','crown-gold','glasses-round','backpack','pet-chick','pet-cat']);
 
 function validInteger(value,min=0,max=MAX_STARS){
   const number=Number(value);
   return Number.isInteger(number)&&number>=min&&number<=max;
+}
+function validatePurchaseSemantics({kind,referenceId,delta},errorPrefix){
+  if(kind!=='item-purchase')return null;
+  if(!SHOP_ITEM_IDS.has(String(referenceId||'')))return `${errorPrefix}-item-purchase-reference`;
+  if(!Number.isInteger(delta)||delta>=0)return `${errorPrefix}-item-purchase-delta`;
+  return null;
 }
 
 export function validateStarMirrorValue(value){
@@ -20,10 +27,11 @@ export function validateStarMirrorValue(value){
   if(entries.length>MAX_MIRROR_ENTRIES)errors.push('too-many-star-mirror-entries');
   let previous=null;
   for(let index=0;index<entries.length;index++){
-    const row=entries[index]||{},before=Number(row.beforeValue),after=Number(row.afterValue),delta=Number(row.delta);
+    const row=entries[index]||{},before=Number(row.beforeValue),after=Number(row.afterValue),delta=Number(row.delta),kind=String(row.kind||'').trim(),referenceId=row.referenceId;
     if(!validInteger(before)||!validInteger(after)||!Number.isInteger(delta)||after-before!==delta)errors.push(`invalid-star-mirror-values:${index}`);
     if(previous&&previous.after!==before)errors.push(`star-mirror-discontinuity:${index}`);
-    if(!String(row.kind||'').trim())errors.push(`star-mirror-kind-missing:${index}`);
+    if(!kind)errors.push(`star-mirror-kind-missing:${index}`);
+    const purchaseError=validatePurchaseSemantics({kind,referenceId,delta},`star-mirror:${index}`);if(purchaseError)errors.push(purchaseError);
     if(!String(row.createdAt||'').trim())errors.push(`star-mirror-created-at-missing:${index}`);
     previous={after};
   }
@@ -55,6 +63,7 @@ export function validateStarBackupPayload(data){
     const after=Number(row?.after_value);
     const delta=Number(row?.delta);
     const name=String(row?.player_name||'').trim();
+    const kind=String(row?.kind||'').trim(),referenceId=row?.reference_id;
     if(!Number.isInteger(id)||id<=0||id<=previousId)errors.push(`invalid-ledger-id:${id}`);else previousId=id;
     if(!name)errors.push(`ledger-player-name-missing:${id||'unknown'}`);
     if(name&&!balanceByPlayer.has(name))errors.push(`orphan-ledger-player:${name}`);
@@ -62,7 +71,8 @@ export function validateStarBackupPayload(data){
     const previous=latestByPlayer.get(name);
     if(name&&previous&&previous.after!==before)errors.push(`ledger-discontinuity:${name}:${id||'unknown'}`);
     if(name)latestByPlayer.set(name,{id,after});
-    if(!String(row?.kind||'').trim())errors.push(`ledger-kind-missing:${id||'unknown'}`);
+    if(!kind)errors.push(`ledger-kind-missing:${id||'unknown'}`);
+    const purchaseError=validatePurchaseSemantics({kind,referenceId,delta},`ledger:${id||'unknown'}`);if(purchaseError)errors.push(purchaseError);
     if(!String(row?.created_at||'').trim())errors.push(`ledger-created-at-missing:${id||'unknown'}`);
   }
   for(const [name,latest] of latestByPlayer){
