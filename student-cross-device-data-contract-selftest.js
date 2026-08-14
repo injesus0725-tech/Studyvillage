@@ -4,7 +4,9 @@ const auth=fs.readFileSync('auth.js','utf8');
 
 const criticalPlayerFields=['totalScore','xp','level','title','badges','baseCharacter','inventory','equipment','activities'];
 for(const field of criticalPlayerFields){
-  if(!server.includes(`${field}:`))throw new Error(`server player payload missing cross-device field: ${field}`);
+  const explicit=new RegExp(`(?:^|[,\\s])${field}\\s*:`).test(server);
+  const shorthand=new RegExp(`(?:^|[,\\s])${field}(?=\\s*[,}])`).test(server);
+  if(!explicit&&!shorthand)throw new Error(`server player payload missing cross-device field: ${field}`);
 }
 if(!server.includes("app.post('/api/login'"))throw new Error('server login route missing');
 if(!server.includes('player:safePlayer(row)'))throw new Error('login must return server-backed player data');
