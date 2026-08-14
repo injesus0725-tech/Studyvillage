@@ -7,12 +7,23 @@ for(const token of [
   'activityKeys.has(key)',
   'reportIds.has(reportId)',
   'ledgerIds.has(id)',
-  '!ledgerIds.has(ledgerId)',
   'reviewedLedgerIds.has(ledgerId)',
-  '!ledgerIds.has(Number(row[ref]))',
-  'correctionIds.has(id)'
-])assert.ok(src.includes(token),`backup cross-reference guard missing: ${token}`);
+  'ledgerById=new Map()',
+  'sameLedgerScope(ledgerById.get(ledgerId),expected)',
+  "return fail('invalid-score-ledger-scope'",
+  "return fail('invalid-score-correction-scope'",
+  "return fail('score-correction-ledger-mismatch'",
+  "return fail('missing-score-correction-ledger'",
+  "return fail('unexpected-score-correction-ledger'",
+  "return fail('score-correction-value-mismatch'",
+  "return fail('unexpected-score-correction-undo-ledger'",
+  "return fail('missing-score-correction-undo-ledger'",
+  "return fail('score-correction-undo-value-mismatch'",
+  'correctionIds.add(id)'
+])assert.ok(src.includes(token),`backup cross-reference/score-correction guard missing: ${token}`);
 assert.ok(src.includes("return fail('invalid-activity-log'"),'orphan activity logs must be rejected');
 assert.ok(src.includes("return fail('invalid-score-review'"),'orphan score reviews must be rejected');
 assert.ok(src.includes("return fail('invalid-score-correction-ledger'"),'orphan correction ledger references must be rejected');
-console.log('backup cross reference integrity contract self-test passed');
+assert.ok(src.includes('ledger.beforeValue!==beforeValue||ledger.afterValue!==afterValue||ledger.delta!==afterValue-beforeValue'),'correction ledger must exactly mirror the correction value flow');
+assert.ok(src.includes('ledger.beforeValue!==afterValue||ledger.afterValue!==beforeValue||ledger.delta!==beforeValue-afterValue'),'undo ledger must exactly reverse the correction value flow');
+console.log('backup cross reference and score correction semantic integrity contract self-test passed');
