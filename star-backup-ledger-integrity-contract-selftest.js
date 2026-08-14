@@ -5,6 +5,9 @@ const combined=fs.readFileSync('server/backup-validator-with-stars.js','utf8');
 for(const token of [
   'entries.length>MAX_MIRROR_ENTRIES',
   'after-before!==delta',
+  'previous&&previous.after!==before',
+  'star-mirror-discontinuity:',
+  'star-mirror-balance-history-mismatch',
   'duplicate-balance:',
   'id<=previousId',
   'ledger-player-name-missing:',
