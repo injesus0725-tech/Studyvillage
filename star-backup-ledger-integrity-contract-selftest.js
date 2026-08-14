@@ -25,6 +25,11 @@ for(const token of [
 for(const token of [
   "code:'orphan-star-backup-setting'",
   "code:'invalid-star-backup-setting'",
-  "code:'star-balance-mismatch'"
+  "code:'star-balance-mismatch'",
+  'ownedByPlayer=new Map()',
+  "String(entry?.kind||'')!=='item-purchase'",
+  "code:'invalid-item-purchase-reference'",
+  "code:'invalid-item-purchase-delta'",
+  "code:'item-purchase-ownership-mismatch'"
 ])assert.ok(combined.includes(token),`combined star backup guard missing: ${token}`);
-console.log('star backup ledger integrity contract self-test passed');
+console.log('star backup ledger and item purchase integrity contract self-test passed');
