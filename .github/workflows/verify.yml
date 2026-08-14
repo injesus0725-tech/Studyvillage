@@ -13,7 +13,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,5 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install runtime dependencies
+        run: npm install --omit=dev --ignore-scripts
       - name: Run repository verification
         run: npm run verify
