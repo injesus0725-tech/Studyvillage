@@ -10,6 +10,9 @@ for(const token of [
   "code:'duplicate-item-id'",
   'if(!validated.ok)return validated',
   'JSON.stringify(validated.items)',
-  "code:changed.changes>0?undefined:'player-not-found'"
-])assert.ok(src.includes(token),`wardrobe replacement write guard missing: ${token}`);
-console.log('wardrobe replacement write integrity contract self-test passed');
+  "code:changed.changes>0?undefined:'player-not-found'",
+  "code:'corrupt-owned-items'",
+  'const validated=validateReplacementItems(value)',
+  'if(!validated.ok)return{ok:false'
+])assert.ok(src.includes(token),`wardrobe write guard missing: ${token}`);
+console.log('wardrobe replacement/grant write integrity contract self-test passed');
