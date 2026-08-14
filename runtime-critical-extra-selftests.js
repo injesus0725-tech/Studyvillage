@@ -73,7 +73,8 @@ const tests=[
   'student-recreate-admin-view-contract-selftest.js',
   'student-recreate-clean-slate-contract-selftest.js',
   'student-session-restore-retry-contract-selftest.js',
-  'vocabulary-startup-timeout-cleanup-contract-selftest.js'
+  'vocabulary-startup-timeout-cleanup-contract-selftest.js',
+  'wardrobe-replace-write-integrity-contract-selftest.js'
 ];
 for(const file of tests){
   const result=spawnSync(process.execPath,[file],{stdio:'inherit'});
