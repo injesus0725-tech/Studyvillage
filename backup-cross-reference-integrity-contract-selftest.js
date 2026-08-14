@@ -32,7 +32,8 @@ assert.ok(src.includes("return fail('invalid-score-correction-ledger'"),'orphan 
 assert.ok(src.includes('attempts===0&&(bestScore!==0||lastScore!==0||totalScore!==0)'),'zero-attempt activity records must have zero scores');
 assert.ok(src.includes('bestScore<lastScore||totalScore<bestScore||totalScore>attempts*1000'),'activity score relationships must remain internally consistent');
 assert.ok(src.includes('current!==ledger.afterValue'),'latest score ledger value must match the restored current value');
-assert.ok(src.includes('previous.afterValue!==next.beforeValue'),'score ledger entries for one target must form a continuous value chain');
+assert.ok(/history\[i-1\]\.afterValue\s*!==\s*history\[i\]\.beforeValue/.test(src),'score ledger entries for one target must form a continuous value chain');
+assert.ok(src.includes('history.sort((a,b)=>a.id-b.id)'),'score ledger continuity must be checked in ledger id order');
 assert.ok(src.includes('ledger.beforeValue!==beforeValue||ledger.afterValue!==afterValue||ledger.delta!==afterValue-beforeValue'),'correction ledger must exactly mirror the correction value flow');
 assert.ok(src.includes('ledger.beforeValue!==afterValue||ledger.afterValue!==beforeValue||ledger.delta!==beforeValue-afterValue'),'undo ledger must exactly reverse the correction value flow');
 console.log('backup cross reference, activity score, and score ledger semantic integrity contract self-test passed');
