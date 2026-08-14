@@ -12,7 +12,11 @@ for(const token of [
   "setSetting('admin_hash',hashPassword(p,salt))",
   'adminSessions.clear()'
 ])assert.ok(src.includes(token),`admin credential lifecycle guard missing: ${token}`);
-const init=src.indexOf('function ensureAdminPassword()');
-const install=src.indexOf('installActivityStateRoutes');
-assert.ok(init>=0&&install>init,'admin credential initialization must happen before protected route installation');
+const initDefinition=src.indexOf('function ensureAdminPassword()');
+const initCall=src.indexOf('ensureAdminPassword();',initDefinition);
+const installCall=src.indexOf('installActivityStateRoutes(app,{',initCall);
+assert.ok(initDefinition>=0&&initCall>initDefinition,'admin credential initializer must be defined and invoked');
+assert.ok(installCall>initCall,'admin credential initialization must happen before protected route installation');
+assert.ok(src.indexOf('installQuestionReviewRoutes(app,{',initCall)>initCall,'question review protected routes must install after admin credential initialization');
+assert.ok(src.indexOf('installStarLedgerRoutes(app,{',initCall)>initCall,'star ledger protected routes must install after admin credential initialization');
 console.log('admin credential lifecycle contract self-test passed');
