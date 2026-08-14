@@ -15,6 +15,8 @@ for(const token of [
   "code:'corrupt-owned-items'",
   'validateEquipment',
   "code:'corrupt-equipment'",
+  'validStarBalance',
+  "code:'corrupt-star-balance'",
   "if(state.ok===false)return res.status(409).json(state)"
 ])assert.ok(src.includes(token),`shop consistency guard missing: ${token}`);
 
@@ -23,11 +25,14 @@ const purchaseStart=src.indexOf('export function purchaseItem');
 const equipStart=src.indexOf('export function saveOwnedEquipment');
 assert.ok(stateStart>=0&&purchaseStart>stateStart&&equipStart>purchaseStart,'shop state/purchase/equipment functions must exist');
 const state=src.slice(stateStart,src.indexOf('export function configureShop',stateStart));
+assert.ok(state.includes('if(!validStarBalance(player.stars))'), 'shop read must strictly validate star balance');
 assert.ok(state.includes('validateOwnedItemsStrict(player.owned_items_json)'), 'shop read must strictly validate wardrobe state');
 assert.ok(state.includes('validateEquipment(player.equipment_json)'), 'shop read must strictly validate equipment state');
+assert.ok(state.includes("return{ok:false,code:'corrupt-star-balance'}"), 'shop read must surface corrupt star balance');
 assert.ok(state.includes("return{ok:false,code:'corrupt-owned-items'}"), 'shop read must surface corrupt wardrobe state');
 assert.ok(state.includes("return{ok:false,code:'corrupt-equipment'}"), 'shop read must surface corrupt equipment state');
 const purchase=src.slice(purchaseStart,equipStart);
+assert.ok(purchase.indexOf('if(!validStarBalance(player.stars))')<purchase.indexOf('UPDATE players SET stars=?,owned_items_json=?'),'purchase must validate existing star balance before writing');
 assert.ok(purchase.indexOf('validateOwnedItemsStrict(player.owned_items_json)')<purchase.indexOf('UPDATE players SET stars=?,owned_items_json=?'),'purchase must validate existing wardrobe state before writing');
 assert.ok(purchase.indexOf('UPDATE players SET stars=?,owned_items_json=?')<purchase.indexOf('INSERT INTO star_ledger'),'ownership and star balance must update before ledger insert inside the transaction');
 assert.ok(purchase.indexOf('INSERT INTO star_ledger')<purchase.indexOf('writeStarMirror(db,name)'),'star mirror must be written after the ledger entry');
