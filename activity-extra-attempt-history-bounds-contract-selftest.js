@@ -3,13 +3,13 @@ const assert=require('assert');
 const src=fs.readFileSync('server/activity-attempt-exceptions.js','utf8');
 for(const token of [
   "const HISTORY_KEY='activity-attempt-extra-history:v1'",
-  "if(Array.isArray(parsed))rows=parsed.slice(-1000)",
+  "rows=store.ok?store.rows.slice(-1000):[]",
   "const rawName=String(name??'').trim()",
   "if(rawName.length>12)return[]",
   "const safeName=rawName,safeActivity=clean(activityId,40),requestedLimit=Number(limit),max=Math.max(1,Math.min(1000,Number.isFinite(requestedLimit)?Math.floor(requestedLimit):200))",
   "if(safeActivity&&!SAFE_ACTIVITY.test(safeActivity))return[]",
   ".slice(-max).reverse()",
-  "if(Array.isArray(parsed))rows=parsed.slice(-999)",
+  "const rows=store.rows.slice(-999)",
   "rows.push(entry);setSetting(HISTORY_KEY,JSON.stringify(rows))",
   "type:'grant'",
   "type:'set'",
