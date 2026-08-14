@@ -8,14 +8,14 @@ import { fileURLToPath } from 'node:url';
 import { serializeOwnedItems,validateOwnedItemsStrict } from './item-ownership.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
-const PRICE_KEY='shop:prices:v1',ENABLED_KEY='shop:enabled:v1';
+const PRICE_KEY='shop:prices:v1',ENABLED_KEY='shop:enabled:v1',MAX_STARS=1000000;
 const DEFAULT_PRICES=Object.freeze({'cap-blue':10,'crown-gold':50,'glasses-round':15,'backpack':30,'pet-chick':25,'pet-cat':50});
 const ITEM_NAMES=Object.freeze({'cap-blue':'파란 모자','crown-gold':'황금 왕관','glasses-round':'동그란 안경','backpack':'모험 가방','pet-chick':'병아리 친구','pet-cat':'고양이 친구'});
 const ITEM_SLOTS=Object.freeze({'cap-blue':'hat','crown-gold':'hat','glasses-round':'glasses','backpack':'bag','pet-chick':'pet','pet-cat':'pet'});
 const SLOT_NAMES=new Set(['hat','glasses','bag','pet']);
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n),mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
 const compatibilityKeysFor=name=>['compat:stars:','compat:base-character:','compat:owned-items:'].map(prefix=>`${prefix}${encodeURIComponent(clean(name,12))}`);
-const validStarBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=1000000000;
+const validStarBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=MAX_STARS;
 function openDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,db=new Database(path.join(dataDir,'studyvillage.db'));db.pragma('busy_timeout = 3000');return db}
 function getSetting(db,key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null}
 function setSetting(db,key,value){db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,value)}
