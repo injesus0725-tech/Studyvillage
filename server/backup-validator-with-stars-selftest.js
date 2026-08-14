@@ -14,8 +14,11 @@ let result=validateStudyvillageBackupWithStars(base);
 assert.equal(result.ok,true);
 assert.equal(result.extraAttemptSettingCount,1);
 assert.equal(result.extraAttemptHistoryCount,2);
-assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.settings,{key:extraKey,value:'1'}]}).code,'duplicate-backup-setting-key');
-assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.settings,{key:historyKey,value:JSON.stringify(history)}]}).code,'duplicate-backup-setting-key');
+// Generic backup validation rejects duplicate setting keys before the additive
+// star/extra-attempt validator runs. Keep this contract aligned with that
+// fail-closed ordering instead of expecting the unreachable specialized code.
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.settings,{key:extraKey,value:'1'}]}).code,'invalid-setting');
+assert.equal(validateStudyvillageBackupWithStars({...base,settings:[...base.settings,{key:historyKey,value:JSON.stringify(history)}]}).code,'invalid-setting');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([history[0],{...history[1],id:'1'}])}]}).code,'duplicate-extra-attempt-history-id');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:extraKey,value:'1'},{key:historyKey,value:JSON.stringify([{...history[0],id:''}])}]}).code,'invalid-extra-attempt-history-id');
 assert.equal(validateStudyvillageBackupWithStars({...base,settings:[{key:starKey,value:mirror},{key:historyKey,value:JSON.stringify(history)}]}).code,'missing-extra-attempt-current-setting');
