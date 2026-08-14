@@ -11,8 +11,10 @@ if(!/if\(restoring\|\|finished/.test(restore))throw new Error('session-restore.j
 if(!/finished=true/.test(restore))throw new Error('session-restore.js: successful restore completion guard is missing');
 if(!/retryUsed=false/.test(restore))throw new Error('session-restore.js: bounded retry state is missing');
 if(!/if\(retry&&retryUsed\)return/.test(restore))throw new Error('session-restore.js: repeated retry guard is missing');
-if(!/window\.addEventListener\('online',retryRestore,\{once:true\}\)/.test(restore))throw new Error('session-restore.js: reconnect retry hook is missing');
-if(!/window\.addEventListener\('focus',retryRestore,\{once:true\}\)/.test(restore))throw new Error('session-restore.js: first-focus retry hook is missing');
+if(!/window\.addEventListener\('online',retryRestore\)/.test(restore))throw new Error('session-restore.js: reconnect retry hook is missing');
+if(!/window\.addEventListener\('focus',retryRestore\)/.test(restore))throw new Error('session-restore.js: first-focus retry hook is missing');
+if(!/window\.removeEventListener\('online',retryRestore\)/.test(restore)||!/window\.removeEventListener\('focus',retryRestore\)/.test(restore))throw new Error('session-restore.js: retry hooks must be removable after the bounded retry or successful restore');
+if(!/listenersAttached=false/.test(restore)||!/removeRetryListeners\(\)/.test(restore))throw new Error('session-restore.js: retry listener lifecycle guard is missing');
 if(!/name\.value\|\|password\.value/.test(restore))throw new Error('session-restore.js: retry must not override student typing');
 
 console.log('startup request contract selftest passed');
