@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8');
+assert.ok(server.includes("app.post('/api/admin/student-change-history/:id/undo',requireAdmin"),'undo must require administrator authentication');
+assert.ok(server.includes("['xp-correction','activity-record-correction'].includes(change.type)"),'only value-complete corrections may be undone');
+assert.ok(server.includes('current.xp!==after')&&server.includes('Object.keys(after).some(key=>current[key]!==after[key])'),'undo must reject a record changed after correction');
+assert.ok(server.includes("type='admin-change-undo' AND detail LIKE ?")&&server.includes('change-already-undone'),'the same correction must not be undone twice');
+assert.ok(server.includes("if(activityId==='riddle')")&&server.includes('aggregate[key]!==after[key]'),'riddle undo must verify and restore the legacy aggregate');
+assert.ok(server.includes("logActivity(change.playerName,'admin-change-undo'")&&server.includes('db.transaction(()=>'),'undo and audit entry must be atomic');
+assert.ok(admin.includes('이 교정 되돌리기')&&admin.includes('교정 이후 학생 기록이 다시 바뀌어'),'teacher UI must explain and expose conflict-safe undo');
+console.log('admin student change undo contract selftest passed');
