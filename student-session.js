@@ -59,6 +59,15 @@
     location.reload();
   });
 
+  document.addEventListener('click',event=>{
+    const closeActivity=event.target.closest('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
+    if(!closeActivity)return;
+    const panel=closeActivity.closest('.math-practice-panel,#library-game');
+    const completed=panel?.querySelector('.math-prompt,.library-word')?.textContent?.includes('완료');
+    if(completed||confirm('풀던 활동을 닫고 마을로 돌아갈까요?\n\n제출해 저장된 문제까지는 이어하기 기록에 남습니다. 현재 문제에 입력만 하고 아직 제출하지 않은 답은 저장되지 않습니다.'))return;
+    event.preventDefault();event.stopImmediatePropagation();
+  },true);
+
   window.addEventListener('keydown',event=>{
     if(event.key!=='Escape')return;
     const closeActivity=document.querySelector('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
