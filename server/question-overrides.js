@@ -5,7 +5,7 @@ const clean=(v,n=500)=>String(v??'').trim().slice(0,n);
 const read=getSetting=>{try{const v=JSON.parse(getSetting(STORE_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch{return{}}};
 const write=(setSetting,v)=>setSetting(STORE_KEY,JSON.stringify(v));
 const key=(activityId,questionNumber)=>`${clean(activityId,80)}:${Number(questionNumber)}`;
-const validQuestion=q=>q.type==='input'?q.acceptedAnswers.length>0:q.options.length>=2&&q.answer!==null&&q.answer>=0&&q.answer<q.options.length;
+const validQuestion=q=>{const prompt=q.word||q.question||q.prompt;if(!prompt)return false;if(q.type==='input'){const normalized=q.acceptedAnswers.map(value=>value.replace(/\s+/g,' ').toLocaleLowerCase('ko-KR'));return q.acceptedAnswers.length>0&&q.acceptedAnswers.length<=8&&new Set(normalized).size===normalized.length}return q.options.length>=2&&q.answer!==null&&q.answer>=0&&q.answer<q.options.length};
 export function installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSetting}){
   app.get('/api/question-overrides',(_req,res)=>res.json({ok:true,overrides:read(getSetting)}));
   app.post('/api/admin/question-overrides',requireAdmin,(req,res)=>{

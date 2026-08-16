@@ -8,5 +8,5 @@ assert.ok(client.includes("if(item.type==='input')"),'Bookmaru must render input
 assert.ok(client.includes("event.key==='Enter'"),'tablet/keyboard Enter must submit a typed answer');
 assert.ok(client.includes('StudyVillageQuestionResponse?.correct(item,response)'),'student scoring must use the shared answer rule');
 assert.ok(history.includes('acceptedAnswers:Array.isArray(q.acceptedAnswers)?q.acceptedAnswers.slice(0,8)'),'teacher history must preserve bounded accepted answers');
-assert.ok(routes.includes("q.type==='input'?q.acceptedAnswers.length>0"),'server overrides must validate input answers instead of requiring choice indexes');
+assert.ok(routes.includes("if(q.type==='input')")&&routes.includes('q.acceptedAnswers.length>0'),'server overrides must validate input answers instead of requiring choice indexes');
 console.log('question input type contract self-test passed');
