@@ -5,9 +5,8 @@
 const SAFE_ID=/^[a-z0-9-]{1,80}$/;
 
 const SETS=[
-  // Future examples:
-  // {id:'teacher-set',name:'선생님 세트',itemIds:['teacher-hat','teacher-glasses'],rarity:'special'},
-  // {id:'legendary-gwangcheol-set',name:'전설의 광철 세트',itemIds:['gwangcheol-hat','gwangcheol-pet'],rarity:'legendary'}
+  {id:'forest-explorer-set',name:'숲 탐험가 세트',itemIds:['leaf-cap','explorer-goggles','field-satchel','pet-fox'],rarity:'adventure'},
+  {id:'starlight-scholar-set',name:'별빛 학자 세트',itemIds:['scholar-cap','star-monocle','book-pack','pet-owl'],rarity:'scholar'}
 ];
 
 export function validateItemSetRegistry(sets=SETS){
