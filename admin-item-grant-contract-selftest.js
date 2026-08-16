@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const shop=fs.readFileSync('server/item-shop.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8'),pkg=fs.readFileSync('package.json','utf8');
+assert.ok(shop.includes('export function grantItemByTeacher'),'teacher item grant must use a dedicated server operation');
+assert.ok(shop.includes("app.post('/api/admin/player/:name/items',requireAdmin"),'item grant must require administrator authentication');
+assert.ok(shop.includes("if(validated.items.includes(id))return{ok:true,alreadyOwned:true"),'duplicate ownership must be a no-op');
+assert.ok(shop.includes("'teacher-item-grant'")&&shop.includes('delta,kind,reference_id'),'teacher grant must leave a zero-star audit ledger entry');
+assert.ok(shop.includes('db.transaction(()=>')&&shop.includes('writeStarMirror(db,name)'),'ownership and audit mirror must commit through the transaction');
+assert.ok(admin.includes('별은 차감되지 않으며 영구 보유 아이템으로 지급됩니다.')&&admin.includes('data-grant-name'),'teacher UI must explain and expose item grant');
+for(const file of ['admin-checkpoints.js','admin-checkpoints.css','admin-student-edit.js'])assert.ok(pkg.includes(`"${file}"`),`portable build must include ${file}`);
+console.log('admin item grant contract selftest passed');
