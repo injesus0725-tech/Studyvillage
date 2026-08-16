@@ -12,7 +12,15 @@ window.StudyVillageAvatar = (() => {
     'glasses-round': { emoji:'👓', src:null, alt:'동그란 안경' },
     'backpack': { emoji:'🎒', src:null, alt:'모험 가방' },
     'pet-chick': { emoji:'🐣', src:null, alt:'병아리 친구' },
-    'pet-cat': { emoji:'🐱', src:null, alt:'고양이 친구' }
+    'pet-cat': { emoji:'🐱', src:null, alt:'고양이 친구' },
+    'leaf-cap': { emoji:'🍃', src:null, alt:'새싹 탐험모' },
+    'scholar-cap': { emoji:'🎓', src:null, alt:'별빛 학사모' },
+    'explorer-goggles': { emoji:'🥽', src:null, alt:'숲빛 고글' },
+    'star-monocle': { emoji:'🔭', src:null, alt:'별 관측경' },
+    'field-satchel': { emoji:'🧰', src:null, alt:'탐험 도구 가방' },
+    'book-pack': { emoji:'📚', src:null, alt:'책마루 가방' },
+    'pet-owl': { emoji:'🦉', src:null, alt:'부엉이 친구' },
+    'pet-fox': { emoji:'🦊', src:null, alt:'여우 친구' }
   };
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}
