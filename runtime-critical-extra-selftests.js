@@ -27,6 +27,7 @@ const tests=[
   'activity-xp-idempotency-contract-selftest.js',
   'admin-credential-lifecycle-contract-selftest.js',
   'admin-default-password-contract-selftest.js',
+  'admin-exploration-collection-contract-selftest.js',
   'admin-login-password-safety-contract-selftest.js',
   'admin-password-session-invalidation-contract-selftest.js',
   'aggregate-player-backup-relationship-contract-selftest.js',
