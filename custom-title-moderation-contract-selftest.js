@@ -1,0 +1,15 @@
+const fs=require('fs'),assert=require('assert');
+const helper=fs.readFileSync('server/custom-title.js','utf8'),server=fs.readFileSync('server/server.js','utf8'),riddle=fs.readFileSync('server/riddle-attempt-student.js','utf8'),game=fs.readFileSync('game.js','utf8'),data=fs.readFileSync('data-service.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8');
+for(const token of ["value>=60?Math.floor(value/5)*5:0","last<threshold","nextCustomTitleLevel","title.length>=2&&title.length<=15","custom-title:v1:"])assert.ok(helper.includes(token),`custom title rule missing: ${token}`);
+assert.ok(server.includes("app.post('/api/player/me/custom-title',requireSession"),'student title writes must require a student session');
+assert.ok(server.includes("if(!custom.customTitleAvailable)return res.status(409)"),'server must reject repeated changes before the next five-level threshold');
+assert.ok(server.includes("writeCustomTitle(setSetting,player.name,title,custom.customTitleThreshold,'student')"),'student changes must consume the current threshold only on the server');
+assert.ok(server.includes("app.post('/api/admin/player/:name/custom-title',requireAdmin"),'teacher correction must require admin authentication');
+assert.ok(server.includes("writeCustomTitle(setSetting,name,title,before.lastStudentChangeLevel,'teacher')"),'teacher correction must preserve the student change right');
+assert.ok(server.includes("'custom-title-change','teacher-title-correction'"),'student and teacher changes must appear in the audit history');
+assert.ok(server.includes("['custom-title:v1:','exact']")&&server.includes('customTitleKey(name)'),'rename and delete must cover custom title state');
+for(const src of [server,riddle])assert.ok(src.includes('progress.level>=60&&custom.customTitle?custom.customTitle:rewards.title'),'custom titles must only replace earned titles from Lv.60');
+assert.ok(data.includes('customTitleAvailable:d.customTitleAvailable===true'),'client data cleaning must retain server eligibility');
+assert.ok(game.includes("fetch('/api/player/me/custom-title'")&&game.includes('다음 변경은 5레벨을 더 올린 뒤 가능합니다.'),'student record UI must explain and submit the one-use change');
+assert.ok(admin.includes('data-title-name')&&admin.includes('학생의 다음 5레벨 변경권은 소모되지 않습니다.'),'teacher UI must support moderated corrections without consuming rights');
+console.log('custom title moderation contract self-test passed');
