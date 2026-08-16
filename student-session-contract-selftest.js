@@ -21,6 +21,15 @@ if(!index.includes('<script src="student-session.js"></script>'))throw new Error
 const files=pkg.build?.files||[];
 if(!files.includes('student-session.js'))throw new Error('student-session.js must be packaged');
 if(/clearCheckpoint|localStorage\.clear|sessionStorage\.clear/.test(session))throw new Error('student switch must not clear saved activity checkpoints or all browser storage');
+for(const text of [
+  "exitButton.id='student-exit-button'",
+  "exitButton.textContent='🚪 나가기'",
+  "window.addEventListener('popstate'",
+  "history.pushState({studyvillageGuard:true},'',location.href)",
+  "new KeyboardEvent('keydown',{key:'Escape',code:'Escape'",
+  'if(leaving||!active())return',
+  '저장된 학습 기록은 유지되고 로그인 화면으로 돌아갑니다.'
+])if(!session.includes(text))throw new Error(`student navigation guard missing: ${text}`);
 for(const text of ['sessionGeneration=0','sessionGeneration++','expectedGeneration=sessionGeneration','expectedToken=sessionToken','expectedName=sessionName','expectedGeneration!==sessionGeneration']){
   if(!auth.includes(text))throw new Error(`stale restore guard missing: ${text}`);
 }
