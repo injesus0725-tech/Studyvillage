@@ -27,7 +27,7 @@ for(const text of [
   "window.addEventListener('popstate'",
   "history.pushState({studyvillageGuard:true},'',location.href)",
   "new KeyboardEvent('keydown',{key:'Escape',code:'Escape'",
-  'if(leaving||!active())return',
+  'if(leaving)return',
   '저장된 학습 기록은 유지되고 로그인 화면으로 돌아갑니다.'
 ])if(!session.includes(text))throw new Error(`student navigation guard missing: ${text}`);
 for(const text of ['sessionGeneration=0','sessionGeneration++','expectedGeneration=sessionGeneration','expectedToken=sessionToken','expectedName=sessionName','expectedGeneration!==sessionGeneration']){
