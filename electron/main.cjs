@@ -5,7 +5,11 @@ const { pathToFileURL } = require('node:url');
 
 let mainWindow;
 let classroomServer;
+let runtimeLogFile='';
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
+
+function safeRuntimeText(value,limit=5000){let text=String(value??'');try{text=text.split(app.getPath('userData')).join('[USER_DATA]')}catch{}text=text.split(path.resolve(__dirname,'..')).join('[APP]');return text.replace(/Bearer\s+[A-Za-z0-9._-]+/gi,'Bearer [REDACTED]').slice(0,limit)}
+function writeRuntimeError(kind,error){try{if(!runtimeLogFile){const dir=path.join(app.getPath('userData'),'data');fs.mkdirSync(dir,{recursive:true});runtimeLogFile=path.join(dir,'runtime-errors.jsonl')}if(fs.existsSync(runtimeLogFile)&&fs.statSync(runtimeLogFile).size>200000){const data=fs.readFileSync(runtimeLogFile,'utf8').slice(-100000),start=data.indexOf('\n');fs.writeFileSync(runtimeLogFile,start>=0?data.slice(start+1):'','utf8')}const row={kind:safeRuntimeText(kind,80),message:safeRuntimeText(error?.message||error,1800),stack:safeRuntimeText(error?.stack||'',5000),at:new Date().toISOString(),pid:process.pid};fs.appendFileSync(runtimeLogFile,`${JSON.stringify(row)}\n`,'utf8')}catch{}}
 
 async function waitForServer(url, timeoutMs = 15000) {
   const started = Date.now();
@@ -22,6 +26,7 @@ async function waitForServer(url, timeoutMs = 15000) {
 async function startServer() {
   const dataDir = path.join(app.getPath('userData'), 'data');
   fs.mkdirSync(dataDir, { recursive: true });
+  runtimeLogFile = path.join(dataDir, 'runtime-errors.jsonl');
   process.env.STUDYVILLAGE_DATA_DIR = dataDir;
   process.env.STUDYVILLAGE_EMBEDDED = '1';
 
@@ -30,6 +35,7 @@ async function startServer() {
   const serverPath = path.join(__dirname, '..', 'server', 'server.js');
   const serverModule = await import(pathToFileURL(serverPath).href);
   classroomServer = serverModule.startClassroomServer();
+  classroomServer?.on?.('error',error=>writeRuntimeError('server-error',error));
 }
 
 async function createWindow() {
@@ -70,6 +76,7 @@ if (!gotSingleInstanceLock) {
   });
 
   app.whenReady().then(createWindow).catch(error => {
+    writeRuntimeError('startup-error',error);
     console.error(error);
     dialog.showErrorBox(
       'Studyvillage를 시작하지 못했습니다',
@@ -86,3 +93,6 @@ app.on('before-quit', () => {
 app.on('window-all-closed', () => {
   app.quit();
 });
+
+process.on('unhandledRejection',reason=>writeRuntimeError('electron-unhandled-rejection',reason));
+process.on('uncaughtException',error=>{writeRuntimeError('electron-uncaught-exception',error);console.error(error);app.quit()});

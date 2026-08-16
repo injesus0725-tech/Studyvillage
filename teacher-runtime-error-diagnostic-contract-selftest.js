@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const electron=fs.readFileSync('electron/main.cjs','utf8'),server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-errors.js','utf8');
+for(const kind of ['startup-error','server-error','electron-unhandled-rejection','electron-uncaught-exception'])assert.ok(electron.includes(kind),`Electron runtime log must capture ${kind}`);
+assert.ok(electron.includes("runtime-errors.jsonl")&&electron.includes('size>200000')&&electron.includes("slice(-100000)"),'runtime log must be a bounded persistent JSONL file');
+assert.ok(electron.includes("'[USER_DATA]'")&&electron.includes("'[APP]'")&&electron.includes('Bearer [REDACTED]'),'runtime log must redact local paths and bearer tokens before writing');
+assert.ok(server.includes("app.get('/api/admin/runtime-errors',requireAdmin"),'runtime log reads must require administrator authentication');
+assert.ok(server.includes('stat.size>250000')&&server.includes("slice(-100)"),'runtime log API must reject oversized files and bound returned entries');
+assert.ok(server.includes("split(dataDir).join('[USER_DATA]')")&&server.includes("split(rootDir).join('[APP]')"),'server must redact paths again on export');
+assert.ok(admin.includes("optionalJson('/api/admin/runtime-errors')")&&admin.includes('teacherRuntimeErrors:runtimeErrors'),'ChatGPT diagnostic must include runtime errors without blocking other diagnostics');
+assert.ok(admin.includes('teacherRuntimeErrorCount:runtimeErrors.length'),'diagnostic summary must expose runtime error count');
+console.log('teacher runtime error diagnostic contract selftest passed');
