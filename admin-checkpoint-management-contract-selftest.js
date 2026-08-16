@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),client=fs.readFileSync('activity-checkpoint.js','utf8'),admin=fs.readFileSync('admin-checkpoints.js','utf8'),html=fs.readFileSync('admin.html','utf8');
+assert.ok(server.includes("app.get('/api/admin/player/:name/checkpoints',requireAdmin"),'checkpoint list must require administrator authentication');
+assert.ok(server.includes("app.delete('/api/admin/player/:name/checkpoints/:activityId',requireAdmin"),'checkpoint deletion must require administrator authentication');
+assert.ok(server.includes("deleted:true,updatedAt:new Date().toISOString()"),'checkpoint deletion must leave a bounded synchronization tombstone');
+assert.ok(client.includes('if(value.deleted===true)')&&client.includes('localStorage.removeItem(key(playerName,value.activityId))'),'server deletion must clear an older tablet copy on login sync');
+assert.ok(admin.includes('완료 점수·XP·활동 기록은 유지됩니다.'),'teacher must see the checkpoint-only deletion boundary');
+assert.ok(admin.includes('response.status===401')&&admin.includes("sessionStorage.removeItem('studyvillage-admin-token')"),'expired administrator authentication must fail closed');
+assert.ok(html.includes('<script src="admin-checkpoints.js"></script>'),'administrator checkpoint module must be loaded');
+console.log('admin checkpoint management contract selftest passed');

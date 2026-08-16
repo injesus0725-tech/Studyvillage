@@ -1,5 +1,6 @@
 const {spawnSync}=require('child_process');
 const tests=[
+  'admin-checkpoint-management-contract-selftest.js',
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-attempt-policy-safety-contract-selftest.js',
   'activity-extra-attempt-admin-safety-contract-selftest.js',
