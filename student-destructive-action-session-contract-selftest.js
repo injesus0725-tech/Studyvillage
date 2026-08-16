@@ -1,9 +1,9 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('server/server.js','utf8');
-assert.ok(src.includes('function clearStudentSessions(name)'),'student-specific session clearing helper must exist');
-const helperStart=src.indexOf('function clearStudentSessions(name)'),helperEnd=src.indexOf('\napp.post',helperStart),helper=src.slice(helperStart,helperEnd);
-assert.ok(/for\(const\[token,(?:s|session)\]of sessions\.entries\(\)\)if\((?:s|session)\?\.name===name\)sessions\.delete\(token\)/.test(helper),'session invalidation must remove every token owned by that student');
+assert.ok(src.includes('function clearStudentSessions(name,markReplaced=false)'),'student-specific session clearing helper must exist');
+const helperStart=src.indexOf('function clearStudentSessions(name,markReplaced=false)'),helperEnd=src.indexOf('\napp.post',helperStart),helper=src.slice(helperStart,helperEnd);
+assert.ok(/for\(const\[token,(?:s|session)\]of sessions\.entries\(\)\)if\((?:s|session)\?\.name===name\)\{/.test(helper)&&helper.includes('sessions.delete(token)'),'session invalidation must remove every token owned by that student');
 assert.ok(helper.includes('presence.delete(name)'),'student session invalidation must also clear stale presence');
 const pwStart=src.indexOf("app.post('/api/admin/player/:name/reset-password'"),recordStart=src.indexOf('const resetStudentRecord=db.transaction',pwStart),pw=src.slice(pwStart,recordStart);
 assert.ok(pw.includes('clearStudentSessions(name)'),'password reset must invalidate that student sessions');

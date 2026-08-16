@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),client=fs.readFileSync('student-single-session.js','utf8'),index=fs.readFileSync('index.html','utf8');
+assert.ok(server.includes('const sessions=new Map(),adminSessions=new Map(),presence=new Map(),replacedStudentSessions=new Map()'),'replaced student tokens must be tracked separately');
+assert.ok(server.includes("code:'session-replaced'"),'an old device must receive a specific replacement response');
+assert.ok(server.includes('REPLACED_SESSION_TTL_MS=5*60*1000')&&server.includes('pruneReplacedStudentSessions'),'replacement markers must be short-lived and pruned');
+const login=server.slice(server.indexOf("app.post('/api/login'"),server.indexOf("app.get('/api/player/me'"));
+assert.ok(login.indexOf("code:'wrong-password'")<login.indexOf('clearStudentSessions(name,true)'),'wrong passwords must not disconnect the current device');
+assert.ok(login.indexOf('clearStudentSessions(name,true)')<login.indexOf('token:createSession(name)'),'old sessions must be cleared before the new token is issued');
+for(const text of ["response.clone().json()","result?.code==='session-replaced'","sessionStorage.setItem(NOTICE_KEY,message)",'window.StudyVillageAuth?.clearSession?.()','location.reload()'])assert.ok(client.includes(text),`replacement client guard missing: ${text}`);
+assert.ok(index.indexOf('<script src="error-reporter.js"></script>')<index.indexOf('<script src="student-single-session.js"></script>'),'replacement handler must wrap the established fetch reporter');
+assert.ok(index.indexOf('<script src="student-single-session.js"></script>')<index.indexOf('<script src="presence.js"></script>'),'replacement handler must observe heartbeat requests');
+console.log('student single active session contract self-test passed');
