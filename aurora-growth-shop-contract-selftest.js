@@ -1,0 +1,13 @@
+const fs=require('fs');
+const assert=require('assert');
+const shop=fs.readFileSync('server/item-shop.js','utf8'),student=fs.readFileSync('student-shop.js','utf8'),admin=fs.readFileSync('admin-shop.js','utf8'),growth=fs.readFileSync('avatar-growth-effects.js','utf8'),css=fs.readFileSync('style.css','utf8');
+for(const token of ["'aurora-effect':150","'aurora-effect':'오로라 성장 효과'","'aurora-effect':'effect'","id==='aurora-effect'?50:1"])assert.ok(shop.includes(token),`aurora shop rule missing: ${token}`);
+assert.ok(shop.includes('level<DEFAULT_LEVEL_REQUIREMENTS[id]'),'teacher settings must not lower the aurora below level 50');
+assert.ok(student.includes('data-shop-slot="effect"')&&admin.includes('data-admin-shop-slot="effect"'),'student and teacher shops need an effect filter');
+assert.ok(admin.includes('min="${id===\'aurora-effect\'?50:1}"')&&admin.includes("minimum=input.dataset.shopLevel==='aurora-effect'?50:1"),'teacher shop UI must enforce the level-50 aurora floor');
+assert.ok(student.includes("if(found?.slot==='effect')")&&student.includes('성장 효과가 자동으로 켜졌어요.'),'effect purchases must activate without asking to occupy an equipment slot');
+assert.ok(growth.includes("data.ownedItems.includes('aurora-effect')"),'aurora must activate only after confirmed ownership');
+assert.ok(growth.includes("player.dataset.aurora=String(response.ok&&data.ok"),'failed shop reads must not grant aurora');
+assert.ok(css.includes('#player[data-aurora="true"]:before'),'owned aurora needs a separate visual layer');
+assert.ok(css.includes('@media(prefers-reduced-motion:reduce){#player[data-aurora="true"]:before{animation:none}'),'aurora must respect reduced motion');
+console.log('aurora growth shop contract self-test passed');
