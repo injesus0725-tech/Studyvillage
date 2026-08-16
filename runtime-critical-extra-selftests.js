@@ -61,6 +61,7 @@ const tests=[
   'star-ledger-balance-integrity-contract-selftest.js',
   'student-admin-action-boundary-contract-selftest.js',
   'student-accessory-benchmark-contract-selftest.js',
+  'student-2d-exploration-map-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
   'student-collection-milestone-contract-selftest.js',
