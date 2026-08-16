@@ -11,7 +11,7 @@ assert.ok(src.includes("if(!confirm(`${toggle.checked?'상점을 켜고':'상점
 const studentRoutes=fs.readFileSync('server/star-ledger.js','utf8');
 const adminRoutes=fs.readFileSync('server/question-review.js','utf8');
 assert.ok(studentRoutes.includes("import { installItemShopRoutes } from './item-shop.js';"),'학생 상점 라우트 연결 import가 필요합니다.');
-assert.ok(studentRoutes.includes('installItemShopRoutes(app,{requireSession,requireAdmin});'),'학생 상점 라우트는 학생 세션 인증을 포함해 연결되어야 합니다.');
+assert.ok(studentRoutes.includes('installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent});'),'학생 상점 라우트는 학생 세션 인증과 제한된 축하 알림 발행기를 포함해 연결되어야 합니다.');
 assert.ok(adminRoutes.includes("import { installItemShopRoutes } from './item-shop.js';"),'교사 상점 라우트 연결 import가 필요합니다.');
 assert.ok(adminRoutes.includes('installItemShopRoutes(app,{requireAdmin});'),'교사 상점 라우트는 관리자 인증으로 연결되어야 합니다.');
 

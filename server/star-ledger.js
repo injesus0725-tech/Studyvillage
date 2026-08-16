@@ -159,5 +159,5 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publish
   app.post('/api/player/me/daily-mission/claim',requireSession,(req,res)=>{try{const result=claimDailyMission(req.session.name);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-claim-failed',message:clean(err?.message||err,160)})}});
   installRiddleAttemptStudentRoutes(app,{requireSession});
   installActivityAttemptStudentRoutes(app,{requireSession});
-  installItemShopRoutes(app,{requireSession,requireAdmin});
+  installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent});
 }

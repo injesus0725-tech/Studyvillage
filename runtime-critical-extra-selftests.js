@@ -93,6 +93,7 @@ const tests=[
   'student-logout-session-contract-selftest.js',
   'student-level-up-live-event-contract-selftest.js',
   'student-collection-live-event-contract-selftest.js',
+  'student-featured-item-live-event-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js'
 ];
