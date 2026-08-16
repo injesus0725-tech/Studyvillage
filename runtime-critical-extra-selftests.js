@@ -85,6 +85,7 @@ const tests=[
   'admin-shop-unsaved-changes-contract-selftest.js',
   'admin-shop-bulk-availability-contract-selftest.js',
   'student-shop-category-filter-contract-selftest.js',
+  'student-shop-affordability-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
   'star-backup-ledger-integrity-contract-selftest.js',
