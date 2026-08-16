@@ -67,6 +67,7 @@ const tests=[
   'student-delete-extra-attempt-cleanup-contract-selftest.js',
   'student-destructive-action-session-contract-selftest.js',
   'student-first-activity-fresh-account-contract-selftest.js',
+  'student-entrance-interior-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
   'student-movement-recovery-contract-selftest.js',
   'student-mobile-controls-contract-selftest.js',
