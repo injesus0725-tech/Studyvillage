@@ -1,7 +1,7 @@
 /* v1.9 student star shop panel. Purchasing is atomic on the server and refreshes star/ownership records. */
 (()=>{
   const panel=document.querySelector('#customize-panel');if(!panel)return;
-  const icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱'};
+  const icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊'};
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
