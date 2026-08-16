@@ -7,4 +7,9 @@ assert.ok(css.includes('grid-template-columns:156px minmax(112px,1fr)'),'mobile 
 assert.ok(css.includes('.mobile-controls .talk-button{grid-column:2;grid-row:1/3;width:100%;height:88px'),'interaction must remain visible beside both direction rows');
 assert.ok(css.includes('env(safe-area-inset-bottom)'),'mobile controls must stay above the device safe area');
 assert.ok(css.includes('touch-action:none'),'direction presses must not turn into browser gestures');
+assert.ok(css.includes('-webkit-user-select:none;user-select:none;-webkit-touch-callout:none'),'long-press selection and touch callouts must be disabled on controls');
+const game=fs.readFileSync('game.js','utf8');
+assert.ok(game.includes("b.addEventListener('contextmenu',blockNative)"),'direction buttons must suppress native long-press menus');
+assert.ok(game.includes("b.addEventListener('selectstart',blockNative)"),'direction buttons must suppress text selection starts');
+assert.ok(game.includes('b.draggable=false'),'direction buttons must not become draggable browser content');
 console.log('student mobile controls contract selftest passed');
