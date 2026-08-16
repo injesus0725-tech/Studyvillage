@@ -106,6 +106,7 @@ const tests=[
   'student-entrance-interior-contract-selftest.js',
   'student-exploration-collection-contract-selftest.js',
   'student-random-exploration-contract-selftest.js',
+  'exploration-star-refresh-contract-selftest.js',
   'student-interior-suite-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
   'student-movement-recovery-contract-selftest.js',
