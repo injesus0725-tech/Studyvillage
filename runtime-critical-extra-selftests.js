@@ -109,6 +109,7 @@ const tests=[
   'student-new-account-defaults-contract-selftest.js',
   'student-movement-recovery-contract-selftest.js',
   'student-random-npc-contract-selftest.js',
+  'student-next-npc-unlock-contract-selftest.js',
   'initial-character-choice-contract-selftest.js',
   'student-random-discovery-contract-selftest.js',
   'student-mobile-controls-contract-selftest.js',
