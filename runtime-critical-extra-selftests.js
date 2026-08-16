@@ -75,6 +75,7 @@ const tests=[
   'shop-limited-sale-expiry-contract-selftest.js',
   'shop-limited-sale-start-contract-selftest.js',
   'student-shop-schedule-refresh-contract-selftest.js',
+  'admin-shop-sales-summary-contract-selftest.js',
   'student-shop-category-filter-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
