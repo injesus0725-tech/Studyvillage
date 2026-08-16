@@ -98,6 +98,14 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
     return tx();
   }finally{try{db?.close()}catch{}}
 }
+const EXPLORATION_REWARDS=Object.freeze({chest:{stars:3,detail:'보물상자 발견'},tree:{stars:1,detail:'반짝 나무 관찰'},flower:{stars:2,detail:'숨은 꽃 피우기'}});
+export function claimExplorationReward(playerName,eventType){
+  const name=clean(playerName,12),type=clean(eventType,20),reward=EXPLORATION_REWARDS[type];
+  if(!name||!reward)return{ok:false,code:'invalid-exploration-event'};
+  let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const day=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'}),referenceId=`${type}:${day}`;
+    const tx=db.transaction(()=>{const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='exploration-event' AND reference_id=? LIMIT 1").get(name,referenceId);if(prior)return{ok:true,alreadyClaimed:true,eventType:type,stars:0,balance:prior.balance};const before=player.stars,after=before+reward.stars;if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,reward.stars,'exploration-event',referenceId,reward.detail,now);writeMirror(db,name);return{ok:true,alreadyClaimed:false,eventType:type,stars:reward.stars,balance:after,createdAt:now}});return tx();
+  }finally{try{db?.close()}catch{}}
+}
 export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
   ensureStarLedger();
   installRestoreValidationMiddleware(app,{requireAdmin});
@@ -118,6 +126,7 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin}){
     try{const balance=starBalanceFor(req.session.name),entries=starLedgerFor(req.session.name,{limit:req.query.limit});if(balance===null)return res.status(404).json({ok:false,code:'player-not-found'});res.json({ok:true,balance,entries})}
     catch(err){res.status(500).json({ok:false,code:'star-ledger-read-failed',message:clean(err?.message||err,160)})}
   });
+  app.post('/api/player/me/exploration-event',requireSession,(req,res)=>{try{const result=claimExplorationReward(req.session.name,req.body?.eventType);if(!result.ok)return res.status(result.code==='player-not-found'?404:400).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'exploration-event-failed',message:clean(err?.message||err,160)})}});
   installRiddleAttemptStudentRoutes(app,{requireSession});
   installActivityAttemptStudentRoutes(app,{requireSession});
   installItemShopRoutes(app,{requireSession,requireAdmin});
