@@ -124,6 +124,7 @@ const tests=[
   'student-featured-item-live-event-contract-selftest.js',
   'student-special-achievement-live-event-contract-selftest.js',
   'student-progressive-xp-curve-contract-selftest.js',
+  'student-level-growth-effects-contract-selftest.js',
   'student-xp-progress-ui-contract-selftest.js',
   'student-next-growth-reward-contract-selftest.js',
   'student-server-checkpoint-contract-selftest.js',

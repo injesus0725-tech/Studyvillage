@@ -1,0 +1,13 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('avatar-growth-effects.js','utf8'),css=fs.readFileSync('style.css','utf8'),index=fs.readFileSync('index.html','utf8');
+assert.ok(src.includes("level>=5?'5':level>=3?'3':'1'"),'growth effects must unlock only at the intended levels');
+assert.ok(src.includes("player.dataset.motion==='walk'"),'trail effects must appear only while the avatar moves');
+assert.ok(src.includes('now-lastTrail>=220'),'trail creation must be rate limited for classroom tablets');
+assert.ok(src.includes('setTimeout(()=>mark.remove(),700)'),'trail nodes must be removed promptly');
+assert.ok(src.includes("!document.hidden&&game.classList.contains('active')"),'hidden or inactive game screens must not create effects');
+assert.ok(src.includes("matchMedia('(prefers-reduced-motion: reduce)')"),'reduced-motion preference must disable animated trails');
+assert.ok(css.includes('#player[data-growth-tier="3"]')&&css.includes('#player[data-growth-tier="5"]'),'level 3 and 5 visual tiers need distinct styling');
+assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'),'CSS must also respect reduced motion');
+assert.ok(index.includes('<script src="avatar-growth-effects.js"></script>'),'student page must load growth effects after avatar motion');
+console.log('student level growth effects contract self-test passed');
