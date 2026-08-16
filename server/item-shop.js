@@ -9,9 +9,9 @@ import { serializeOwnedItems,validateOwnedItemsStrict } from './item-ownership.j
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const PRICE_KEY='shop:prices:v1',ENABLED_KEY='shop:enabled:v1',MAX_STARS=1000000;
-const DEFAULT_PRICES=Object.freeze({'cap-blue':10,'crown-gold':50,'glasses-round':15,'backpack':30,'pet-chick':25,'pet-cat':50});
-const ITEM_NAMES=Object.freeze({'cap-blue':'파란 모자','crown-gold':'황금 왕관','glasses-round':'동그란 안경','backpack':'모험 가방','pet-chick':'병아리 친구','pet-cat':'고양이 친구'});
-const ITEM_SLOTS=Object.freeze({'cap-blue':'hat','crown-gold':'hat','glasses-round':'glasses','backpack':'bag','pet-chick':'pet','pet-cat':'pet'});
+const DEFAULT_PRICES=Object.freeze({'cap-blue':10,'crown-gold':50,'glasses-round':15,'backpack':30,'pet-chick':25,'pet-cat':50,'leaf-cap':18,'scholar-cap':35,'explorer-goggles':22,'star-monocle':40,'field-satchel':28,'book-pack':38,'pet-owl':45,'pet-fox':60});
+const ITEM_NAMES=Object.freeze({'cap-blue':'파란 모자','crown-gold':'황금 왕관','glasses-round':'동그란 안경','backpack':'모험 가방','pet-chick':'병아리 친구','pet-cat':'고양이 친구','leaf-cap':'새싹 탐험모','scholar-cap':'별빛 학사모','explorer-goggles':'숲빛 고글','star-monocle':'별 관측경','field-satchel':'탐험 도구 가방','book-pack':'책마루 가방','pet-owl':'부엉이 친구','pet-fox':'여우 친구'});
+const ITEM_SLOTS=Object.freeze({'cap-blue':'hat','crown-gold':'hat','glasses-round':'glasses','backpack':'bag','pet-chick':'pet','pet-cat':'pet','leaf-cap':'hat','scholar-cap':'hat','explorer-goggles':'glasses','star-monocle':'glasses','field-satchel':'bag','book-pack':'bag','pet-owl':'pet','pet-fox':'pet'});
 const SLOT_NAMES=new Set(['hat','glasses','bag','pet']);
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n),mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
 const compatibilityKeysFor=name=>['compat:stars:','compat:base-character:','compat:owned-items:'].map(prefix=>`${prefix}${encodeURIComponent(clean(name,12))}`);
