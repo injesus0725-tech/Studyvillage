@@ -69,6 +69,7 @@ const tests=[
   'restore-validation-wiring-contract-selftest.js',
   'session-token-lifecycle-contract-selftest.js',
   'shop-price-validation-parity-contract-selftest.js',
+  'shop-item-availability-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
   'star-backup-ledger-integrity-contract-selftest.js',
