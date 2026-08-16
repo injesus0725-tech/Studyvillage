@@ -119,6 +119,7 @@ const tests=[
   'student-random-discovery-contract-selftest.js',
   'student-mobile-controls-contract-selftest.js',
   'student-qr-back-navigation-contract-selftest.js',
+  'student-entry-exit-flow-contract-selftest.js',
   'student-record-relationship-contract-selftest.js',
   'student-record-reset-boundary-contract-selftest.js',
   'student-record-reset-extra-attempt-preservation-contract-selftest.js',
