@@ -13,6 +13,28 @@
   const profile=hudRight.querySelector('.player-profile');
   if(profile)hudRight.insertBefore(button,profile);else hudRight.appendChild(button);
 
+  const exitButton=document.createElement('button');
+  exitButton.id='student-exit-button';
+  exitButton.className='record-button';
+  exitButton.textContent='🚪 나가기';
+  exitButton.title='확인 후 현재 학생의 마을 이용을 마칩니다.';
+  hudRight.insertBefore(exitButton,button);
+
+  const notice=document.createElement('div');
+  notice.id='student-back-notice';
+  notice.setAttribute('role','status');
+  notice.setAttribute('aria-live','polite');
+  notice.style.cssText='position:fixed;left:50%;bottom:105px;z-index:12000;transform:translate(-50%,12px);padding:10px 15px;border-radius:999px;background:#203f2eea;color:#fff;font-size:13px;font-weight:900;opacity:0;pointer-events:none;transition:.2s';
+  notice.textContent='마을을 나가려면 위쪽의 🚪 나가기를 눌러 주세요.';
+  document.body.appendChild(notice);
+
+  let navigationArmed=false,leaving=false,noticeTimer=0;
+  function active(){return game.classList.contains('active')}
+  function armNavigation(){if(navigationArmed||!active())return;history.pushState({studyvillageGuard:true},'',location.href);navigationArmed=true}
+  function showBackNotice(){notice.style.opacity='1';notice.style.transform='translate(-50%,0)';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{notice.style.opacity='0';notice.style.transform='translate(-50%,12px)'},1800)}
+  window.addEventListener('popstate',()=>{if(leaving||!active())return;history.pushState({studyvillageGuard:true},'',location.href);window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));showBackNotice()});
+  new MutationObserver(armNavigation).observe(game,{attributes:true,attributeFilter:['class']});
+
   let switching=false;
   button.addEventListener('click',()=>{
     if(switching)return;
@@ -21,6 +43,17 @@
     switching=true;
     button.disabled=true;
     button.textContent='학생 바꾸는 중…';
+    window.StudyVillageAuth.clearSession();
+    location.reload();
+  });
+
+  exitButton.addEventListener('click',()=>{
+    if(leaving)return;
+    const name=document.querySelector('#profile-name')?.textContent?.trim()||'현재 학생';
+    if(!confirm(`${name} 학생의 마을 이용을 마칠까요?\n\n저장된 학습 기록은 유지되고 로그인 화면으로 돌아갑니다.`))return;
+    leaving=true;
+    exitButton.disabled=true;
+    exitButton.textContent='나가는 중…';
     window.StudyVillageAuth.clearSession();
     location.reload();
   });
