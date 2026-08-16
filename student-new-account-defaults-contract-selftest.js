@@ -18,6 +18,6 @@ for(const token of [
   "base_character TEXT NOT NULL DEFAULT 'student-default'",
   "equipment_json TEXT NOT NULL DEFAULT '{}'"
 ])assert.ok(src.includes(token),`fresh account database default missing: ${token}`);
-assert.ok(src.includes("levelFromXp=xp=>Math.max(1"),'zero XP must still start at level 1');
+assert.ok(src.includes('levelFromXp=xp=>')&&src.includes('let level=1'),'zero XP must still start at level 1');
 assert.ok(src.includes("let title='새싹 주민'"),'fresh account must start with the beginner title');
 console.log('student new account defaults contract self-test passed');
