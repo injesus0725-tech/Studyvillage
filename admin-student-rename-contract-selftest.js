@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8');
+assert.ok(server.includes("app.post('/api/admin/player/:name/rename',requireAdmin"),'student rename must require administrator authentication');
+for(const table of ['activity_records','activity_log','error_reports','score_ledger','score_corrections','star_ledger'])assert.ok(server.includes(`'${table}'`),`rename must migrate ${table}`);
+for(const prefix of ['compat:stars:','compat:base-character:','compat:owned-items:','exploration-collection:','activity-checkpoints:','activity-attempt-extra:v1:'])assert.ok(server.includes(prefix),`rename must migrate ${prefix}`);
+assert.ok(server.includes("row?.name===oldName?{...row,name:newName}:row"),'extra-attempt history must migrate the canonical student name');
+assert.ok(server.includes('rename-settings-conflict')&&server.includes("student-name-exists"),'rename must fail closed on account or settings conflicts');
+assert.ok(server.includes("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?")&&!server.includes("'])try{db.prepare(`UPDATE ${table}"),'existing relationship tables must migrate without swallowing write failures');
+assert.ok(server.includes('clearStudentSessions(oldName);clearStudentSessions(newName);presence.delete(oldName)'),'rename must revoke old device sessions and presence');
+assert.ok(admin.includes('활동·점수·별·아이템·이어하기 기록도 함께 이동됩니다.')&&admin.includes('data-rename-name'),'teacher UI must explain and expose the full rename boundary');
+console.log('admin student rename contract selftest passed');
