@@ -68,6 +68,7 @@ const tests=[
   'student-destructive-action-session-contract-selftest.js',
   'student-first-activity-fresh-account-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
+  'student-movement-recovery-contract-selftest.js',
   'student-record-relationship-contract-selftest.js',
   'student-record-reset-boundary-contract-selftest.js',
   'student-record-reset-extra-attempt-preservation-contract-selftest.js',
