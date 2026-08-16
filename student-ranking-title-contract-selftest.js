@@ -5,5 +5,10 @@ assert.ok(server.includes("app.get('/api/ranking',requireSession"),'class rankin
 assert.ok(layout.includes("currentTitle=String(p.title||'새싹 주민')"),'ranking must use the current verified title with a safe fallback');
 assert.ok(layout.includes('class="sv-rank-title"')&&layout.includes('🏷️ ${esc(currentTitle)}'),'ranking must display escaped titles');
 assert.ok(layout.includes('.sv-rank-title{')&&layout.includes('text-overflow:ellipsis'),'long valid titles must not break the tablet ranking layout');
-assert.ok(layout.includes("players.sort((a,b)=>(Number(b.totalScore)||0)-(Number(a.totalScore)||0)||(Number(b.xp)||0)-(Number(a.xp)||0)"),'titles must not change the established score and XP ranking order');
+assert.ok(layout.includes("players.sort((a,b)=>(Number(b.level)||1)-(Number(a.level)||1)||(Number(b.xp)||0)-(Number(a.xp)||0)"),'ranking must order by level, then XP, then student name');
+assert.ok(server.includes("return{name:player.name,xp:player.xp,level:player.level,title:player.title,baseCharacter:player.baseCharacter,equipment:rankingEquipment(row)}"),'ranking API must expose only the fields needed for level and avatar cards');
+assert.ok(server.includes('RANKING_ITEM_SLOTS=Object.freeze')&&server.includes('if(RANKING_ITEM_SLOTS[id]===slot)'), 'ranking equipment must be server allowlisted by slot');
+for(const slot of ['hat','glasses','bag','pet'])assert.ok(layout.includes(`equipment.${slot}`),`ranking avatar must paint ${slot}`);
+assert.ok(layout.includes("renderer?.paintBase(row.querySelector('.sv-rank-base'),p.baseCharacter||'student-default')"),'ranking must reuse the canonical avatar renderer');
+assert.ok(layout.includes('class="sv-rank-level"')&&layout.includes('class="sv-rank-avatar"'),'ranking cards must show level before title, student name, and avatar');
 console.log('student ranking title contract self-test passed');
