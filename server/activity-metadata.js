@@ -1,7 +1,10 @@
 /* v1.9 shared server activity metadata for score history/read APIs. */
 const META=Object.freeze({
   vocabulary:{subject:'국어',topic:'어휘',name:'책마루 · 낱말 뜻 맞추기'},
-  riddle:{subject:'기타',topic:'수수께끼',name:'도전관 · 수수께끼'}
+  riddle:{subject:'기타',topic:'수수께끼',name:'도전관 · 수수께끼'},
+  'exploration-riddle':{subject:'창의적 사고',topic:'수수께끼 탐험',name:'탐험 · 수수께끼'},
+  'exploration-forest-riddle':{subject:'창의적 사고',topic:'쉬운 수수께끼',name:'생각의 숲 · 수수께끼'},
+  'exploration-mountain-riddle':{subject:'창의적 사고',topic:'도전 수수께끼',name:'도전의 산 · 수수께끼'}
 });
 
 export function activityMetadataFor(activityId){
