@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-errors.js','utf8');
+assert.ok(server.includes("app.delete('/api/admin/runtime-errors',requireAdmin"),'runtime log deletion must require administrator authentication');
+assert.ok(server.includes("path.join(dataDir,'runtime-errors.jsonl')")&&server.includes('fs.unlinkSync(file)'),'runtime deletion must target only the exact bounded log file');
+assert.ok(admin.includes('교사 프로그램·서버 실행 오류')&&admin.includes('loadRuntimeErrors'),'teacher error panel must show runtime errors');
+assert.ok(admin.includes('rows.slice(-10).reverse()'),'runtime viewer must show only the latest ten entries');
+assert.ok(admin.includes("esc(row.kind||'runtime-error')")&&admin.includes("esc(row.message||'오류 메시지 없음')"),'runtime error content must be HTML escaped');
+assert.ok(admin.includes('학생 기기 오류는 유지됩니다.')&&admin.includes("fetchJson('/api/admin/runtime-errors',{method:'DELETE'})"),'runtime clear must explain and preserve student error records');
+assert.ok(admin.includes("refresh.onclick=()=>{loadRetention();loadRuntimeErrors();load()}") ,'manual refresh must update both student and teacher runtime errors');
+console.log('admin runtime error viewer contract selftest passed');
