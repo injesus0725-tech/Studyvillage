@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),ledger=fs.readFileSync('server/star-ledger.js','utf8');
+assert.ok(server.includes('installStarLedgerRoutes(app,{requireSession,requireAdmin,publishLiveEvent})'),'star reward routes must receive the bounded live-event publisher');
+assert.ok(ledger.includes('installStarLedgerRoutes(app,{requireSession,requireAdmin,publishLiveEvent})'),'the optional publisher must be injected rather than coupled to server memory');
+const route=ledger.slice(ledger.indexOf("app.post('/api/player/me/exploration-collection/milestone'"),ledger.indexOf("app.get('/api/admin/exploration-collections'"));
+assert.ok(route.includes('if(!result.alreadyClaimed)'),'only the first successful milestone claim may announce');
+assert.ok(route.indexOf('claimCollectionMilestone(')<route.indexOf('publishLiveEvent?.('),'the durable reward must be confirmed before its announcement');
+assert.ok(route.includes("'collection-milestone'"),'collection announcements need a distinct event type');
+assert.ok(route.includes('try{publishLiveEvent?.(')&&route.includes(')}catch{}'),'an announcement failure must never turn a committed reward into a failed claim');
+assert.ok(route.includes('${req.session.name} 학생이 탐험 도감 “${milestone.title}” 보상을 획득했습니다!'),'the announcement must identify the student and verified milestone title');
+console.log('student collection live event contract self-test passed');
