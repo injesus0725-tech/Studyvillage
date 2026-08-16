@@ -58,4 +58,11 @@
     await window.StudyVillageAuth.logoutSession();
     location.reload();
   });
+
+  window.addEventListener('keydown',event=>{
+    if(event.key!=='Escape')return;
+    const closeActivity=document.querySelector('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
+    if(!closeActivity)return;
+    event.preventDefault();event.stopImmediatePropagation();closeActivity.click();
+  },true);
 })();
