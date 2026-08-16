@@ -71,6 +71,7 @@ const tests=[
   'shop-price-validation-parity-contract-selftest.js',
   'shop-item-availability-contract-selftest.js',
   'shop-item-level-requirement-contract-selftest.js',
+  'student-shop-category-filter-contract-selftest.js',
   'shop-star-equipment-consistency-contract-selftest.js',
   'sqlite-classroom-write-safety-contract-selftest.js',
   'star-backup-ledger-integrity-contract-selftest.js',
