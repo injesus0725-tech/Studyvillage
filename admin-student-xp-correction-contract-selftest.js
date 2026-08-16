@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8'),html=fs.readFileSync('admin.html','utf8');
+assert.ok(server.includes("app.post('/api/admin/player/:name/xp',requireAdmin"),'XP correction route must require administrator authentication');
+assert.ok(server.includes('Number.isInteger(xp)&&')||server.includes('!Number.isInteger(xp)||xp<0||xp>1000000'),'XP correction must accept only a bounded integer');
+assert.ok(server.includes("reason.length<3||reason.length>200"),'XP correction must require a bounded reason');
+assert.ok(server.includes("logActivity(name,'xp-correction'"),'XP correction must leave a teacher-readable audit event');
+assert.ok(server.includes("const result=db.transaction(()=>{const now=new Date().toISOString();db.prepare('UPDATE players SET xp=?"),'XP change and audit event must commit atomically');
+assert.ok(admin.includes('현재 값이 아니라 변경 후 최종 XP입니다.')&&admin.includes('교정 이유를 3자 이상'),'teacher UI must distinguish target XP and require a reason');
+assert.ok(admin.includes('response.status===401')&&admin.includes("sessionStorage.removeItem('studyvillage-admin-token')"),'expired administrator authentication must fail closed');
+assert.ok(html.includes('<script src="admin-student-edit.js"></script>'),'administrator student edit module must be loaded');
+console.log('admin student XP correction contract selftest passed');
