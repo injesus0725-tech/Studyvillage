@@ -6,7 +6,7 @@ assert.ok(src.includes("const esc=v=>String(v??'').replace"),'상점 아이템 �
 assert.ok(src.includes('${esc(item.name)}'),'상점 아이템 이름은 안전하게 표시해야 합니다.');
 assert.ok(src.includes('${esc(id)}'),'상점 아이템 ID는 안전하게 표시해야 합니다.');
 assert.ok(src.includes('saving=false,loading=false'),'상점 저장과 조회 상태를 각각 추적해야 합니다.');
-assert.ok(src.includes('async function load(){ensure();if(loading)return;loading=true'),'상점 설정 조회가 겹치면 안 됩니다.');
+assert.ok(src.includes('async function load(){ensure();if(loading)return;')&&src.includes("return;loading=true;status.textContent='불러오는 중…'"),'상점 설정 조회가 겹치면 안 됩니다.');
 assert.ok(src.includes('finally{loading=false}'),'상점 조회가 끝나면 조회 잠금을 풀어야 합니다.');
 assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'상점 관리 요청은 무한정 대기하지 않도록 제한 시간이 필요합니다.');
 assert.ok(src.includes('async function timedFetch'),'상점 관리 요청은 공통 제한시간 함수를 사용해야 합니다.');
