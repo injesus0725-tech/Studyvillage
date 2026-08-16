@@ -11,6 +11,6 @@ assert.ok(server.includes('limited:limited[id]'),'학생과 관리자에게 아�
 assert.ok(server.includes('limited:req.body?.limited'),'관리자 API가 한정 설정을 전달해야 합니다.');
 assert.ok(admin.includes('data-shop-limited'),'관리자 화면에 한정 아이템 토글이 있어야 합니다.');
 assert.ok(admin.includes('levelRequirements,limited'),'관리자 저장 요청에 한정 상태가 포함돼야 합니다.');
-assert.ok(student.includes("item.limited?'<em>한정</em>':''"),'학생 상점에 한정 배지를 표시해야 합니다.');
-assert.ok(!server.slice(server.indexOf('export function purchaseItem'),server.indexOf('export function saveOwnedEquipment')).includes('readLimited'),'한정 표시는 구매 가능 여부를 바꾸지 않아야 합니다.');
+assert.ok(student.includes('item.limited?`<em')&&student.includes('>한정</em>`'),'학생 상점에 한정 배지를 표시해야 합니다.');
+assert.ok(server.includes("readLimited(db)[id]&&saleEnd"),'한정 표시는 종료 시각이 함께 있을 때만 구매 종료에 사용해야 합니다.');
 console.log('shop limited item contract self-test passed');
