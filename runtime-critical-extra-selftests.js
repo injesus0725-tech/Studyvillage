@@ -98,6 +98,7 @@ const tests=[
   'student-progressive-xp-curve-contract-selftest.js',
   'student-xp-progress-ui-contract-selftest.js',
   'student-next-growth-reward-contract-selftest.js',
+  'student-server-checkpoint-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js'
 ];
