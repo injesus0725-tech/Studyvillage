@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+assert.ok(src.includes("function publishLiveEvent(icon,message,type='celebration')"),'manual and automatic announcements must share one bounded publisher');
+assert.ok(src.includes('const audience=activePresenceNames();if(!audience.size)return null'),'automatic announcements must target only students present at that moment');
+assert.ok(src.includes('expiresAt:now+15000')&&src.includes('liveEvents.length>50'),'automatic announcements must retain existing expiry and queue bounds');
+assert.ok(src.includes("function announceLevelUp(before,after)")&&src.includes('if(newLevel<=oldLevel)return null'),'only a real level transition may announce');
+assert.ok(src.includes("logActivity(after.name,'level-up',`Lv.${newLevel} 달성`)"),'level-up announcements must leave an activity record');
+assert.ok(src.includes("publishLiveEvent('🎉',`${after.name} 학생이 Lv.${newLevel}에 올랐습니다!`,'level-up')"),'level-up announcements must contain the student and achieved level');
+const record=src.slice(src.indexOf("app.post('/api/player/me/record'"),src.indexOf("app.post('/api/player/me/activity'"));
+const activity=src.slice(src.indexOf("app.post('/api/player/me/activity'"),src.indexOf("app.post('/api/player/me/equipment'"));
+assert.ok(record.includes('announceLevelUp(e,updated)'),'legacy riddle XP must announce level transitions');
+assert.ok(activity.includes('announceLevelUp(player,updated)'),'activity XP must announce level transitions');
+console.log('student level-up live event contract self-test passed');
