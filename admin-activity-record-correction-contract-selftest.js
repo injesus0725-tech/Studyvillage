@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-student-edit.js','utf8');
+assert.ok(server.includes("app.get('/api/admin/player/:name/activity-records',requireAdmin"),'activity record list must require administrator authentication');
+assert.ok(server.includes("app.post('/api/admin/player/:name/activity-records/:activityId',requireAdmin"),'activity correction must require administrator authentication');
+assert.ok(server.includes("attempts===0&&(bestScore||lastScore||totalScore)")&&server.includes("bestScore<lastScore||totalScore<bestScore||totalScore>attempts*1000"),'server must reject internally inconsistent activity records');
+assert.ok(server.includes("if(activityId==='riddle')db.prepare('UPDATE players SET attempts=?"),'legacy riddle aggregate must stay synchronized');
+assert.ok(server.includes("logActivity(name,'activity-record-correction'")&&server.includes('const result=db.transaction'),'record correction and audit event must be atomic');
+assert.ok(server.includes('xpUnchanged:true')&&admin.includes('XP는 이 작업에서 변경되지 않습니다.'),'teacher must see that record correction preserves XP');
+assert.ok(admin.includes('data-record-name')&&admin.includes('활동 교정'),'student table must expose the correction action');
+console.log('admin activity record correction contract selftest passed');
