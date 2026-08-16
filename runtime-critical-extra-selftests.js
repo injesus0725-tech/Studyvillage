@@ -1,5 +1,6 @@
 const {spawnSync}=require('child_process');
 const tests=[
+  'admin-error-review-contract-selftest.js',
   'admin-student-change-undo-contract-selftest.js',
   'admin-student-change-history-contract-selftest.js',
   'admin-student-rename-contract-selftest.js',

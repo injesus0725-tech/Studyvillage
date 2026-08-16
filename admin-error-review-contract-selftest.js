@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-errors.js','utf8');
+assert.ok(server.includes("app.put('/api/admin/errors/review/:groupKey',requireAdmin"),'error review writes must require administrator authentication');
+assert.ok(server.includes("crypto.createHash('sha256')")&&server.includes("[row.kind||'error',row.message||'',row.page||'',row.version||''].join"),'error review must use the same stable group dimensions as the UI');
+assert.ok(server.includes("['open','resolved','ignored'].includes(status)")&&server.includes('note.length>500'),'review status and note must be bounded');
+assert.ok(server.includes('ERROR_REVIEW_MAX=500')&&server.includes('rows.slice(ERROR_REVIEW_MAX)'),'stored reviews must be count bounded');
+assert.ok(server.includes(".some(row=>errorGroupKey(row)===groupKey)"),'review writes must target an existing error group');
+assert.ok(admin.includes('해결 후 재발')&&admin.includes('Date.parse(g.latest)>Date.parse(g.review.updatedAt)'),'a post-resolution occurrence must be marked as reappeared');
+assert.ok(admin.includes('상태·메모 수정')&&admin.includes('교사 메모 ·'),'teacher must be able to edit and see grouped review notes');
+assert.ok(admin.includes("headers:{...headers(),'Content-Type':'application/json'}"),'review save must preserve administrator authorization');
+console.log('admin error review contract selftest passed');
