@@ -63,6 +63,7 @@ const tests=[
   'student-accessory-benchmark-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
+  'student-collection-milestone-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',
   'student-delete-data-cleanup-contract-selftest.js',
   'student-delete-extra-attempt-atomic-cleanup-contract-selftest.js',
