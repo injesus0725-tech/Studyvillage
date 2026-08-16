@@ -37,8 +37,20 @@
   armNavigation();
 
   let switching=false;
+  function writeInProgress(){
+    const mission=document.querySelector('.sv-mission-panel:not([hidden]) .claim:disabled');if(mission&&mission.closest('.sv-mission-card')?.textContent.includes('저장'))return true;
+    if(document.querySelector('.sv-collection-panel:not([hidden]) button:disabled'))return true;
+    const customizeSave=document.querySelector('#customize-panel:not([hidden]) #customize-save:disabled');if(customizeSave&&document.querySelector('#customize-message')?.textContent.includes('저장'))return true;
+    const mathSubmit=document.querySelector('.math-practice-panel:not([hidden]) [data-submit]:disabled');if(mathSubmit&&mathSubmit.closest('.math-practice-card')?.textContent.includes('서버가'))return true;
+    const library=document.querySelector('#library-game:not([hidden])');if(library?.querySelector('#library-progress')?.textContent==='완료'&&library.querySelector('#library-next')?.hidden)return true;
+    const expedition=document.querySelector('.sv-expedition-panel:not([hidden]) .sv-expedition-result');if(expedition&&!expedition.querySelector('button'))return true;
+    const discovery=document.querySelector('.sv-discovery-panel:not([hidden]) .primary:disabled');if(discovery&&discovery.closest('.sv-discovery-card')?.textContent.includes('저장'))return true;
+    return false;
+  }
+  function guardWrite(){if(!writeInProgress())return false;alert('기록을 안전하게 저장하고 있어요.\n완료 또는 다시 시도 안내가 나온 뒤 나가 주세요.');return true}
   button.addEventListener('click',async()=>{
     if(switching)return;
+    if(guardWrite())return;
     const name=document.querySelector('#profile-name')?.textContent?.trim()||'현재 학생';
     if(!confirm(`${name} 학생의 사용을 마치고 다른 학생으로 바꿀까요?\n\n이미 저장된 기록과 풀던 문제의 임시 기록은 지워지지 않습니다.\n저장 중인 화면이 있다면 저장 완료 표시를 확인한 뒤 바꾸는 것이 안전합니다.`))return;
     switching=true;
@@ -50,6 +62,7 @@
 
   exitButton.addEventListener('click',async()=>{
     if(leaving)return;
+    if(guardWrite())return;
     const name=document.querySelector('#profile-name')?.textContent?.trim()||'현재 학생';
     if(!confirm(`${name} 학생의 마을 이용을 마칠까요?\n\n저장된 학습 기록은 유지되고 로그인 화면으로 돌아갑니다.`))return;
     leaving=true;
