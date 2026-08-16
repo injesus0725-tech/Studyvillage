@@ -64,6 +64,7 @@ const tests=[
   'question-content-selftest.js',
   'question-input-type-contract-selftest.js',
   'admin-question-input-editor-contract-selftest.js',
+  'math-practice-server-validation-contract-selftest.js',
   'restore-executor-single-run-contract-selftest.js',
   'restore-preflight-fail-closed-contract-selftest.js',
   'restore-route-order-contract-selftest.js',

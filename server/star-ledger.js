@@ -11,6 +11,7 @@ import { installActivityAttemptStudentRoutes } from './activity-attempt-student.
 import { installRiddleAttemptStudentRoutes } from './riddle-attempt-student.js';
 import { installStudentScoreHistoryRoutes } from './student-score-history.js';
 import { installRestoreValidationMiddleware } from './restore-validation-middleware.js';
+import { installMathPracticeRoutes, validateMathCompletion, finalizeMathCompletion } from './math-practice.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const MAX_STARS=1000000,MAX_MIRROR_ENTRIES=500;
@@ -179,6 +180,7 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publish
   app.get('/api/player/me/daily-mission',requireSession,(req,res)=>{try{const result=dailyMissionStatus(req.session.name);if(!result)return res.status(404).json({ok:false,code:'player-not-found'});res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-read-failed',message:clean(err?.message||err,160)})}});
   app.post('/api/player/me/daily-mission/claim',requireSession,(req,res)=>{try{const result=claimDailyMission(req.session.name);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-claim-failed',message:clean(err?.message||err,160)})}});
   installRiddleAttemptStudentRoutes(app,{requireSession});
-  installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward});
+  installMathPracticeRoutes(app,{requireSession});
+  installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward,validateActivityCompletion:validateMathCompletion,finalizeActivityCompletion:finalizeMathCompletion});
   installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent});
 }

@@ -4,7 +4,7 @@
   if(!game||!player)return;
   let current=null,open=false,bypassUntil=0;
   const buildings=[
-    {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:null},
+    {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:'math'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
     {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'수수께끼와 여러 학습 퀴즈에 도전하는 공간입니다.',action:'quiz'},
     {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize'}
@@ -16,7 +16,8 @@
   function addActionButton(label,onClick,requiresServer=false){const btn=document.createElement('button');btn.className='interior-primary';btn.textContent=label;if(requiresServer)btn.dataset.requiresServer='true';btn.onclick=onClick;actions.appendChild(btn)}
   async function runScoredAction(action){const connection=window.StudyVillageConnection;if(connection?.requireOnline&&!(await connection.requireOnline()))return;action()}
   function enter(b){if(!b)return;open=true;current=b;overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';
-    if(b.action==='quiz')addActionButton('🎯 수수께끼 도전 시작',()=>runScoredAction(()=>{leave();bypassUntil=performance.now()+700;setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true})),60)}),true);
+    if(b.action==='math')addActionButton('➕ 랜덤 계산 연습 시작',()=>runScoredAction(()=>window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))),true);
+    else if(b.action==='quiz')addActionButton('🎯 수수께끼 도전 시작',()=>runScoredAction(()=>{leave();bypassUntil=performance.now()+700;setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true})),60)}),true);
     else if(b.action==='library')addActionButton('📖 낱말 뜻 맞추기 시작',()=>runScoredAction(()=>window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'))),true);
     else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();setTimeout(()=>document.querySelector('#customize-button')?.click(),50)});
     else{const note=document.createElement('p');note.className='interior-coming';note.textContent='✨ 이 공간의 활동은 다음 업데이트에서 열립니다.';actions.appendChild(note)}

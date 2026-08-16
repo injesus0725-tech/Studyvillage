@@ -28,7 +28,7 @@ function pruneRecentSubmissions(now=Date.now()){
 function cachedSubmission(name,activityId,submissionId){if(!submissionId)return null;pruneRecentSubmissions();return recentSubmissions.get(`${name}\u0000${activityId}\u0000${submissionId}`)?.result||null}
 function rememberSubmission(name,activityId,submissionId,result){if(!submissionId)return;recentSubmissions.set(`${name}\u0000${activityId}\u0000${submissionId}`,{savedAt:Date.now(),result});pruneRecentSubmissions()}
 
-export function installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward=()=>({stars:0,balance:null})}){
+export function installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward=()=>({stars:0,balance:null}),validateActivityCompletion=()=>({ok:true}),finalizeActivityCompletion=()=>{}}){
   app.get('/api/player/me/activity-attempt-status/:activityId',requireSession,(req,res)=>{const activityId=clean(req.params?.activityId,40);if(!/^[a-z0-9-]+$/.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity'});let db;try{db=openDb();const name=req.session.name,player=db.prepare('SELECT 1 FROM players WHERE name=?').get(name);if(!player)return res.status(404).json({ok:false,code:'player-not-found'});const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policyId=policyIdFor(activityId,policies),policy=policies[policyId]||{},record=db.prepare('SELECT attempts,best_score AS bestScore,last_score AS lastScore,total_score AS totalScore,updated_at AS updatedAt FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId)||{},extra=readExtraAttempts(key=>getSetting(db,key),name,policyId),decision=evaluateWithExtra(policy,record,extra);res.json({ok:true,activityId,policyId,allowed:decision.allowed,remaining:decision.remaining,extraAttempts:extra,policy:decision.policy,record:{attempts:Number(record.attempts)||0,bestScore:Number(record.bestScore)||0,lastScore:Number(record.lastScore)||0,totalScore:Number(record.totalScore)||0,updatedAt:record.updatedAt||null}})}catch(err){res.status(500).json({ok:false,code:'activity-attempt-status-failed',message:clean(err?.message||err,160)})}finally{try{db?.close()}catch{}}});
   app.post('/api/player/me/activity',requireSession,(req,res)=>{
     const activityId=clean(req.body?.activityId,40),score=Math.max(0,Math.min(1000,Number(req.body?.score)||0)),submissionId=submissionIdOf(req.body?.submissionId);
@@ -36,6 +36,7 @@ export function installActivityAttemptStudentRoutes(app,{requireSession,commitEx
     if(!validExpeditionScore(activityId,score)||activityId.startsWith('exploration-')&&!submissionId)return res.status(400).json({ok:false,code:'invalid-expedition-completion'});
     const name=req.session.name,cached=cachedSubmission(name,activityId,submissionId);
     if(cached)return res.json({...cached,deduplicated:true});
+    const verified=validateActivityCompletion({name,activityId,score,submissionId});if(!verified?.ok)return res.status(400).json({ok:false,code:verified?.code||'unverified-activity-completion'});
     let db;
     try{
       db=openDb();
@@ -59,6 +60,7 @@ export function installActivityAttemptStudentRoutes(app,{requireSession,commitEx
       const result=tx();
       if(!result.ok)return res.status(409).json(result);
       rememberSubmission(name,activityId,submissionId,result);
+      finalizeActivityCompletion({name,activityId,score,submissionId});
       res.json(result);
     }catch(err){res.status(500).json({ok:false,code:err?.code||'activity-save-failed',message:clean(err?.message||err,160)})}
     finally{try{db?.close()}catch{}}
