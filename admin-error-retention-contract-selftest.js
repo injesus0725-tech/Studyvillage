@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),admin=fs.readFileSync('admin-errors.js','utf8');
+assert.ok(server.includes("app.get('/api/admin/errors/retention',requireAdmin")&&server.includes("app.put('/api/admin/errors/retention',requireAdmin"),'retention reads and writes must require administrator authentication');
+assert.ok(server.includes('ERROR_RETENTION_ALLOWED=new Set([30,90,180,365])'),'server must accept only the documented retention choices');
+assert.ok(server.includes('ERROR_REPORT_MAX=2000')&&server.includes('ORDER BY id DESC LIMIT ?'),'error flood storage must be count bounded');
+assert.ok(server.includes("DELETE FROM error_reports WHERE created_at<?")&&server.includes('pruneErrorReports();res.json({ok:true})'),'old reports must prune during normal error collection');
+assert.ok(server.includes("setSetting(ERROR_RETENTION_KEY,String(days))")&&server.includes('count:pruneErrorReports(days)'),'saving retention must immediately prune old reports');
+assert.ok(admin.includes('30, 90, 180, 365')&&admin.includes('최신 오류는 최대 2,000건'),'teacher UI must explain retention choices and the hard count bound');
+assert.ok(admin.includes("headers:{...headers(),'Content-Type':'application/json'}"),'retention save must preserve administrator authorization');
+console.log('admin error retention contract selftest passed');
