@@ -4,8 +4,8 @@ for(const route of ["app.get('/api/player/me/checkpoints',requireSession","app.p
 assert.ok(server.includes('CHECKPOINT_MAX_AGE_MS=7*24*60*60*1000')&&server.includes('CHECKPOINT_MAX_BYTES=16384')&&server.includes('CHECKPOINT_MAX_PER_PLAYER=20'),'server checkpoints must be age, size, and count bounded');
 assert.ok(server.includes("checkpointKey=name=>`activity-checkpoints:${encodeURIComponent"),'checkpoints must be isolated by canonical student key');
 assert.ok(server.includes("db.prepare('DELETE FROM settings WHERE key=?').run(checkpointKey(name))"),'full student deletion must remove checkpoint state');
-assert.ok(client.includes("remote(activityId,{method:'PUT'")&&client.includes("remote(activityId,{method:'DELETE'})"),'local save and clear must mirror to the server');
-assert.ok(client.includes('remoteQueues=new Map()')&&client.includes("previous.catch(()=>{}).then"),'save and clear requests must remain ordered per activity');
+assert.ok(client.includes("remote(playerName,activityId,{method:'PUT'")&&client.includes("remote(playerName,activityId,{method:'DELETE'})"),'local save and clear must mirror to the server');
+assert.ok(client.includes('remoteQueues=new Map()')&&client.includes("previous.catch(()=>{}).then"),'save and clear requests must remain ordered per student activity');
 assert.ok(client.includes("fetch('/api/player/me/checkpoints'")&&client.includes('String(value.updatedAt)>String(current.updatedAt)'),'login sync must merge only newer server checkpoints');
 assert.ok(game.includes('await window.StudyVillageCheckpoint?.sync?.(state.playerName)'),'checkpoint sync must finish before the student enters the game');
 console.log('student server checkpoint contract self-test passed');

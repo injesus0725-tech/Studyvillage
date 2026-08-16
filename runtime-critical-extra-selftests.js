@@ -139,6 +139,7 @@ const tests=[
   'student-ranking-title-contract-selftest.js',
   'student-ranking-live-refresh-contract-selftest.js',
   'student-server-checkpoint-contract-selftest.js',
+  'checkpoint-session-isolation-contract-selftest.js',
   'student-expedition-checkpoint-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js'
