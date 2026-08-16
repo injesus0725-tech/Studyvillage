@@ -73,6 +73,7 @@ const tests=[
   'student-interior-suite-contract-selftest.js',
   'student-new-account-defaults-contract-selftest.js',
   'student-movement-recovery-contract-selftest.js',
+  'student-random-npc-contract-selftest.js',
   'student-mobile-controls-contract-selftest.js',
   'student-record-relationship-contract-selftest.js',
   'student-record-reset-boundary-contract-selftest.js',
