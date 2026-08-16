@@ -45,6 +45,7 @@ const tests=[
   'backup-size-bounds-contract-selftest.js',
   'error-reporter-polling-contract-selftest.js',
   'exploration-attempt-progress-contract-selftest.js',
+  'exploration-result-race-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
