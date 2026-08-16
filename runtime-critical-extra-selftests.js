@@ -90,6 +90,7 @@ const tests=[
   'student-recreate-clean-slate-contract-selftest.js',
   'student-session-restore-retry-contract-selftest.js',
   'student-single-active-session-contract-selftest.js',
+  'student-logout-session-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js'
 ];

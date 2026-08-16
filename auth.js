@@ -11,6 +11,7 @@ window.StudyVillageAuth=(()=>{
   function confirmUnfamiliarName(name){if(knownNames().has(name.trim().toLowerCase()))return true;return confirm(`처음 사용하는 이름이에요.\n\n“${name}”이(가) 내 이름이 맞나요?\n\n이름을 잘못 입력하면 새 학생 계정이 만들어질 수 있어요.`)}
   function saveSession(name,token){sessionGeneration++;sessionName=name;sessionToken=token;restoredPlayer=null;sessionStorage.setItem(SESSION_NAME_KEY,name);sessionStorage.setItem(SESSION_TOKEN_KEY,token)}
   function clearSession(){const hadSession=!!(sessionName||sessionToken);sessionGeneration++;sessionName=null;sessionToken=null;restoredPlayer=null;sessionStorage.removeItem(SESSION_NAME_KEY);sessionStorage.removeItem(SESSION_TOKEN_KEY);if(hadSession)window.dispatchEvent(new CustomEvent('studyvillage:session-cleared'))}
+  async function logoutSession(){const token=sessionToken;if(token){try{await timedFetch('/api/logout',{method:'POST',headers:{Authorization:`Bearer ${token}`},cache:'no-store'},2000)}catch{}}clearSession()}
   function invalidateServer(){serverAvailable=null;serverCheck=null}
   async function timedFetch(url,options={},timeoutMs=REQUEST_TIMEOUT_MS){const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timeout)}}
   async function checkServer(force=false){if(!force&&serverAvailable!==null)return serverAvailable;if(serverCheck&&!force)return serverCheck;const work=(async()=>{try{const response=await timedFetch('/api/health',{cache:'no-store'},SERVER_CHECK_TIMEOUT_MS);serverAvailable=response.ok}catch{serverAvailable=false}return serverAvailable})();serverCheck=work;try{return await work}finally{if(serverCheck===work)serverCheck=null}}
@@ -20,7 +21,7 @@ window.StudyVillageAuth=(()=>{
   async function login(name,password){if(password===RESTORE_SENTINEL&&restoredPlayer&&sessionToken&&name===sessionName){const player=restoredPlayer;restoredPlayer=null;return{ok:true,isNew:false,restored:true,player,mode:'classroom-server'}}if(await checkServer())return serverLogin(name,password);return localLogin(name,password)}
   function authHeaders(){return sessionToken?{Authorization:`Bearer ${sessionToken}`}:{}}
   window.addEventListener('online',invalidateServer);window.addEventListener('offline',()=>{serverAvailable=false;serverCheck=null});window.addEventListener('studyvillage:connection-change',e=>{serverAvailable=e.detail?.online===true?true:e.detail?.online===false?false:null;serverCheck=null});
-  return{login,restoreSession,checkServer,authHeaders,clearSession,invalidateServer,restoreSentinel:RESTORE_SENTINEL,mode:()=>serverAvailable?'classroom-server':'local'};
+  return{login,restoreSession,checkServer,authHeaders,clearSession,logoutSession,invalidateServer,restoreSentinel:RESTORE_SENTINEL,mode:()=>serverAvailable?'classroom-server':'local'};
 })();
 
 (()=>{

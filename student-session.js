@@ -36,25 +36,25 @@
   new MutationObserver(armNavigation).observe(game,{attributes:true,attributeFilter:['class']});
 
   let switching=false;
-  button.addEventListener('click',()=>{
+  button.addEventListener('click',async()=>{
     if(switching)return;
     const name=document.querySelector('#profile-name')?.textContent?.trim()||'현재 학생';
     if(!confirm(`${name} 학생의 사용을 마치고 다른 학생으로 바꿀까요?\n\n이미 저장된 기록과 풀던 문제의 임시 기록은 지워지지 않습니다.\n저장 중인 화면이 있다면 저장 완료 표시를 확인한 뒤 바꾸는 것이 안전합니다.`))return;
     switching=true;
     button.disabled=true;
     button.textContent='학생 바꾸는 중…';
-    window.StudyVillageAuth.clearSession();
+    await window.StudyVillageAuth.logoutSession();
     location.reload();
   });
 
-  exitButton.addEventListener('click',()=>{
+  exitButton.addEventListener('click',async()=>{
     if(leaving)return;
     const name=document.querySelector('#profile-name')?.textContent?.trim()||'현재 학생';
     if(!confirm(`${name} 학생의 마을 이용을 마칠까요?\n\n저장된 학습 기록은 유지되고 로그인 화면으로 돌아갑니다.`))return;
     leaving=true;
     exitButton.disabled=true;
     exitButton.textContent='나가는 중…';
-    window.StudyVillageAuth.clearSession();
+    await window.StudyVillageAuth.logoutSession();
     location.reload();
   });
 })();

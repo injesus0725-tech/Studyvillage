@@ -5,7 +5,7 @@ const index=fs.readFileSync('index.html','utf8');
 const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
 const required=[
   "button.textContent='👤 학생 바꾸기'",
-  'window.StudyVillageAuth.clearSession();',
+  'await window.StudyVillageAuth.logoutSession();',
   'location.reload();',
   '이미 저장된 기록과 풀던 문제의 임시 기록은 지워지지 않습니다.',
   '저장 중인 화면이 있다면 저장 완료 표시를 확인한 뒤 바꾸는 것이 안전합니다.',
