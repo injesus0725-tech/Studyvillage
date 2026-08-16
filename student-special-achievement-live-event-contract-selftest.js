@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const src=fs.readFileSync('server/server.js','utf8');
+assert.ok(src.includes('function announceFeaturedAchievement(before,after)'),'featured achievements need a transition detector');
+assert.ok(src.includes("earned.find(b=>b.id==='perfect')||earned.find(b=>b.id==='persistent')"),'only perfect score and ten-attempt achievements should broadcast, with perfect score taking priority');
+assert.ok(src.includes('filter(b=>!oldIds.has(b.id))'),'already-owned badges must never announce again');
+assert.ok(src.includes("logActivity(after.name,'special-achievement',featured.name)"),'special achievements must remain visible in teacher activity history');
+assert.ok(src.includes("publishLiveEvent(featured.icon,`${after.name} 학생이 특별 업적 “${featured.name}”을 달성했습니다!`,'special-achievement')"),'achievement announcements must use server-derived identity and badge data');
+const route=src.slice(src.indexOf("app.post('/api/player/me/record'"),src.indexOf("app.post('/api/player/me/activity'"));
+assert.ok(route.indexOf("UPDATE players SET total_score=?")<route.indexOf('announceFeaturedAchievement(e,updated)'),'the record update must be durable before announcing an achievement');
+assert.equal((route.match(/announceFeaturedAchievement\(e,updated\)/g)||[]).length,1,'one record save may run the achievement detector only once');
+console.log('student special achievement live event contract self-test passed');
