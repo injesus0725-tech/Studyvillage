@@ -112,6 +112,7 @@ const tests=[
   'student-next-npc-unlock-contract-selftest.js',
   'student-npc-unlock-live-event-contract-selftest.js',
   'student-riddle-randomization-contract-selftest.js',
+  'riddle-star-reward-contract-selftest.js',
   'initial-character-choice-contract-selftest.js',
   'student-random-discovery-contract-selftest.js',
   'student-mobile-controls-contract-selftest.js',

@@ -10,7 +10,7 @@ assert.ok(server.includes('function announceNpcUnlock(before,after)'),'the main 
 const record=server.slice(server.indexOf("app.post('/api/player/me/record'"),server.indexOf("app.post('/api/player/me/activity'"));
 const activity=server.slice(server.indexOf("app.post('/api/player/me/activity'"),server.indexOf("app.post('/api/player/me/equipment'"));
 assert.ok(record.includes('announceNpcUnlock(e,updated)')&&activity.includes('announceNpcUnlock(player,updated)'),'every main XP save path must check verified unlock transitions');
-assert.ok(ledger.includes('installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent})'),'the intercepted riddle route must receive the bounded classroom publisher');
+assert.ok(ledger.includes('installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent,commitRiddleReward})'),'the intercepted riddle route must receive the bounded classroom publisher');
 assert.ok(riddle.includes('const result=tx(),{liveLevelUp,liveNpcUnlocks,...response}=result'),'riddle announcements must occur only after the durable transaction succeeds');
 assert.ok(riddle.includes('try{if(liveLevelUp)publishLiveEvent?.(')&&riddle.includes(')}catch{}'),'announcement failure must not turn saved progress into a failed response');
 assert.ok(!riddle.includes('liveNpcUnlocks,...response});'),'internal announcement metadata must not be returned to the student');

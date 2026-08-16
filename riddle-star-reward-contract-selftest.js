@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const ledger=fs.readFileSync('server/star-ledger.js','utf8'),riddle=fs.readFileSync('server/riddle-attempt-student.js','utf8'),data=fs.readFileSync('data-service.js','utf8'),game=fs.readFileSync('game.js','utf8');
+assert.ok(ledger.includes('function riddleStarsFor(score)')&&ledger.includes('value>=1000?3:value>=700?2:value>0?1:0'),'riddle reward must use the bounded 0/1/2/3-star score tiers');
+assert.ok(ledger.includes("referenceId=`riddle-demo:${Math.max(1,Number(attempt)||1)}`")&&ledger.includes("kind='riddle-completion' AND reference_id=?"),'each recorded attempt must have one idempotent ledger reference');
+assert.ok(ledger.includes("'riddle-completion',referenceId")&&ledger.includes('writeMirror(db,name)'),'a reward must be recorded in the ledger and compatibility mirror');
+assert.ok(ledger.includes('installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent,commitRiddleReward})'),'the ledger writer must be injected into the intercepted riddle route');
+const transaction=riddle.slice(riddle.indexOf('const tx=db.transaction'),riddle.indexOf('const result=tx()'));
+assert.ok(transaction.includes('commitRiddleReward(db,{name,attempt:nextAttempts,score:incoming.lastScore,now})'),'stars must use the server-accepted score and attempt inside the record transaction');
+assert.ok(transaction.includes('riddleStars:starReward.stars')&&transaction.includes('starBalance:starReward.balance'),'confirmed reward data must be returned with the saved player');
+assert.ok(data.includes('rewardStars:num(body.riddleStars,0,100)'),'the data service must retain only bounded server reward metadata');
+assert.ok(game.includes("+${rewardStars}별")&&game.includes("studyvillage:stars-refresh"),'the result screen must show the confirmed stars and refresh the shared balance');
+console.log('riddle star reward contract self-test passed');

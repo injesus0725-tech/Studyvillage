@@ -96,6 +96,15 @@ function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
   if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,'expedition-completion',submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
   return{stars,balance:after,alreadyClaimed:false};
 }
+function riddleStarsFor(score){const value=Math.max(0,Math.min(1000,Math.round(Number(score)||0)));return value>=1000?3:value>=700?2:value>0?1:0}
+function commitRiddleReward(db,{name,attempt,score,now}){
+  ensureSchema(db);const referenceId=`riddle-demo:${Math.max(1,Number(attempt)||1)}`,prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='riddle-completion' AND reference_id=? LIMIT 1").get(name,referenceId);
+  if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
+  const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});if(!validStarBalance(player.stars))throw Object.assign(new Error('corrupt-star-balance'),{code:'corrupt-star-balance'});
+  const stars=riddleStarsFor(score),before=player.stars,after=before+stars;if(after>MAX_STARS)throw Object.assign(new Error('star-limit-exceeded'),{code:'star-limit-exceeded'});
+  if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,'riddle-completion',referenceId,`기본 수수께끼 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
+  return{stars,balance:after,alreadyClaimed:false};
+}
 
 export function ensureStarLedger(){let db;try{db=openLiveDb();ensureSchema(db);return true}finally{try{db?.close()}catch{}}}
 export function starBalanceFor(playerName){
@@ -179,7 +188,7 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publish
   app.get('/api/admin/exploration-collections',requireAdmin,(_req,res)=>{try{res.json({ok:true,students:classroomExplorationCollections()})}catch(err){res.status(500).json({ok:false,code:'exploration-collections-read-failed',message:clean(err?.message||err,160)})}});
   app.get('/api/player/me/daily-mission',requireSession,(req,res)=>{try{const result=dailyMissionStatus(req.session.name);if(!result)return res.status(404).json({ok:false,code:'player-not-found'});res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-read-failed',message:clean(err?.message||err,160)})}});
   app.post('/api/player/me/daily-mission/claim',requireSession,(req,res)=>{try{const result=claimDailyMission(req.session.name);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-claim-failed',message:clean(err?.message||err,160)})}});
-  installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent});
+  installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent,commitRiddleReward});
   installMathPracticeRoutes(app,{requireSession});
   installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward,validateActivityCompletion:validateMathCompletion,finalizeActivityCompletion:finalizeMathCompletion});
   installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent});

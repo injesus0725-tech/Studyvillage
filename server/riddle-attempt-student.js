@@ -26,7 +26,7 @@ function rewardsFor(r){const level=levelFromXp(r.xp),badges=[];if((r.attempts||0
 function playerView(db,r){const rewards=rewardsFor(r),progress=progressFromXp(r.xp),custom=customTitleView(key=>getSetting(db,key),r.name,progress.level);return{name:r.name,totalScore:r.total_score,attempts:r.attempts,bestScore:r.best_score,lastScore:r.last_score,loginCount:r.login_count||0,lastLoginAt:r.last_login_at||null,xp:r.xp||0,...progress,title:progress.level>=60&&custom.customTitle?custom.customTitle:rewards.title,badges:rewards.badges,nextGrowthReward:nextGrowthRewardFor(progress.level),nextNpcUnlock:nextNpcUnlockFor(progress.level),...custom,updatedAt:r.updated_at}}
 function logActivity(db,name,type,detail){db.prepare('INSERT INTO activity_log(player_name,type,detail,created_at) VALUES(?,?,?,?)').run(name,type,detail,new Date().toISOString())}
 
-export function installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent}){
+export function installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent,commitRiddleReward}){
   app.post('/api/player/me/record',requireSession,(req,res)=>{
     let db;
     try{
@@ -47,10 +47,11 @@ export function installRiddleAttemptStudentRoutes(app,{requireSession,publishLiv
         const nextTotal=Math.max(Number(current.total_score)||0,incoming.totalScore),nextBest=Math.max(Number(current.best_score)||0,incoming.bestScore),nextAttempts=Math.max(Number(current.attempts)||0,incoming.attempts),nextLast=newAttempts>0?incoming.lastScore:Number(current.last_score)||0;
         db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,xp=xp+?,updated_at=? WHERE name=?').run(nextTotal,nextAttempts,nextBest,nextLast,gained,now,name);
         if(newAttempts>0)logActivity(db,name,'quiz-complete',`${incoming.lastScore}점${gained?` · +${gained}XP`:' · XP 추가 없음'}${extraNeeded?` · 추가 도전권 ${extraNeeded}회 사용`:''}${newAttempts>1?' · 레거시 묶음 기록':''}`);
+        const starReward=newAttempts>0&&commitRiddleReward?commitRiddleReward(db,{name,attempt:nextAttempts,score:incoming.lastScore,now}):{stars:0,balance:null};
         const updated=db.prepare('SELECT * FROM players WHERE name=?').get(name),oldLevel=levelFromXp(current.xp),newLevel=levelFromXp(updated.xp),npcUnlocks=NPC_LEVEL_UNLOCKS.filter(npc=>oldLevel<npc.level&&newLevel>=npc.level);
         if(newLevel>oldLevel)logActivity(db,name,'level-up',`Lv.${newLevel} 달성`);
         for(const npc of npcUnlocks)logActivity(db,name,'npc-unlock',`Lv.${npc.level} · ${npc.name}`);
-        return{player:playerView(db,updated),gainedXp:gained,extraAttemptsUsed:extraNeeded,extraAttemptsRemaining:Math.max(0,latestExtra-extraNeeded),liveLevelUp:newLevel>oldLevel?newLevel:null,liveNpcUnlocks:npcUnlocks};
+        return{player:playerView(db,updated),gainedXp:gained,riddleStars:starReward.stars,starBalance:starReward.balance,extraAttemptsUsed:extraNeeded,extraAttemptsRemaining:Math.max(0,latestExtra-extraNeeded),liveLevelUp:newLevel>oldLevel?newLevel:null,liveNpcUnlocks:npcUnlocks};
       });
       const result=tx(),{liveLevelUp,liveNpcUnlocks,...response}=result;
       try{if(liveLevelUp)publishLiveEvent?.('🎉',`${name} 학생이 Lv.${liveLevelUp}에 올랐습니다!`,'level-up');for(const npc of liveNpcUnlocks)publishLiveEvent?.(npc.icon,`${name} 학생이 새 마을 친구 “${npc.name}”을 만날 수 있게 되었습니다!`,'npc-unlock')}catch{}
