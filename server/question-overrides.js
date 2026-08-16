@@ -5,11 +5,12 @@ const clean=(v,n=500)=>String(v??'').trim().slice(0,n);
 const read=getSetting=>{try{const v=JSON.parse(getSetting(STORE_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch{return{}}};
 const write=(setSetting,v)=>setSetting(STORE_KEY,JSON.stringify(v));
 const key=(activityId,questionNumber)=>`${clean(activityId,80)}:${Number(questionNumber)}`;
+const validQuestion=q=>q.type==='input'?q.acceptedAnswers.length>0:q.options.length>=2&&q.answer!==null&&q.answer>=0&&q.answer<q.options.length;
 export function installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSetting}){
   app.get('/api/question-overrides',(_req,res)=>res.json({ok:true,overrides:read(getSetting)}));
   app.post('/api/admin/question-overrides',requireAdmin,(req,res)=>{
     const activityId=clean(req.body?.activityId,80),questionNumber=Number(req.body?.questionNumber),reason=clean(req.body?.reason,240),before=safeQuestionSnapshot(req.body?.before),after=safeQuestionSnapshot(req.body?.after);
-    if(!activityId||!Number.isInteger(questionNumber)||questionNumber<1||!reason||!after.options.length||after.answer===null||after.answer<0||after.answer>=after.options.length)return res.status(400).json({ok:false,code:'invalid-input'});
+    if(!activityId||!Number.isInteger(questionNumber)||questionNumber<1||!reason||!validQuestion(after))return res.status(400).json({ok:false,code:'invalid-input'});
     const overrides=read(getSetting),k=key(activityId,questionNumber),previous=overrides[k];
     try{
       overrides[k]={activityId,questionNumber,question:after,updatedAt:new Date().toISOString()};write(setSetting,overrides);
@@ -19,7 +20,7 @@ export function installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSe
   });
   app.post('/api/admin/question-overrides/:activityId/:questionNumber/revert',requireAdmin,(req,res)=>{
     const activityId=clean(req.params.activityId,80),questionNumber=Number(req.params.questionNumber),reason=clean(req.body?.reason,240),after=safeQuestionSnapshot(req.body?.baseQuestion),overrides=read(getSetting),k=key(activityId,questionNumber),previous=overrides[k];
-    if(!activityId||!Number.isInteger(questionNumber)||questionNumber<1||!reason||!previous||!after.options.length||after.answer===null||after.answer<0||after.answer>=after.options.length)return res.status(previous?400:404).json({ok:false,code:previous?'invalid-input':'not-found'});
+    if(!activityId||!Number.isInteger(questionNumber)||questionNumber<1||!reason||!previous||!validQuestion(after))return res.status(previous?400:404).json({ok:false,code:previous?'invalid-input':'not-found'});
     const before=safeQuestionSnapshot(previous.question);
     try{
       delete overrides[k];write(setSetting,overrides);

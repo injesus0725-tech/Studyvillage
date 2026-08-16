@@ -12,6 +12,11 @@ for(const [setKey,set] of Object.entries(sets)){
   for(const [index,question] of set.questions.entries()){
     const label=`${setKey}[${index}]`;
     assert.ok(question&&typeof question==='object',`${label}: question required`);
+    if(question.type==='input'){
+      assert.ok(Array.isArray(question.acceptedAnswers)&&question.acceptedAnswers.length>0,`${label}: input answers required`);
+      assert.ok(question.acceptedAnswers.every(answer=>typeof answer==='string'&&answer.trim()),`${label}: input answers must be non-empty strings`);
+      continue;
+    }
     assert.ok(Array.isArray(question.options)&&question.options.length>=2,`${label}: at least two options required`);
     assert.ok(question.options.every(option=>typeof option==='string'&&option.trim().length>0),`${label}: options must be non-empty strings`);
     const normalizedOptions=question.options.map(option=>option.trim());

@@ -62,6 +62,7 @@ const tests=[
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
+  'question-input-type-contract-selftest.js',
   'restore-executor-single-run-contract-selftest.js',
   'restore-preflight-fail-closed-contract-selftest.js',
   'restore-route-order-contract-selftest.js',
