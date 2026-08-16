@@ -11,8 +11,16 @@
 
   window.addEventListener('studyvillage:library-complete',event=>{
     const player=event.detail?.player;
-    if(player)applyPlayer(player);
+    if(player){applyPlayer(player);window.dispatchEvent(new Event('studyvillage:ranking-refresh'))}
   });
+
+  let profileRefresh=null;
+  async function refreshConfirmedPlayer(){
+    if(profileRefresh)return profileRefresh;
+    profileRefresh=(async()=>{const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);try{const response=await fetch('/api/player/me',{headers:window.StudyVillageAuth?.authHeaders?.()||{},cache:'no-store',signal:controller.signal});if(!response.ok)return;const data=await response.json();if(data.ok&&data.player){applyPlayer(data.player);window.dispatchEvent(new Event('studyvillage:ranking-refresh'))}}catch{}finally{clearTimeout(timeout)}})();
+    try{return await profileRefresh}finally{profileRefresh=null}
+  }
+  window.addEventListener('studyvillage:activity-record-refresh',refreshConfirmedPlayer);
 
   const quizNext=document.querySelector('#quiz-next');
   let retryingRiddleResult=false;
