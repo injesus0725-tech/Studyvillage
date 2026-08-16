@@ -100,6 +100,7 @@ const tests=[
   'student-activity-movement-lock-contract-selftest.js',
   'student-activity-back-navigation-contract-selftest.js',
   'student-overlay-back-priority-contract-selftest.js',
+  'student-overlay-save-back-lock-contract-selftest.js',
   'student-activity-close-confirmation-contract-selftest.js',
   'student-activity-result-profile-sync-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
