@@ -75,6 +75,27 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']);
+function expeditionStarsFor(activityId,score){
+  const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
+  if(activityId==='exploration-forest-riddle')return Math.min(3,Math.ceil(value/40));
+  if(activityId==='exploration-mountain-riddle')return value===100?5:Math.min(4,Math.ceil(value/25));
+  return 0;
+}
+function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
+  if(!EXPEDITION_REWARD_IDS.has(activityId))return{stars:0,balance:null};
+  if(!/^[A-Za-z0-9._:-]{8,100}$/.test(submissionId||''))throw Object.assign(new Error('invalid-expedition-submission'),{code:'invalid-expedition-submission'});
+  ensureSchema(db);
+  const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='expedition-completion' AND reference_id=? LIMIT 1").get(name,submissionId);
+  if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
+  const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
+  if(!validStarBalance(player.stars))throw Object.assign(new Error('corrupt-star-balance'),{code:'corrupt-star-balance'});
+  const stars=expeditionStarsFor(activityId,score),before=player.stars,after=before+stars;
+  if(after>MAX_STARS)throw Object.assign(new Error('star-limit-exceeded'),{code:'star-limit-exceeded'});
+  if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,'expedition-completion',submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
+  return{stars,balance:after,alreadyClaimed:false};
+}
+
 export function ensureStarLedger(){let db;try{db=openLiveDb();ensureSchema(db);return true}finally{try{db?.close()}catch{}}}
 export function starBalanceFor(playerName){
   let db;try{db=openLiveDb();ensureSchema(db);const name=clean(playerName,12);recoverFromMirror(db,name);const row=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!row)return null;if(!validStarBalance(row.stars))throw new Error('corrupt-star-balance');return row.stars}finally{try{db?.close()}catch{}}
@@ -158,6 +179,6 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publish
   app.get('/api/player/me/daily-mission',requireSession,(req,res)=>{try{const result=dailyMissionStatus(req.session.name);if(!result)return res.status(404).json({ok:false,code:'player-not-found'});res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-read-failed',message:clean(err?.message||err,160)})}});
   app.post('/api/player/me/daily-mission/claim',requireSession,(req,res)=>{try{const result=claimDailyMission(req.session.name);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-claim-failed',message:clean(err?.message||err,160)})}});
   installRiddleAttemptStudentRoutes(app,{requireSession});
-  installActivityAttemptStudentRoutes(app,{requireSession});
+  installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward});
   installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent});
 }

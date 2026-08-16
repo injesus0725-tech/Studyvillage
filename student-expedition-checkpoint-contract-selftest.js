@@ -3,7 +3,7 @@ const assert=require('assert');
 
 const src=fs.readFileSync('village-layout.js','utf8');
 
-assert.ok(src.includes('{regionId:region.id,questions,index,correct,answeredChoice,submissionId}'),'expedition checkpoint must preserve the randomized route and scoring state');
+assert.ok(src.includes('{regionId:region.id,questions,index,correct,answeredChoice,submissionId,pendingStars:'),'expedition checkpoint must preserve the randomized route, scoring state, and provisional stars');
 assert.ok(src.includes('p.questions.length!==region.count'),'checkpoint must match the selected expedition length');
 assert.ok(src.includes('이전에 걷던 ${region.name} 기록이 있어요. ${saved.index+1}번째 길부터 이어서 탐험할까요?'),'student must be offered an explicit resume choice');
 for(const restored of ['questions=saved.questions','index=saved.index','correct=saved.correct','answeredChoice=saved.answeredChoice','submissionId=saved.submissionId']){

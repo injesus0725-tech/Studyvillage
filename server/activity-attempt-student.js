@@ -20,6 +20,7 @@ function logActivity(db,name,type,detail=''){db.prepare('INSERT INTO activity_lo
 function policyIdFor(activityId,policies){const alias=POLICY_ALIASES[activityId];return alias&&policies[alias]?alias:activityId}
 function evaluateWithExtra(policy,record,extraAttempts){const base=evaluateAttempt(policy,record),extra=Math.max(0,Number(extraAttempts)||0),allowed=base.allowed||extra>0,usingExtra=!base.allowed&&extra>0,remaining=base.remaining===null?null:base.remaining+extra,awardXp=base.allowed?base.awardXp:(usingExtra&&base.policy.xpMode==='every-attempt');return{...base,allowed,usingExtra,extraAttempts:extra,remaining,awardXp}}
 function submissionIdOf(value){const id=clean(value,100);return /^[A-Za-z0-9._:-]{8,100}$/.test(id)?id:''}
+function validExpeditionScore(activityId,score){if(activityId==='exploration-forest-riddle')return[0,20,40,60,80,100].includes(score);if(activityId==='exploration-mountain-riddle')return[0,14,29,43,57,71,86,100].includes(score);return true}
 function pruneRecentSubmissions(now=Date.now()){
   for(const [key,row] of recentSubmissions){if(now-row.savedAt>SUBMISSION_TTL_MS)recentSubmissions.delete(key)}
   while(recentSubmissions.size>MAX_RECENT_SUBMISSIONS)recentSubmissions.delete(recentSubmissions.keys().next().value)
@@ -27,11 +28,12 @@ function pruneRecentSubmissions(now=Date.now()){
 function cachedSubmission(name,activityId,submissionId){if(!submissionId)return null;pruneRecentSubmissions();return recentSubmissions.get(`${name}\u0000${activityId}\u0000${submissionId}`)?.result||null}
 function rememberSubmission(name,activityId,submissionId,result){if(!submissionId)return;recentSubmissions.set(`${name}\u0000${activityId}\u0000${submissionId}`,{savedAt:Date.now(),result});pruneRecentSubmissions()}
 
-export function installActivityAttemptStudentRoutes(app,{requireSession}){
+export function installActivityAttemptStudentRoutes(app,{requireSession,commitExpeditionReward=()=>({stars:0,balance:null})}){
   app.get('/api/player/me/activity-attempt-status/:activityId',requireSession,(req,res)=>{const activityId=clean(req.params?.activityId,40);if(!/^[a-z0-9-]+$/.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity'});let db;try{db=openDb();const name=req.session.name,player=db.prepare('SELECT 1 FROM players WHERE name=?').get(name);if(!player)return res.status(404).json({ok:false,code:'player-not-found'});const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policyId=policyIdFor(activityId,policies),policy=policies[policyId]||{},record=db.prepare('SELECT attempts,best_score AS bestScore,last_score AS lastScore,total_score AS totalScore,updated_at AS updatedAt FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId)||{},extra=readExtraAttempts(key=>getSetting(db,key),name,policyId),decision=evaluateWithExtra(policy,record,extra);res.json({ok:true,activityId,policyId,allowed:decision.allowed,remaining:decision.remaining,extraAttempts:extra,policy:decision.policy,record:{attempts:Number(record.attempts)||0,bestScore:Number(record.bestScore)||0,lastScore:Number(record.lastScore)||0,totalScore:Number(record.totalScore)||0,updatedAt:record.updatedAt||null}})}catch(err){res.status(500).json({ok:false,code:'activity-attempt-status-failed',message:clean(err?.message||err,160)})}finally{try{db?.close()}catch{}}});
   app.post('/api/player/me/activity',requireSession,(req,res)=>{
     const activityId=clean(req.body?.activityId,40),score=Math.max(0,Math.min(1000,Number(req.body?.score)||0)),submissionId=submissionIdOf(req.body?.submissionId);
     if(!/^[a-z0-9-]+$/.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity'});
+    if(!validExpeditionScore(activityId,score)||activityId.startsWith('exploration-')&&!submissionId)return res.status(400).json({ok:false,code:'invalid-expedition-completion'});
     const name=req.session.name,cached=cachedSubmission(name,activityId,submissionId);
     if(cached)return res.json({...cached,deduplicated:true});
     let db;
@@ -50,8 +52,9 @@ export function installActivityAttemptStudentRoutes(app,{requireSession}){
         db.prepare(`INSERT INTO activity_records(player_name,activity_id,attempts,best_score,last_score,total_score,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(player_name,activity_id) DO UPDATE SET attempts=excluded.attempts,best_score=excluded.best_score,last_score=excluded.last_score,total_score=excluded.total_score,updated_at=excluded.updated_at`).run(name,activityId,nextAttempts,nextBest,score,nextTotal,now);
         if(latestDecision.usingExtra){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,latestPolicyId,1,`${activityId} 활동 추가 도전 사용`);if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
         if(nextGained)db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name);else db.prepare('UPDATE players SET updated_at=? WHERE name=?').run(now,name);
-        logActivity(db,name,`activity-${activityId}`,`${score}점${nextGained?` · +${nextGained}XP`:' · XP 추가 없음'}${latestDecision.usingExtra?' · 추가 도전권 1회 사용':''}`);
-        return{ok:true,gainedXp:nextGained,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId:latestPolicyId,policy:latestDecision.policy};
+        const expeditionReward=commitExpeditionReward(db,{name,activityId,score,submissionId,now});
+        logActivity(db,name,`activity-${activityId}`,`${score}점${nextGained?` · +${nextGained}XP`:' · XP 추가 없음'}${expeditionReward.stars?` · 탐험 별 +${expeditionReward.stars}`:''}${latestDecision.usingExtra?' · 추가 도전권 1회 사용':''}`);
+        return{ok:true,gainedXp:nextGained,expeditionStars:expeditionReward.stars,starBalance:expeditionReward.balance,rewardDeduplicated:expeditionReward.alreadyClaimed===true,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId:latestPolicyId,policy:latestDecision.policy};
       });
       const result=tx();
       if(!result.ok)return res.status(409).json(result);
