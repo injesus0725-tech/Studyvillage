@@ -14,6 +14,7 @@ const tests=[
   'admin-checkpoint-management-contract-selftest.js',
   'activity-attempt-limit-atomic-contract-selftest.js',
   'activity-attempt-policy-safety-contract-selftest.js',
+  'student-extra-attempt-entry-contract-selftest.js',
   'activity-extra-attempt-admin-safety-contract-selftest.js',
   'activity-extra-attempt-exact-student-name-contract-selftest.js',
   'activity-extra-attempt-history-bounds-contract-selftest.js',

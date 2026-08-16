@@ -11,7 +11,7 @@ import { readExtraAttempts, consumeExtraAttempts } from './activity-attempt-exce
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
-const POLICY_ALIASES={vocabulary:'library-vocabulary'};
+const POLICY_ALIASES={vocabulary:'library-vocabulary',riddle:'riddle-demo'};
 const SUBMISSION_TTL_MS=30*60*1000,MAX_RECENT_SUBMISSIONS=1000,recentSubmissions=new Map();
 function openDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,db=new Database(path.join(dataDir,'studyvillage.db'));db.pragma('busy_timeout = 3000');return db}
 function getSetting(db,key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null}
