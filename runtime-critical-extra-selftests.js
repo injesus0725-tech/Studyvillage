@@ -129,6 +129,7 @@ const tests=[
   'student-xp-progress-ui-contract-selftest.js',
   'student-next-growth-reward-contract-selftest.js',
   'custom-title-moderation-contract-selftest.js',
+  'student-ranking-title-contract-selftest.js',
   'student-server-checkpoint-contract-selftest.js',
   'student-expedition-checkpoint-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
