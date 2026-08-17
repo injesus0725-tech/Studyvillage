@@ -65,6 +65,7 @@ const tests=[
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
+  'bookmaru-random-bank-contract-selftest.js',
   'question-input-type-contract-selftest.js',
   'admin-question-input-editor-contract-selftest.js',
   'math-practice-server-validation-contract-selftest.js',
