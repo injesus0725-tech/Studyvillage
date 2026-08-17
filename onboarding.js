@@ -6,7 +6,8 @@
   style.textContent=`
     [hidden]{display:none!important;pointer-events:none!important}
     #game-screen.active{pointer-events:auto!important}
-    #game-screen.active .mobile-controls,#game-screen.active .mobile-controls button,#game-screen.active .hud button{pointer-events:auto!important;touch-action:manipulation}
+    #game-screen.active .mobile-controls,#game-screen.active .mobile-controls button,#game-screen.active .hud button{pointer-events:auto!important}
+    #game-screen.active .mobile-controls button{touch-action:none!important}
     .guide-button{border:0;border-radius:12px;padding:8px 11px;background:#fff8d8;color:#69551d;font-weight:900;cursor:pointer;box-shadow:0 2px 8px #0001}
     .welcome-guide{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:#17392388;backdrop-filter:blur(3px)}
     .welcome-guide[hidden]{display:none!important}.welcome-card{width:min(520px,94vw);border-radius:24px;background:#fff;padding:24px;box-shadow:0 20px 60px #10271955;color:#294332}
@@ -43,26 +44,15 @@
     document.body.classList.remove('inside-building','near-building-interaction');
     game.style.pointerEvents='auto';
     document.querySelectorAll('.mobile-controls button,.hud button').forEach(button=>{button.style.pointerEvents='auto';button.disabled=false});
+    /* Home village collision is decorative only. Removing obstacle flags prevents a spawn-overlap from trapping the player
+       and also removes expensive per-frame obstacle geometry reads from the movement loop. Expedition maps keep their own rules. */
+    document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'));
   }
   let wasActive=game.classList.contains('active');
   new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});
   if(wasActive)requestAnimationFrame(resetTransientUi);
   window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true});
-
-  /* Tablet fallback: dispatch one keydown on press and one keyup on release.
-     Do not repeat keydown with setInterval: a lost touchend could otherwise leave a runaway timer and freeze the browser. */
-  const held=new Map();
-  function fire(key,type){window.dispatchEvent(new KeyboardEvent(type,{key,code:key,bubbles:true,cancelable:true}))}
-  function begin(button,e){if(!game.classList.contains('active'))return;e?.preventDefault?.();const key=button.dataset.key;if(!key||held.has(button))return;fire(key,'keydown');const safety=setTimeout(()=>end(button),1800);held.set(button,{key,safety})}
-  function end(button,e){e?.preventDefault?.();const item=held.get(button);if(!item)return;clearTimeout(item.safety);held.delete(button);fire(item.key,'keyup')}
-  document.querySelectorAll('.mobile-controls button[data-key]').forEach(button=>{
-    button.addEventListener('touchstart',e=>begin(button,e),{passive:false});
-    button.addEventListener('touchend',e=>end(button,e),{passive:false});
-    button.addEventListener('touchcancel',e=>end(button,e),{passive:false});
-    button.addEventListener('mousedown',e=>begin(button,e));
-    button.addEventListener('mouseup',e=>end(button,e));
-    button.addEventListener('mouseleave',e=>end(button,e));
-  });
-  window.addEventListener('blur',()=>{for(const [button,item] of held){clearTimeout(item.safety);fire(item.key,'keyup')}held.clear()});
+  /* Use the game's native PointerEvent movement handlers only. Duplicate synthetic keyboard/touch fallbacks were removed
+     because they can race with pointer capture on Android classroom browsers. */
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
