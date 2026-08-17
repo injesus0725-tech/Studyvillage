@@ -43,6 +43,8 @@ assert.match(shopSource,/res\.on\('finish',[\s\S]*res\.statusCode>=200&&res\.sta
 assert.ok(shopSource.includes("'candy':5")&&shopSource.includes("'stationery':15"),'physical shop defaults must include candy and stationery');
 assert.ok(shopSource.includes("fulfillment:'teacher-delivery'"),'physical purchase must be identified as teacher delivery');
 assert.ok(shopSource.includes("'physical-item-refund'"),'teacher cancellation must create an auditable star refund');
+assert.ok(shopSource.includes("if(!cols.includes('level'))db.exec('ALTER TABLE players ADD COLUMN level INTEGER NOT NULL DEFAULT 1')"),'shop must migrate the real XP-based player schema before querying level');
+assert.ok(shopSource.includes("if(cols.includes('xp'))"),'shop must synchronize compatibility level from XP when XP exists');
 
 const starLedgerSource=fs.readFileSync(new URL('./star-ledger.js',import.meta.url),'utf8');
 assert.match(starLedgerSource,/installStarLedgerRoutes\(app,\{requireSession,requireAdmin,publishLiveEvent\}\)/,'star ledger installer must accept both auth guards and the bounded live-event publisher');
@@ -58,10 +60,13 @@ const tempDir=fs.mkdtempSync(path.join(os.tmpdir(),'studyvillage-shop-'));
 process.env.STUDYVILLAGE_DATA_DIR=tempDir;
 try{
   const db=new Database(path.join(tempDir,'studyvillage.db'));
-  db.exec(`CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);CREATE TABLE players(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,level INTEGER NOT NULL DEFAULT 1,stars INTEGER NOT NULL DEFAULT 0,owned_items_json TEXT NOT NULL DEFAULT '[]',equipment_json TEXT NOT NULL DEFAULT '{}',updated_at TEXT NOT NULL);`);
-  db.prepare('INSERT INTO players(name,level,stars,owned_items_json,equipment_json,updated_at) VALUES(?,?,?,?,?,?)').run('테스트학생',1,100,'[]','{}',new Date().toISOString());
+  db.exec(`CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);CREATE TABLE players(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,xp INTEGER NOT NULL DEFAULT 0,stars INTEGER NOT NULL DEFAULT 0,owned_items_json TEXT NOT NULL DEFAULT '[]',equipment_json TEXT NOT NULL DEFAULT '{}',updated_at TEXT NOT NULL);`);
+  db.prepare('INSERT INTO players(name,xp,stars,owned_items_json,equipment_json,updated_at) VALUES(?,?,?,?,?,?)').run('테스트학생',0,100,'[]','{}',new Date().toISOString());
   db.close();
-  assert.equal(configureShop({enabled:true}).ok,true,'test shop should enable');
+  assert.equal(configureShop({enabled:true}).ok,true,'test shop should enable against the real XP-based player schema');
+  const migratedDb=new Database(path.join(tempDir,'studyvillage.db'),{readonly:true});
+  assert.equal(migratedDb.prepare('SELECT level FROM players WHERE name=?').get('테스트학생').level,1,'shop compatibility level should be derived from XP');
+  migratedDb.close();
   const purchase=purchaseItem('테스트학생','candy');
   assert.equal(purchase.ok,true,'physical purchase should succeed');
   assert.equal(purchase.fulfillment,'teacher-delivery');
