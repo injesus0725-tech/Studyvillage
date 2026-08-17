@@ -1,11 +1,8 @@
 const fs=require('fs'),assert=require('assert');
-const game=fs.readFileSync('game.js','utf8'),guide=fs.readFileSync('onboarding.js','utf8'),server=fs.readFileSync('server/server.js','utf8');
-assert.ok(game.includes("if(auth.isNew)window.dispatchEvent(new CustomEvent('studyvillage:first-character-choice'"),'only newly created accounts must trigger the first character choice');
-for(const [id,label] of [['student-girl','여자 캐릭터'],['student-boy','남자 캐릭터']])assert.ok(guide.includes(`data-base="${id}"`)&&guide.includes(label),`first choice must offer ${label}`);
-assert.ok(guide.includes("if(!['student-girl','student-boy'].includes(baseCharacter)"),'client choice must be restricted to the two simple starting characters');
-assert.ok(guide.includes("fetch('/api/player/me/equipment'")&&guide.includes('body:JSON.stringify({baseCharacter,equipment:{}})'),'the choice must use the authenticated canonical equipment route');
-assert.ok(server.includes("BASE_IDS.has(req.body?.baseCharacter)")&&server.includes("UPDATE players SET base_character=?"),'the server must validate and persist the base character');
-assert.ok(guide.includes('controller.abort(),5000'),'first character saving must not wait forever');
-assert.ok(guide.includes("if(!choice.hidden){if(blockedKeys.has(e.key)||e.key==='Escape'||e.key==='Enter')"),'movement, interaction, and back keys must stay inside the mandatory first choice');
-assert.ok(guide.includes('나중에 꾸미기 화면에서도 다시 바꿀 수 있어요.'),'students must know the initial choice is reversible');
-console.log('initial character choice contract self-test passed');
+const game=fs.readFileSync('game.js','utf8'),guide=fs.readFileSync('onboarding.js','utf8'),server=fs.readFileSync('server/server.js','utf8'),customize=fs.readFileSync('customize.js','utf8');
+assert.ok(!guide.includes('data-base="student-girl"')&&!guide.includes('data-base="student-boy"'),'onboarding must not contain a mandatory first-character chooser');
+assert.ok(guide.includes('Never open a modal automatically after login'),'new student login must remain nonblocking');
+assert.ok(customize.includes('student-girl')&&customize.includes('student-boy'),'the two simple base characters must remain available from customization');
+assert.ok(server.includes("BASE_IDS.has(req.body?.baseCharacter)")&&server.includes("UPDATE players SET base_character=?"),'the server must validate and persist base character changes');
+assert.ok(game.includes('gameScreen.classList.add(\'active\')')&&game.includes('state.running=true'),'successful login must enter the playable village');
+console.log('initial character nonblocking login contract self-test passed');
