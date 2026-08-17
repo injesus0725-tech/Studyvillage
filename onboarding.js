@@ -37,6 +37,20 @@
   window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
 
+  function touchUiVisible(){const controls=document.querySelector('.mobile-controls');return !!controls&&getComputedStyle(controls).display!=='none'}
+  const hint=document.querySelector('#interaction-hint');
+  function normalizeTouchHint(){if(!hint||!touchUiVisible())return;const current=hint.textContent||'';if(current.includes('수수께끼'))hint.textContent='✨ 상호작용 버튼으로 수수께끼 시작하기';else if(current.includes('도우미 선생님'))hint.textContent='✨ 상호작용 버튼으로 도우미 선생님과 이야기하기'}
+  if(hint){new MutationObserver(normalizeTouchHint).observe(hint,{childList:true,characterData:true,subtree:true});window.addEventListener('resize',normalizeTouchHint)}
+
+  /* Android/Samsung classroom browsers sometimes miss PointerEvent capture. Feed the existing keyboard path directly from touch events, without a repeating timer. */
+  const heldTouchKeys=new Map();
+  const fireKey=(key,type)=>window.dispatchEvent(new KeyboardEvent(type,{key,code:key,bubbles:true,cancelable:true}));
+  function touchPress(button,event){if(!game.classList.contains('active'))return;event.preventDefault();const key=button.dataset.key;if(!key||heldTouchKeys.has(button))return;fireKey(key,'keydown');const safety=setTimeout(()=>touchRelease(button),900);heldTouchKeys.set(button,{key,safety})}
+  function touchRelease(button,event){event?.preventDefault?.();const held=heldTouchKeys.get(button);if(!held)return;clearTimeout(held.safety);heldTouchKeys.delete(button);fireKey(held.key,'keyup')}
+  document.querySelectorAll('.mobile-controls button[data-key]').forEach(button=>{button.addEventListener('touchstart',event=>touchPress(button,event),{passive:false});button.addEventListener('touchend',event=>touchRelease(button,event),{passive:false});button.addEventListener('touchcancel',event=>touchRelease(button,event),{passive:false})});
+  window.addEventListener('blur',()=>{for(const [button,held] of heldTouchKeys){clearTimeout(held.safety);fireKey(held.key,'keyup')}heldTouchKeys.clear()});
+  const talk=document.querySelector('#talk-button');if(talk){talk.addEventListener('touchstart',event=>{if(!game.classList.contains('active'))return;event.preventDefault();fireKey(' ','keydown');fireKey(' ','keyup')},{passive:false})}
+
   function resetTransientUi(){
     if(!game.classList.contains('active'))return;
     overlay.hidden=true;
@@ -44,15 +58,12 @@
     document.body.classList.remove('inside-building','near-building-interaction');
     game.style.pointerEvents='auto';
     document.querySelectorAll('.mobile-controls button,.hud button').forEach(button=>{button.style.pointerEvents='auto';button.disabled=false});
-    /* Home village collision is decorative only. Removing obstacle flags prevents a spawn-overlap from trapping the player
-       and also removes expensive per-frame obstacle geometry reads from the movement loop. Expedition maps keep their own rules. */
     document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'));
+    normalizeTouchHint();
   }
   let wasActive=game.classList.contains('active');
   new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});
   if(wasActive)requestAnimationFrame(resetTransientUi);
   window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true});
-  /* Use the game's native PointerEvent movement handlers only. Duplicate synthetic keyboard/touch fallbacks were removed
-     because they can race with pointer capture on Android classroom browsers. */
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
