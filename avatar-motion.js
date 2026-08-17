@@ -3,6 +3,19 @@
 (()=>{
   const player=document.querySelector('#player'),game=document.querySelector('#game-screen');
   if(!player||!game)return;
+
+  const interactionHint=document.querySelector('#interaction-hint');
+  const touchMode=window.matchMedia?.('(max-width:700px),(pointer:coarse)').matches===true;
+  function normalizeTouchHint(){
+    if(!touchMode||!interactionHint)return;
+    const text=interactionHint.textContent||'';
+    if(text.startsWith('Space 키로 '))interactionHint.textContent=text.replace('Space 키로 ','✨ 상호작용 버튼으로 ');
+  }
+  if(touchMode&&interactionHint){
+    new MutationObserver(normalizeTouchHint).observe(interactionHint,{childList:true,characterData:true,subtree:true});
+    normalizeTouchHint();
+  }
+
   let lastX=null,lastY=null,lastDirection='down',timer=null;
   function stop(){if(timer){clearInterval(timer);timer=null}}
   function sample(){
