@@ -15,10 +15,10 @@ assert.ok(activity.includes('const tx=db.transaction(()=>{'),'first activity sav
 assert.ok(/nextAttempts\s*=\s*\(latest\?\.attempts\|\|0\)\+1/.test(activity),'first activity must increment attempts from zero/latest record');
 assert.ok(/nextBest\s*=\s*Math\.max\(latest\?\.best_score\|\|0\s*,\s*score\)/.test(activity),'first activity best score must derive from zero/latest record');
 assert.ok(/nextTotal\s*=\s*\(latest\?\.total_score\|\|0\)\+score/.test(activity),'first activity total score must derive from zero/latest record');
-assert.ok(activity.includes('const now=new Date().toISOString(),baseXp=20+Math.floor(score/10)'),'first activity XP basis must be calculated before the transaction');
+assert.ok(activity.includes('const now=new Date().toISOString(),baseXp=activityXpReward(activityId,score)'),'first activity XP basis must be calculated before the transaction');
 assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?baseXp:0/.test(activity),'first activity XP must follow latest policy decision');
 assert.ok(activity.includes("db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name)"),'first activity XP update must target the current student');
-assert.ok(activity.includes('record:{activityId,attempts:nextAttempts,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now}'),'first activity response must return the saved aggregate record');
+assert.ok(activity.includes('record:{activityId,attempts:nextAttempts,periodAttempts:(Number(latestAttemptRecord.attempts)||0)+1,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now}'),'first activity response must return the saved aggregate and current-period record');
 
 const routeStart=activity.indexOf("app.post('/api/player/me/activity'");
 const txStart=activity.indexOf('const tx=db.transaction(()=>{',routeStart);

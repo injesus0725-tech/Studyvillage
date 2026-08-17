@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { installItemShopRoutes } from './item-shop.js';
 import { installActivityAttemptStudentRoutes } from './activity-attempt-student.js';
+import { standardActivityStars } from './reward-economy.js';
 import { installRiddleAttemptStudentRoutes } from './riddle-attempt-student.js';
 import { installStudentScoreHistoryRoutes } from './student-score-history.js';
 import { installRestoreValidationMiddleware } from './restore-validation-middleware.js';
@@ -76,7 +77,7 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
-const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']);
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary']);
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
   if(activityId==='exploration-forest-riddle')return Math.min(3,Math.ceil(value/40));
@@ -84,16 +85,16 @@ function expeditionStarsFor(activityId,score){
   return 0;
 }
 function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
-  if(!EXPEDITION_REWARD_IDS.has(activityId))return{stars:0,balance:null};
+  if(!EXPEDITION_REWARD_IDS.has(activityId)&&!STANDARD_REWARD_IDS.has(activityId))return{stars:0,balance:null};
   if(!/^[A-Za-z0-9._:-]{8,100}$/.test(submissionId||''))throw Object.assign(new Error('invalid-expedition-submission'),{code:'invalid-expedition-submission'});
   ensureSchema(db);
-  const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='expedition-completion' AND reference_id=? LIMIT 1").get(name,submissionId);
+  const kind=EXPEDITION_REWARD_IDS.has(activityId)?'expedition-completion':'learning-completion',prior=db.prepare('SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind=? AND reference_id=? LIMIT 1').get(name,kind,submissionId);
   if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
   const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
   if(!validStarBalance(player.stars))throw Object.assign(new Error('corrupt-star-balance'),{code:'corrupt-star-balance'});
-  const stars=expeditionStarsFor(activityId,score),before=player.stars,after=before+stars;
+  const stars=EXPEDITION_REWARD_IDS.has(activityId)?expeditionStarsFor(activityId,score):standardActivityStars(activityId,score),before=player.stars,after=before+stars;
   if(after>MAX_STARS)throw Object.assign(new Error('star-limit-exceeded'),{code:'star-limit-exceeded'});
-  if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,'expedition-completion',submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
+  if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,kind,submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
   return{stars,balance:after,alreadyClaimed:false};
 }
 function riddleStarsFor(score){const value=Math.max(0,Math.min(1000,Math.round(Number(score)||0)));return value>=1000?3:value>=700?2:value>0?1:0}

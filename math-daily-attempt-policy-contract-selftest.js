@@ -6,6 +6,7 @@ const overview=fs.readFileSync('server/activity-attempt-overview.js','utf8');
 const admin=fs.readFileSync('admin-attempt-policy.js','utf8');
 
 assert.ok(settings.includes("DAILY_MATH_POLICY=Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'})"),'arithmetic must have a fixed daily three-attempt policy');
+assert.ok(settings.includes("DAILY_BOOKMARU_POLICY=Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'})"),'Bookmaru must award one fresh XP-eligible challenge each day');
 assert.ok(student.includes("timeZone:'Asia/Seoul'"),'daily attempts must follow the classroom timezone');
 assert.ok(student.includes("type=? AND created_at>=? AND created_at<?"),'daily attempts must be counted from confirmed activity log rows');
 assert.ok(student.includes("policy?.period==='daily'?{...record,attempts:dailyAttempts"),'only daily policies may replace cumulative attempts for gating');

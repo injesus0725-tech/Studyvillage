@@ -10,6 +10,7 @@ import { normalizeAttemptPolicy } from './activity-attempt-policy.js';
 import { readActivityAttemptPolicies } from './activity-attempt-settings.js';
 import { readExtraAttempts, consumeExtraAttempts } from './activity-attempt-exceptions.js';
 import { customTitleView } from './custom-title.js';
+import { activityXpReward } from './reward-economy.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const POLICY_ID='riddle-demo';
@@ -43,7 +44,7 @@ export function installRiddleAttemptStudentRoutes(app,{requireSession,publishLiv
         if(latest.attempts!==current.attempts)throw Object.assign(new Error('record-changed'),{code:'record-changed'});
         const latestExtra=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID);if(extraNeeded>latestExtra)throw Object.assign(new Error('attempt-limit-reached'),{code:'attempt-limit-reached'});
         if(extraNeeded){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,POLICY_ID,extraNeeded,'수수께끼 추가 도전 사용');if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
-        const awardXp=newAttempts>0&&(policy.xpMode==='every-attempt'||current.attempts===0),gained=awardXp?20+Math.floor(incoming.lastScore/10):0,now=new Date().toISOString();
+        const awardXp=newAttempts>0&&(policy.xpMode==='every-attempt'||current.attempts===0),gained=awardXp?activityXpReward('riddle',incoming.lastScore):0,now=new Date().toISOString();
         const nextTotal=Math.max(Number(current.total_score)||0,incoming.totalScore),nextBest=Math.max(Number(current.best_score)||0,incoming.bestScore),nextAttempts=Math.max(Number(current.attempts)||0,incoming.attempts),nextLast=newAttempts>0?incoming.lastScore:Number(current.last_score)||0;
         db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,xp=xp+?,updated_at=? WHERE name=?').run(nextTotal,nextAttempts,nextBest,nextLast,gained,now,name);
         if(newAttempts>0)logActivity(db,name,'quiz-complete',`${incoming.lastScore}점${gained?` · +${gained}XP`:' · XP 추가 없음'}${extraNeeded?` · 추가 도전권 ${extraNeeded}회 사용`:''}${newAttempts>1?' · 레거시 묶음 기록':''}`);

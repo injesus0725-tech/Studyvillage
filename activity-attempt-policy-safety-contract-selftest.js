@@ -5,7 +5,7 @@ const policy=fs.readFileSync('server/activity-attempt-policy.js','utf8');
 for(const token of [
   "const STORE_KEY='activity-attempt-policies:v1'",
   'const checked=validateAttemptPolicyMap(raw)',
-  "return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY}",
+  "return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}",
   "app.put('/api/admin/activity-attempt-policies',requireAdmin",
   'if(!checked.ok)return res.status(400)',
   'setSetting(STORE_KEY,JSON.stringify(checked.policies))'

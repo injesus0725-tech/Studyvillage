@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { evaluateAttempt } from './activity-attempt-policy.js';
 import { readActivityAttemptPolicies } from './activity-attempt-settings.js';
 import { readExtraAttempts, consumeExtraAttempts } from './activity-attempt-exceptions.js';
+import { activityXpReward } from './reward-economy.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
@@ -51,7 +52,7 @@ export function installActivityAttemptStudentRoutes(app,{requireSession,commitEx
       const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policyId=policyIdFor(activityId,policies),policy=policies[policyId]||{};
       const existing=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId),attemptRecord=policyRecord(db,name,activityId,policy,existing||{}),extra=readExtraAttempts(key=>getSetting(db,key),name,policyId),decision=evaluateWithExtra(policy,attemptRecord,extra);
       if(!decision.allowed)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId,policyId,attempts:decision.attempts,remaining:decision.remaining,extraAttempts:decision.extraAttempts,policy:decision.policy});
-      const now=new Date().toISOString(),baseXp=20+Math.floor(score/10);
+      const now=new Date().toISOString(),baseXp=activityXpReward(activityId,score);
       const tx=db.transaction(()=>{
         const latestPolicies=readActivityAttemptPolicies(key=>getSetting(db,key)),latestPolicyId=policyIdFor(activityId,latestPolicies),latestPolicy=latestPolicies[latestPolicyId]||{};
         const latest=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId),latestAttemptRecord=policyRecord(db,name,activityId,latestPolicy,latest||{}),latestExtra=readExtraAttempts(key=>getSetting(db,key),name,latestPolicyId),latestDecision=evaluateWithExtra(latestPolicy,latestAttemptRecord,latestExtra);
@@ -62,7 +63,7 @@ export function installActivityAttemptStudentRoutes(app,{requireSession,commitEx
         if(nextGained)db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name);else db.prepare('UPDATE players SET updated_at=? WHERE name=?').run(now,name);
         const expeditionReward=commitExpeditionReward(db,{name,activityId,score,submissionId,now});
         logActivity(db,name,`activity-${activityId}`,`${score}점${nextGained?` · +${nextGained}XP`:' · XP 추가 없음'}${expeditionReward.stars?` · 탐험 별 +${expeditionReward.stars}`:''}${latestDecision.usingExtra?' · 추가 도전권 1회 사용':''}`);
-        return{ok:true,gainedXp:nextGained,expeditionStars:expeditionReward.stars,starBalance:expeditionReward.balance,rewardDeduplicated:expeditionReward.alreadyClaimed===true,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,periodAttempts:(Number(latestAttemptRecord.attempts)||0)+1,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId:latestPolicyId,policy:{...latestDecision.policy,period:latestPolicy?.period||'all-time'}};
+        return{ok:true,gainedXp:nextGained,activityStars:expeditionReward.stars,expeditionStars:expeditionReward.stars,starBalance:expeditionReward.balance,rewardDeduplicated:expeditionReward.alreadyClaimed===true,usedExtraAttempt:latestDecision.usingExtra,extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra,record:{activityId,attempts:nextAttempts,periodAttempts:(Number(latestAttemptRecord.attempts)||0)+1,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now},policyId:latestPolicyId,policy:{...latestDecision.policy,period:latestPolicy?.period||'all-time'}};
       });
       const result=tx();
       if(!result.ok)return res.status(409).json(result);

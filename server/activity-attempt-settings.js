@@ -6,13 +6,14 @@ const STORE_KEY='activity-attempt-policies:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
 const DAILY_MATH_POLICY=Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'});
+const DAILY_BOOKMARU_POLICY=Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'});
 
 export function readActivityAttemptPolicies(getSetting){
   try{
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
-    return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY}:{'math-arithmetic':DAILY_MATH_POLICY};
-  }catch{return{'math-arithmetic':DAILY_MATH_POLICY}}
+    return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}:{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY};
+  }catch{return{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}}
 }
 
 export function installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting}){
