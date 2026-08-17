@@ -1,4 +1,4 @@
-/* v2.2 randomized village NPC encounters. */
+/* v2.3 randomized expedition NPC catalog. Village NPC encounters are intentionally disabled. */
 (()=>{
   const game=document.querySelector('#game-screen'),map=document.querySelector('#world-map'),player=document.querySelector('#player'),talk=document.querySelector('#talk-button');
   if(!game||!map||!player)return;
@@ -10,6 +10,9 @@
     {id:'robot',requiredLevel:1,icon:'🤖',name:'기록 로봇',lines:['삐빅! 작은 도전도 차곡차곡 기록되고 있어.','내 기록에서 점수뿐 아니라 꾸준히 도전한 횟수도 확인해 봐.','오늘의 목표를 하나 정하면 성장 기록이 더 또렷해져.']},
     {id:'owl',requiredLevel:30,icon:'🦉',name:'지혜 부엉이',lines:['정답을 고르기 전에 문제에서 가장 중요한 말을 찾아보렴.','아는 것과 짐작한 것을 구분하면 생각이 더 선명해져.','밤에도 낮에도 좋은 질문은 반짝반짝 빛난단다.']}
   ];
+  window.StudyVillageExpeditionNpcRoster=Object.freeze(roster.map(npc=>Object.freeze({...npc,lines:Object.freeze([...npc.lines])})));
+  const villageNpcEncountersEnabled=false;
+  if(!villageNpcEncountersEnabled)return;
   const spots=[{x:38,y:18},{x:73,y:20},{x:19,y:38},{x:80,y:62},{x:35,y:76},{x:68,y:78}];
   const shuffle=values=>{const out=[...values];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
   const levelLabel=document.querySelector('#profile-level');let elements=[],spawnedLevel=0;
