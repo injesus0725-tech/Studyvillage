@@ -1,6 +1,6 @@
 const fs=require('fs');
 const assert=require('assert');
-const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readFileSync('server/activity-attempt-student.js','utf8'),client=fs.readFileSync('math-practice.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),index=fs.readFileSync('index.html','utf8');
+const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readFileSync('server/activity-attempt-student.js','utf8'),client=fs.readFileSync('math-practice.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),index=fs.readFileSync('index.html','utf8'),hub=fs.readFileSync('assets/student-study-menu.js','utf8');
 assert.ok(server.includes("ACTIVITY_ID='math-arithmetic'"),'math practice needs a stable activity id');
 const issuedProblems="problems:problems.map((problem,index)=>({id:index+1,prompt:problem.prompt,unit:problem.unit}))";
 assert.ok(server.includes(issuedProblems),'server must issue only student-visible math problem fields');
@@ -13,6 +13,8 @@ assert.ok(server.includes('!row.finalized'),'a finalized math session cannot aut
 assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
-assert.ok(building.includes("action:'math'"),'the school interior must open math practice');
+assert.ok(building.includes("action:'explore'"),'study building interiors must route problem solving through the expedition hub');
+assert.ok(building.includes('문제 탐험 열기'),'study building interiors must expose the expedition entry instead of the legacy direct math button');
+assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'the expedition hub must expose math adventure entries');
 assert.ok(index.includes('<script src="math-practice.js"></script>'),'the student page must load math practice');
 console.log('math practice server validation contract self-test passed');
