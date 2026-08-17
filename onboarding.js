@@ -49,12 +49,12 @@
   if(wasActive)requestAnimationFrame(resetTransientUi);
   window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true});
 
-  /* Samsung/Android tablet fallback: keep feeding the normal keyboard movement path while a direction pad is held.
-     This is deliberately independent of Pointer Capture, which can be lost on some classroom browsers. */
+  /* Tablet fallback: dispatch one keydown on press and one keyup on release.
+     Do not repeat keydown with setInterval: a lost touchend could otherwise leave a runaway timer and freeze the browser. */
   const held=new Map();
   function fire(key,type){window.dispatchEvent(new KeyboardEvent(type,{key,code:key,bubbles:true,cancelable:true}))}
-  function begin(button,e){if(!game.classList.contains('active'))return;e?.preventDefault?.();const key=button.dataset.key;if(!key||held.has(button))return;fire(key,'keydown');const timer=setInterval(()=>fire(key,'keydown'),45);held.set(button,{key,timer})}
-  function end(button,e){e?.preventDefault?.();const item=held.get(button);if(!item)return;clearInterval(item.timer);held.delete(button);fire(item.key,'keyup')}
+  function begin(button,e){if(!game.classList.contains('active'))return;e?.preventDefault?.();const key=button.dataset.key;if(!key||held.has(button))return;fire(key,'keydown');const safety=setTimeout(()=>end(button),1800);held.set(button,{key,safety})}
+  function end(button,e){e?.preventDefault?.();const item=held.get(button);if(!item)return;clearTimeout(item.safety);held.delete(button);fire(item.key,'keyup')}
   document.querySelectorAll('.mobile-controls button[data-key]').forEach(button=>{
     button.addEventListener('touchstart',e=>begin(button,e),{passive:false});
     button.addEventListener('touchend',e=>end(button,e),{passive:false});
@@ -63,6 +63,6 @@
     button.addEventListener('mouseup',e=>end(button,e));
     button.addEventListener('mouseleave',e=>end(button,e));
   });
-  window.addEventListener('blur',()=>{for(const [button,item] of held){clearInterval(item.timer);fire(item.key,'keyup')}held.clear()});
+  window.addEventListener('blur',()=>{for(const [button,item] of held){clearTimeout(item.safety);fire(item.key,'keyup')}held.clear()});
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
