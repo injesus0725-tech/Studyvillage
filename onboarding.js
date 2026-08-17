@@ -40,20 +40,23 @@
   const map=document.querySelector('#world-map')||world;
   const marker=document.createElement('div');marker.className='tap-target';marker.hidden=true;map.appendChild(marker);
   let moveFrame=0,target=null,lastPointerAt=0;
+  const held=new Set();
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-  function stopMove(){target=null;marker.hidden=true;if(moveFrame){cancelAnimationFrame(moveFrame);moveFrame=0}}
+  function sendKey(type,key){window.dispatchEvent(new KeyboardEvent(type,{key,code:key,bubbles:true,cancelable:true}))}
+  function syncKeys(nextKeys){for(const key of [...held])if(!nextKeys.has(key)){sendKey('keyup',key);held.delete(key)}for(const key of nextKeys)if(!held.has(key)){sendKey('keydown',key);held.add(key)}}
+  function stopMove(){syncKeys(new Set());target=null;marker.hidden=true;if(moveFrame){cancelAnimationFrame(moveFrame);moveFrame=0}}
   function worldPercent(clientX,clientY){const r=world.getBoundingClientRect();return{x:clamp((clientX-r.left)/r.width*100,3,97),y:clamp((clientY-r.top)/r.height*100,8,92)}}
-  function beginMove(clientX,clientY){if(!touchMode()||!game.classList.contains('active'))return;const p=worldPercent(clientX,clientY);target=p;marker.style.left=`${p.x}%`;marker.style.top=`${p.y}%`;marker.hidden=false;if(!moveFrame)moveFrame=requestAnimationFrame(stepMove)}
-  function stepMove(){moveFrame=0;if(!target||!game.classList.contains('active')||document.hidden){stopMove();return}const left=parseFloat(player.style.left)||50,top=parseFloat(player.style.top)||68,dx=target.x-left,dy=target.y-top,dist=Math.hypot(dx,dy);if(dist<0.7){player.style.left=`${target.x}%`;player.style.top=`${target.y}%`;stopMove();return}const speed=Math.min(0.8,dist);player.style.left=`${left+dx/dist*speed}%`;player.style.top=`${top+dy/dist*speed}%`;moveFrame=requestAnimationFrame(stepMove)}
+  function beginMove(clientX,clientY){if(!touchMode()||!game.classList.contains('active'))return;stopMove();const p=worldPercent(clientX,clientY);target=p;marker.style.left=`${p.x}%`;marker.style.top=`${p.y}%`;marker.hidden=false;moveFrame=requestAnimationFrame(stepMove)}
+  function stepMove(){moveFrame=0;if(!target||!game.classList.contains('active')||document.hidden){stopMove();return}const left=parseFloat(player.style.left)||50,top=parseFloat(player.style.top)||68,dx=target.x-left,dy=target.y-top;if(Math.abs(dx)<1.1&&Math.abs(dy)<1.1){stopMove();return}const keys=new Set();if(Math.abs(dx)>=1.1)keys.add(dx>0?'ArrowRight':'ArrowLeft');if(Math.abs(dy)>=1.1)keys.add(dy>0?'ArrowDown':'ArrowUp');syncKeys(keys);moveFrame=requestAnimationFrame(stepMove)}
 
   function rectHit(el,x,y){if(!el||el.hidden)return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
-  function panelVisible(el){if(!el||el.hidden)return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&cs.pointerEvents!=='none'&&el.getClientRects().length>0}
+  function panelVisible(el){if(!el||el.hidden)return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&el.getClientRects().length>0}
   function visibleBlockingPanel(){return [...document.querySelectorAll('#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide')].some(panelVisible)}
   function routeTouch(clientX,clientY){
     if(!touchMode()||!game.classList.contains('active')||visibleBlockingPanel())return false;
     const hudButtons=[...document.querySelectorAll('.hud button,.hud a')];
     const hudHit=hudButtons.find(el=>rectHit(el,clientX,clientY));
-    if(hudHit){hudHit.click();return true}
+    if(hudHit){stopMove();hudHit.click();return true}
     const buildings=[...document.querySelectorAll('.building')];
     const buildingHit=buildings.find(el=>rectHit(el,clientX,clientY));
     if(buildingHit){buildingHit.click();return true}
@@ -65,7 +68,6 @@
   document.addEventListener('touchend',e=>{if(!touchMode()||Date.now()-lastPointerAt<500)return;const t=e.changedTouches?.[0];if(!t)return;if(routeTouch(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation()}},{capture:true,passive:false});
   window.addEventListener('blur',stopMove);document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMove()});
 
-  function resetTransientUi(){if(!game.classList.contains('active'))return;overlay.hidden=true;stopMove();for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true;node.style.pointerEvents='none'});document.body.classList.remove('inside-building','near-building-interaction');game.style.pointerEvents='auto';world.style.pointerEvents='auto';map.style.pointerEvents='auto';document.querySelectorAll('.hud button,.hud a,.building,.npc').forEach(node=>{node.style.pointerEvents='auto';if('disabled' in node)node.disabled=false});document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'))}
+  function resetTransientUi(){if(!game.classList.contains('active'))return;overlay.hidden=true;stopMove();document.body.classList.remove('inside-building','near-building-interaction');game.style.pointerEvents='auto';world.style.pointerEvents='auto';map.style.pointerEvents='auto';document.querySelectorAll('.hud button,.hud a,.building,.npc').forEach(node=>{node.style.pointerEvents='auto';if('disabled' in node)node.disabled=false})}
   let wasActive=game.classList.contains('active');new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});if(wasActive)requestAnimationFrame(resetTransientUi);window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true;stopMove()});
-  /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
