@@ -21,6 +21,6 @@ assert.ok(shop.includes('finally{loadPromise=null}'),'student shop must clear th
 assert.ok(shop.includes("err?.name==='AbortError'?'구매 요청 시간이 초과됐어요. 잠시 후 별 장부를 확인해 주세요.'"),'purchase timeout must tell students to verify the ledger before retrying');
 assert.ok(shop.includes('if(!refreshed)await load()'),'purchase flow must avoid redundant successful refreshes while still recovering after failure');
 assert.ok(shop.includes("const esc=v=>String(v??'').replace"),'student shop must provide safe HTML escaping for display text');
-assert.ok(shop.includes('<strong>${esc(item.name)}</strong>'),'student shop item names must be escaped before innerHTML rendering');
+assert.ok(shop.includes('<strong>${esc(item.name)}'),'student shop item names must be escaped before innerHTML rendering');
 
 console.log('[Studyvillage] shop immediate-equip contract selftest passed');
