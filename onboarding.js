@@ -17,7 +17,7 @@
     .teacher-preview-return{position:fixed;left:12px;top:12px;z-index:20000;padding:10px 14px;border-radius:999px;background:#fff;color:#315d3b;font-weight:900;text-decoration:none;box-shadow:0 5px 20px #0003;touch-action:manipulation}
     .tap-target{position:absolute;z-index:9;width:26px;height:26px;border:3px solid #fff;border-radius:50%;background:#5e9fff66;box-shadow:0 0 0 3px #2f78d655;transform:translate(-50%,-50%);pointer-events:none!important;animation:tap-pulse .65s ease-out infinite alternate}
     @keyframes tap-pulse{to{transform:translate(-50%,-50%) scale(1.22);opacity:.55}}
-    @media(max-width:720px),(pointer:coarse){.mobile-controls{display:none!important}.control-help{display:none!important}#world{touch-action:none!important}.interaction-hint.visible{font-size:12px;bottom:10px}.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
+    @media(max-width:720px),(pointer:coarse){.mobile-controls{display:none!important}.control-help{display:none!important}#world{touch-action:none!important}.interaction-hint{display:none!important}.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
   `;
   document.head.appendChild(style);
   if(new URLSearchParams(location.search).get('teacher-preview')==='1'){const back=document.createElement('a');back.href='/admin.html';back.className='teacher-preview-return';back.textContent='← 교사 화면으로';document.body.appendChild(back)}
@@ -36,10 +36,6 @@
   function finishGuide(){overlay.hidden=true}
   next.addEventListener('click',()=>{if(guideIndex<steps.length-1){guideIndex++;renderGuide()}else finishGuide()});skip.addEventListener('click',finishGuide);overlay.addEventListener('click',e=>{if(e.target===overlay)finishGuide()});window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finishGuide()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',openGuide);hudRight.insertBefore(b,hudRight.firstChild)}
-
-  const hint=document.querySelector('#interaction-hint');
-  function normalizeHint(){if(!touchMode()||!hint)return;const current=hint.textContent||'';if(current.includes('도우미 선생님'))hint.textContent='도우미 선생님을 직접 터치해 이야기하기';else if(current.includes('수수께끼')||current.includes('도전관'))hint.textContent='도전관을 직접 터치해 들어가기'}
-  if(hint){new MutationObserver(normalizeHint).observe(hint,{childList:true,characterData:true,subtree:true});window.addEventListener('resize',normalizeHint)}
 
   const map=document.querySelector('#world-map')||world;
   const marker=document.createElement('div');marker.className='tap-target';marker.hidden=true;map.appendChild(marker);
@@ -68,7 +64,7 @@
   document.addEventListener('touchend',e=>{if(!touchMode()||Date.now()-lastPointerAt<500)return;const t=e.changedTouches?.[0];if(!t)return;if(routeTouch(t.clientX,t.clientY)){e.preventDefault();e.stopImmediatePropagation()}},{capture:true,passive:false});
   window.addEventListener('blur',stopMove);document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMove()});
 
-  function resetTransientUi(){if(!game.classList.contains('active'))return;overlay.hidden=true;stopMove();for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true;node.style.pointerEvents='none'});document.body.classList.remove('inside-building','near-building-interaction');game.style.pointerEvents='auto';world.style.pointerEvents='auto';map.style.pointerEvents='auto';document.querySelectorAll('.hud button,.hud a,.building,.npc').forEach(node=>{node.style.pointerEvents='auto';if('disabled' in node)node.disabled=false});document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'));normalizeHint()}
+  function resetTransientUi(){if(!game.classList.contains('active'))return;overlay.hidden=true;stopMove();for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true;node.style.pointerEvents='none'});document.body.classList.remove('inside-building','near-building-interaction');game.style.pointerEvents='auto';world.style.pointerEvents='auto';map.style.pointerEvents='auto';document.querySelectorAll('.hud button,.hud a,.building,.npc').forEach(node=>{node.style.pointerEvents='auto';if('disabled' in node)node.disabled=false});document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'))}
   let wasActive=game.classList.contains('active');new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});if(wasActive)requestAnimationFrame(resetTransientUi);window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true;stopMove()});
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
