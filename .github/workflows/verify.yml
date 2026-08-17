@@ -25,3 +25,5 @@ jobs:
         run: npm install --omit=dev --ignore-scripts
       - name: Run repository verification
         run: npm run verify
+      - name: Run classroom regression bundle
+        run: node v1-classroom-regression-contract-selftest.js
