@@ -105,6 +105,7 @@ const tests=[
   'student-activity-close-confirmation-contract-selftest.js',
   'student-activity-result-profile-sync-contract-selftest.js',
   'student-library-profile-fallback-contract-selftest.js',
+  'student-confirmed-player-state-sync-contract-selftest.js',
   'student-cross-device-profile-contract-selftest.js',
   'student-collection-milestone-contract-selftest.js',
   'student-customize-immediate-equip-contract-selftest.js',

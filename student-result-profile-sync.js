@@ -7,6 +7,7 @@
     if(score)score.textContent=`${Number(player.totalScore)||0}점`;
     if(level)level.textContent=`Lv.${Number(player.level)||1}`;
     if(title&&player.title)title.textContent=player.title;
+    window.dispatchEvent(new CustomEvent('studyvillage:player-confirmed',{detail:{player}}));
   }
 
   window.addEventListener('studyvillage:library-complete',event=>{
