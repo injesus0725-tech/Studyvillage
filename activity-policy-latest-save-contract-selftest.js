@@ -9,9 +9,10 @@ for(const token of [
   'const latestPolicies=readActivityAttemptPolicies(key=>getSetting(db,key))',
   'latestPolicyId=policyIdFor(activityId,latestPolicies)',
   'latestPolicy=latestPolicies[latestPolicyId]||{}',
-  'latestDecision=evaluateWithExtra(latestPolicy,latest||{},latestExtra)',
+  'latestAttemptRecord=policyRecord(db,name,activityId,latestPolicy,latest||{})',
+  'latestDecision=evaluateWithExtra(latestPolicy,latestAttemptRecord,latestExtra)',
   'policyId:latestPolicyId',
-  'policy:latestDecision.policy'
+  "policy:{...latestDecision.policy,period:latestPolicy?.period||'all-time'}"
 ])assert.ok(tx.includes(token),`latest policy guard missing: ${token}`);
 assert.ok(tx.indexOf('latestPolicies=readActivityAttemptPolicies')<tx.indexOf('latestDecision=evaluateWithExtra'),'latest policy must be read before final save decision');
 console.log('activity latest policy save contract self-test passed');

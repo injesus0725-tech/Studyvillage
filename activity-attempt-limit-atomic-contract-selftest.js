@@ -3,7 +3,8 @@ const assert=require('assert');
 const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
 for(const token of [
   'const tx=db.transaction(()=>{',
-  'latestDecision=evaluateWithExtra(latestPolicy,latest||{},latestExtra)',
+  'latestAttemptRecord=policyRecord(db,name,activityId,latestPolicy,latest||{})',
+  'latestDecision=evaluateWithExtra(latestPolicy,latestAttemptRecord,latestExtra)',
   "if(!latestDecision.allowed)return{ok:false,code:'attempt-limit-reached'",
   'if(latestDecision.usingExtra){const consumed=consumeExtraAttempts',
   "if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})",

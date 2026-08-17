@@ -10,6 +10,7 @@ import { readExtraAttempts } from './activity-attempt-exceptions.js';
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n);
 const aliasId=id=>id==='riddle-demo'?'riddle':id==='library-vocabulary'?'vocabulary':id;
+function classroomDayRange(now=new Date()){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now),value=type=>parts.find(part=>part.type===type)?.value,start=new Date(`${value('year')}-${value('month')}-${value('day')}T00:00:00+09:00`);return{start:start.toISOString(),end:new Date(start.getTime()+86400000).toISOString()}}
 function openDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,db=new Database(path.join(dataDir,'studyvillage.db'),{readonly:true,fileMustExist:true});db.pragma('busy_timeout = 3000');return db}
 function getSetting(db,key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null}
 
@@ -26,10 +27,10 @@ export function installActivityAttemptOverviewRoutes(app,{requireAdmin}){
         activityId,
         policy:policies[activityId],
         students:players.map(({name})=>{
-          const recordId=aliasId(activityId),record=recordStmt.get(name,recordId)||{attempts:0,bestScore:0,lastScore:0,updatedAt:null};
-          const decision=evaluateAttempt(policies[activityId],record),extraAttempts=readExtraAttempts(key=>getSetting(db,key),name,activityId);
+          const recordId=aliasId(activityId),record=recordStmt.get(name,recordId)||{attempts:0,bestScore:0,lastScore:0,updatedAt:null},policy=policies[activityId],range=policy?.period==='daily'?classroomDayRange():null,dailyCount=range?Number(db.prepare('SELECT COUNT(*) AS count FROM activity_log WHERE player_name=? AND type=? AND created_at>=? AND created_at<?').get(name,`activity-${recordId}`,range.start,range.end)?.count)||0:null,attemptRecord=dailyCount===null?record:{...record,attempts:dailyCount};
+          const decision=evaluateAttempt(policy,attemptRecord),extraAttempts=readExtraAttempts(key=>getSetting(db,key),name,activityId);
           const remaining=decision.remaining===null?null:decision.remaining+extraAttempts;
-          return{name,attempts:decision.attempts,baseRemaining:decision.remaining,extraAttempts,remaining,allowed:decision.allowed||extraAttempts>0,awardXpOnNextAttempt:decision.awardXp,bestScore:Number(record.bestScore)||0,lastScore:Number(record.lastScore)||0,updatedAt:record.updatedAt||null};
+          return{name,attempts:Number(record.attempts)||0,periodAttempts:decision.attempts,period:policy?.period||'all-time',baseRemaining:decision.remaining,extraAttempts,remaining,allowed:decision.allowed||extraAttempts>0,awardXpOnNextAttempt:decision.awardXp,bestScore:Number(record.bestScore)||0,lastScore:Number(record.lastScore)||0,updatedAt:record.updatedAt||null};
         })
       }));
       res.json({ok:true,activities});
