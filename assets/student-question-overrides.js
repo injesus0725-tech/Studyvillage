@@ -1,0 +1,11 @@
+/* v1.11 shared student question override loader. Applies teacher-reviewed edits to every student question set before activity entry. */
+(()=>{
+  const TIMEOUT_MS=5000;
+  const clone=q=>({...q,options:Array.isArray(q?.options)?[...q.options]:[],acceptedAnswers:Array.isArray(q?.acceptedAnswers)?[...q.acceptedAnswers]:[]});
+  const valid=q=>{const prompt=q?.word||q?.question||q?.prompt;if(typeof prompt!=='string'||!prompt.trim())return false;if(q.type==='input')return Array.isArray(q.acceptedAnswers)&&q.acceptedAnswers.length>0&&q.acceptedAnswers.length<=8&&q.acceptedAnswers.every(v=>typeof v==='string'&&v.trim());return Array.isArray(q.options)&&q.options.length>=2&&q.options.every(v=>typeof v==='string'&&v.trim())&&Number.isInteger(Number(q.answer))&&Number(q.answer)>=0&&Number(q.answer)<q.options.length};
+  async function fetchOverrides(){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);try{const response=await fetch('/api/question-overrides',{cache:'no-store',signal:controller.signal}),data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw new Error(data.code||'override-load-failed');return data.overrides||{}}finally{clearTimeout(timer)}}
+  async function apply(){const sets=Object.values(window.StudyVillageQuestionSets||{}).filter(set=>set?.activityId&&Array.isArray(set.questions));if(!sets.length)return{ok:true,applied:0};try{const overrides=await fetchOverrides();let applied=0;for(const set of sets){set.questions=set.questions.map((base,index)=>{const row=overrides[`${set.activityId}:${index+1}`]?.question;if(!row||!valid(row))return base;applied++;return clone({...base,...row,answer:row.type==='input'?null:Number(row.answer)})})}return{ok:true,applied}}catch(error){console.warn('[Studyvillage] shared question overrides unavailable; bundled questions remain active',error?.name==='AbortError'?'timeout':error?.message||error);return{ok:false,applied:0,error}}}
+  const ready=apply();
+  window.StudyVillageStudentQuestionOverrides={ready,refresh:apply};
+  document.addEventListener('click',event=>{const card=event.target.closest?.('.sv-exp-card[data-expedition]');if(!card||card.dataset.overrideReady==='1')return;event.preventDefault();event.stopImmediatePropagation();ready.finally(()=>{card.dataset.overrideReady='1';card.click()})},true);
+})();
