@@ -3,9 +3,22 @@
   const BODY_BY_NAME=Object.freeze({'기본 학생':'🧍','소년 탐험가':'🧍‍♂️','소녀 탐험가':'🧍‍♀️','우주 탐험가':'🧑‍🚀'});
   function refreshChoiceIcons(){const list=document.querySelector('#base-character-list');if(!list)return;for(const button of list.querySelectorAll('button.inventory-item')){const name=button.querySelector('strong')?.textContent?.trim(),icon=button.querySelector('span');if(icon&&BODY_BY_NAME[name])icon.textContent=BODY_BY_NAME[name]}}
   function refreshProfile(){const icon=document.querySelector('.profile-avatar'),base=document.querySelector('.player-icon')?.dataset?.avatarBase||'student-default',renderer=window.StudyVillageAvatar;if(!icon||!renderer)return;icon.textContent=renderer.base(base)?.emoji||'🧍'}
-  const customize=document.querySelector('#customize-button');customize?.addEventListener('click',()=>setTimeout(()=>{refreshChoiceIcons();refreshProfile()},0));
+  function syncExpeditionAvatar(){
+    const stage=document.querySelector('.sv-stage-player'),player=document.querySelector('#player'),renderer=window.StudyVillageAvatar;if(!stage||!player||!renderer)return;
+    let base=stage.querySelector('.sv-exp-avatar-base'),hat=stage.querySelector('.sv-exp-avatar-hat'),glasses=stage.querySelector('.sv-exp-avatar-glasses'),bag=stage.querySelector('.sv-exp-avatar-bag'),pet=stage.querySelector('.sv-exp-avatar-pet');
+    if(!base){stage.replaceChildren();base=document.createElement('span');base.className='sv-exp-avatar-base';hat=document.createElement('span');hat.className='sv-exp-avatar-layer sv-exp-avatar-hat';glasses=document.createElement('span');glasses.className='sv-exp-avatar-layer sv-exp-avatar-glasses';bag=document.createElement('span');bag.className='sv-exp-avatar-layer sv-exp-avatar-bag';pet=document.createElement('span');pet.className='sv-exp-avatar-layer sv-exp-avatar-pet';stage.append(base,hat,glasses,bag,pet)}
+    renderer.paintBase(base,player.querySelector('.player-icon')?.dataset?.avatarBase||'student-default');
+    renderer.paintItem(hat,player.querySelector('#player-hat')?.dataset?.avatarItem||'');
+    renderer.paintItem(glasses,player.querySelector('#player-glasses')?.dataset?.avatarItem||'');
+    renderer.paintItem(bag,player.querySelector('#player-bag')?.dataset?.avatarItem||'');
+    renderer.paintItem(pet,player.querySelector('#player-pet')?.dataset?.avatarItem||'');
+  }
+  if(!document.querySelector('#sv-exp-avatar-sync-style')){const style=document.createElement('style');style.id='sv-exp-avatar-sync-style';style.textContent='.sv-stage-player{overflow:visible!important}.sv-stage-player .sv-exp-avatar-base{position:relative;z-index:2;font-size:48px;line-height:1}.sv-stage-player .sv-exp-avatar-layer{position:absolute;z-index:3;font-size:25px;line-height:1;pointer-events:none}.sv-stage-player .sv-exp-avatar-hat{left:50%;top:-9%;transform:translateX(-50%)}.sv-stage-player .sv-exp-avatar-glasses{left:50%;top:27%;transform:translateX(-50%);font-size:21px}.sv-stage-player .sv-exp-avatar-bag{left:7%;top:47%;font-size:24px}.sv-stage-player .sv-exp-avatar-pet{right:-14%;bottom:-8%;font-size:25px}@media(max-width:760px),(pointer:coarse){.sv-stage-player .sv-exp-avatar-base{font-size:38px}.sv-stage-player .sv-exp-avatar-layer{font-size:21px}.sv-stage-player .sv-exp-avatar-glasses{font-size:18px}.sv-stage-player .sv-exp-avatar-bag,.sv-stage-player .sv-exp-avatar-pet{font-size:20px}}';document.head.appendChild(style)}
+  const customize=document.querySelector('#customize-button');customize?.addEventListener('click',()=>setTimeout(()=>{refreshChoiceIcons();refreshProfile();syncExpeditionAvatar()},0));
   window.addEventListener('studyvillage:ranking-refresh',()=>setTimeout(refreshProfile,0));
+  window.addEventListener('studyvillage:stars-refresh',()=>setTimeout(syncExpeditionAvatar,0));
   const list=document.querySelector('#base-character-list');if(list)new MutationObserver(refreshChoiceIcons).observe(list,{childList:true,subtree:true});
-  const player=document.querySelector('#player');if(player)new MutationObserver(refreshProfile).observe(player,{attributes:true,subtree:true,attributeFilter:['data-avatar-base']});
-  setTimeout(()=>{refreshChoiceIcons();refreshProfile()},500);
+  const player=document.querySelector('#player');if(player)new MutationObserver(()=>{refreshProfile();syncExpeditionAvatar()}).observe(player,{attributes:true,childList:true,subtree:true,characterData:true});
+  const game=document.querySelector('#game-screen');if(game)new MutationObserver(mutations=>{if(mutations.some(m=>[...m.addedNodes].some(node=>node.nodeType===1&&(node.matches?.('.sv-stage-player')||node.querySelector?.('.sv-stage-player')))))setTimeout(syncExpeditionAvatar,0)}).observe(game,{childList:true,subtree:true});
+  setTimeout(()=>{refreshChoiceIcons();refreshProfile();syncExpeditionAvatar()},500);
 })();
