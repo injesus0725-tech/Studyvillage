@@ -47,7 +47,8 @@
   function stepMove(){moveFrame=0;if(!target||!game.classList.contains('active')||document.hidden){stopMove();return}const left=parseFloat(player.style.left)||50,top=parseFloat(player.style.top)||68,dx=target.x-left,dy=target.y-top,dist=Math.hypot(dx,dy);if(dist<0.7){player.style.left=`${target.x}%`;player.style.top=`${target.y}%`;stopMove();return}const speed=Math.min(0.8,dist);player.style.left=`${left+dx/dist*speed}%`;player.style.top=`${top+dy/dist*speed}%`;moveFrame=requestAnimationFrame(stepMove)}
 
   function rectHit(el,x,y){if(!el||el.hidden)return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
-  function visibleBlockingPanel(){return [...document.querySelectorAll('#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide')].some(el=>!el.hidden&&getComputedStyle(el).display!=='none')}
+  function panelVisible(el){if(!el||el.hidden)return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&cs.pointerEvents!=='none'&&el.getClientRects().length>0}
+  function visibleBlockingPanel(){return [...document.querySelectorAll('#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide')].some(panelVisible)}
   function routeTouch(clientX,clientY){
     if(!touchMode()||!game.classList.contains('active')||visibleBlockingPanel())return false;
     const hudButtons=[...document.querySelectorAll('.hud button,.hud a')];
