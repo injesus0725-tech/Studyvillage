@@ -39,9 +39,7 @@
   function resetTransientUi(){
     if(!game.classList.contains('active'))return;
     overlay.hidden=true;
-    for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue']){
-      document.querySelectorAll(selector).forEach(node=>{node.hidden=true});
-    }
+    for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true});
     document.body.classList.remove('inside-building','near-building-interaction');
     game.style.pointerEvents='auto';
     document.querySelectorAll('.mobile-controls button,.hud button').forEach(button=>{button.style.pointerEvents='auto';button.disabled=false});
@@ -50,5 +48,21 @@
   new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});
   if(wasActive)requestAnimationFrame(resetTransientUi);
   window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true});
+
+  /* Samsung/Android tablet fallback: keep feeding the normal keyboard movement path while a direction pad is held.
+     This is deliberately independent of Pointer Capture, which can be lost on some classroom browsers. */
+  const held=new Map();
+  function fire(key,type){window.dispatchEvent(new KeyboardEvent(type,{key,code:key,bubbles:true,cancelable:true}))}
+  function begin(button,e){if(!game.classList.contains('active'))return;e?.preventDefault?.();const key=button.dataset.key;if(!key||held.has(button))return;fire(key,'keydown');const timer=setInterval(()=>fire(key,'keydown'),45);held.set(button,{key,timer})}
+  function end(button,e){e?.preventDefault?.();const item=held.get(button);if(!item)return;clearInterval(item.timer);held.delete(button);fire(item.key,'keyup')}
+  document.querySelectorAll('.mobile-controls button[data-key]').forEach(button=>{
+    button.addEventListener('touchstart',e=>begin(button,e),{passive:false});
+    button.addEventListener('touchend',e=>end(button,e),{passive:false});
+    button.addEventListener('touchcancel',e=>end(button,e),{passive:false});
+    button.addEventListener('mousedown',e=>begin(button,e));
+    button.addEventListener('mouseup',e=>end(button,e));
+    button.addEventListener('mouseleave',e=>end(button,e));
+  });
+  window.addEventListener('blur',()=>{for(const [button,item] of held){clearInterval(item.timer);fire(item.key,'keyup')}held.clear()});
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
