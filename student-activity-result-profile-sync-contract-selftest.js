@@ -9,4 +9,5 @@ assert.ok(sync.includes("fetch('/api/player/me'")&&sync.includes("cache:'no-stor
 assert.ok(sync.includes('if(profileRefresh)return profileRefresh'),'rapid completion refreshes must share one player request');
 assert.ok(sync.includes('setTimeout(()=>controller.abort(),5000)'),'profile refresh must not wait forever');
 assert.ok(library.includes("studyvillage:library-complete")&&sync.includes("window.dispatchEvent(new Event('studyvillage:ranking-refresh'))"),'math and vocabulary completion must both refresh ranking-dependent level state');
+assert.ok(sync.includes('else refreshConfirmedPlayer();'),'vocabulary completion must fetch the confirmed player when the save response omits it');
 console.log('student activity result profile sync contract self-test passed');

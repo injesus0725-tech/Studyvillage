@@ -12,6 +12,7 @@
   window.addEventListener('studyvillage:library-complete',event=>{
     const player=event.detail?.player;
     if(player){applyPlayer(player);window.dispatchEvent(new Event('studyvillage:ranking-refresh'))}
+    else refreshConfirmedPlayer();
   });
 
   let profileRefresh=null;
