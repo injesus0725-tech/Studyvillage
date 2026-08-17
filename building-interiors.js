@@ -12,6 +12,7 @@
   ];
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
   const exit=overlay.querySelector('#interior-exit'),icon=overlay.querySelector('#interior-icon'),title=overlay.querySelector('#interior-title'),text=overlay.querySelector('#interior-text'),actions=overlay.querySelector('#interior-action-wrap');
+  const touchMode=()=>matchMedia?.('(pointer:coarse)').matches===true||innerWidth<=700;
   function distance(el){const a=player.getBoundingClientRect(),b=el.getBoundingClientRect();return Math.hypot(a.left+a.width/2-(b.left+b.width/2),a.top+a.height/2-(b.top+b.height/2))}
   function nearest(){let best=null;for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;const d=distance(el);if(d<190&&(!best||d<best.d))best={...b,el,d}}return best}
   function addActionButton(label,onClick){const btn=document.createElement('button');btn.className='interior-primary';btn.textContent=label;btn.onclick=onClick;actions.appendChild(btn)}
@@ -22,5 +23,6 @@
   function interact(e){if(open)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
   talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);
-  function tick(now){if(now-lastCheck>=160){lastCheck=now;const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b){document.body.classList.add('near-building-interaction');hint.textContent=`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}else hideHint()}else hideHint()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+  for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;el.style.cursor='pointer';el.addEventListener('click',e=>{if(!touchMode()||open)return;e.preventDefault();e.stopImmediatePropagation();if(confirm(`${b.title}에 들어갈까요?`))enter({...b,el,d:0})},true)}
+  function tick(now){if(now-lastCheck>=160){lastCheck=now;const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b){document.body.classList.add('near-building-interaction');hint.textContent=touchMode()?`${b.title}을(를) 직접 터치해 들어가기`:`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}else hideHint()}else hideHint()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
 })();
