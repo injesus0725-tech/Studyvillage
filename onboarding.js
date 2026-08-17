@@ -10,9 +10,11 @@
     .welcome-card .guide-icon{font-size:48px}.welcome-card h2{margin:9px 0 8px;font-size:25px}.welcome-card p{margin:0;color:#65756b;line-height:1.65;font-weight:700}
     .guide-dots{display:flex;gap:6px;margin:18px 0}.guide-dots span{width:9px;height:9px;border-radius:999px;background:#dbe5dc}.guide-dots span.active{width:24px;background:#4d8a5d}
     .guide-actions{display:flex;justify-content:space-between;gap:10px}.guide-actions button{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer;touch-action:manipulation}.guide-skip{background:#eef2ee;color:#627068}.guide-next{margin-left:auto;background:#38744a;color:#fff}
-    @media(max-width:720px){.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}}
+    .teacher-preview-return{position:fixed;left:12px;top:12px;z-index:20000;padding:10px 14px;border-radius:999px;background:#fff;color:#315d3b;font-weight:900;text-decoration:none;box-shadow:0 5px 20px #0003;touch-action:manipulation}
+    @media(max-width:720px){.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
   `;
   document.head.appendChild(style);
+  if(new URLSearchParams(location.search).get('teacher-preview')==='1'){const back=document.createElement('a');back.href='/admin.html';back.className='teacher-preview-return';back.textContent='← 교사 화면으로';document.body.appendChild(back)}
   const steps=[
     {icon:'🌳',title:'우리 학습마을에 온 걸 환영해!',text:'마을을 돌아다니며 건물과 탐험 메뉴에서 학습 활동에 참여해 보세요. 활동 기록과 성장 내용은 자동으로 저장됩니다.'},
     {icon:'🎮',title:'캐릭터를 움직여 보세요',text:'컴퓨터에서는 방향키 또는 WASD로 움직이고 Space 키로 상호작용해요. 태블릿에서는 화면 아래 방향 버튼과 상호작용 버튼을 사용하면 됩니다.'},
@@ -30,5 +32,5 @@
   overlay.addEventListener('click',e=>{if(e.target===overlay)finish()});
   window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
-  /* Important: never open a modal automatically after login. First character choice is handled later from 꾸미기. */
+  /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
