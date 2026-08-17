@@ -4,6 +4,9 @@
   if(!game)return;
   const style=document.createElement('style');
   style.textContent=`
+    [hidden]{display:none!important;pointer-events:none!important}
+    #game-screen.active{pointer-events:auto!important}
+    #game-screen.active .mobile-controls,#game-screen.active .mobile-controls button,#game-screen.active .hud button{pointer-events:auto!important;touch-action:manipulation}
     .guide-button{border:0;border-radius:12px;padding:8px 11px;background:#fff8d8;color:#69551d;font-weight:900;cursor:pointer;box-shadow:0 2px 8px #0001}
     .welcome-guide{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:#17392388;backdrop-filter:blur(3px)}
     .welcome-guide[hidden]{display:none!important}.welcome-card{width:min(520px,94vw);border-radius:24px;background:#fff;padding:24px;box-shadow:0 20px 60px #10271955;color:#294332}
@@ -32,5 +35,20 @@
   overlay.addEventListener('click',e=>{if(e.target===overlay)finish()});
   window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
+
+  function resetTransientUi(){
+    if(!game.classList.contains('active'))return;
+    overlay.hidden=true;
+    for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue']){
+      document.querySelectorAll(selector).forEach(node=>{node.hidden=true});
+    }
+    document.body.classList.remove('inside-building','near-building-interaction');
+    game.style.pointerEvents='auto';
+    document.querySelectorAll('.mobile-controls button,.hud button').forEach(button=>{button.style.pointerEvents='auto';button.disabled=false});
+  }
+  let wasActive=game.classList.contains('active');
+  new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});
+  if(wasActive)requestAnimationFrame(resetTransientUi);
+  window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true});
   /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();
