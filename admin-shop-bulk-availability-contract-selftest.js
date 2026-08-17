@@ -5,7 +5,7 @@ const src=fs.readFileSync('admin-shop.js','utf8');
 assert.ok(src.includes('data-shop-bulk="on"'), '현재 종류 모두 판매 버튼이 있어야 합니다.');
 assert.ok(src.includes('data-shop-bulk="off"'), '현재 종류 모두 중지 버튼이 있어야 합니다.');
 assert.ok(src.includes("setVisibleAvailability(button.dataset.shopBulk==='on')"), '일괄 버튼 값을 판매 체크 상태로 전달해야 합니다.');
-const bulk=src.match(/function setVisibleAvailability\(value\)\{([\s\S]*?)\}\n  function setSaving/);
+const bulk=src.match(/function setVisibleAvailability\(value\)\{([\s\S]*?)\}\r?\n  function setSaving/);
 assert.ok(bulk, '현재 필터 판매 상태 일괄 변경 함수가 있어야 합니다.');
 assert.ok(bulk[1].includes('if(card.hidden)continue'), '현재 필터에서 숨겨진 종류는 변경하지 않아야 합니다.');
 assert.ok(bulk[1].includes("card.querySelector('[data-shop-available]')"), '판매 여부 체크만 변경해야 합니다.');
