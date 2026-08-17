@@ -8,4 +8,5 @@ assert.ok(!src.includes('MutationObserver(showGuideOnce)'),'로그인 직후 안
 assert.ok(src.includes("next.textContent=index===steps.length-1?'마을로 돌아가기 ✓':'다음 ▶'"),'수동 안내 마지막 단계에서 마을로 돌아갈 수 있어야 합니다.');
 assert.ok(src.includes("if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish()}"),'Esc는 수동 안내만 닫고 게임 입력으로 전달되면 안 됩니다.');
 assert.ok(src.includes('모은 별은 상점과 꾸미기에 사용할 수 있습니다.'),'현재 별 상점과 꾸미기 기능을 안내해야 합니다.');
-console.log('student manual onboarding contract self-test passed');
+assert.ok(src.includes('tap-to-move')||src.includes('tapTarget')||src.includes('터치'),'태블릿 안내는 터치 이동 구조를 포함해야 합니다.');
+console.log('student manual onboarding and tap-to-move contract self-test passed');
