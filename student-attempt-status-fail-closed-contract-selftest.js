@@ -6,5 +6,9 @@ assert.ok(gate.includes("const unavailable={ok:false,message:`📡 ${name}의 �
 assert.ok(gate.includes('if(!response.ok)return unavailable')&&gate.includes('if(!status.ok)return unavailable'),'HTTP and malformed status failures must stop activity entry');
 assert.ok(gate.includes('catch{return unavailable}'),'a timeout or network failure must not fail open');
 assert.ok(!gate.includes('catch{return{ok:true}}'),'students must not start an attempt that may be rejected only after completion');
-assert.ok(math.includes("const allowance=await fetchJson('/api/player/me/activity-attempt-status/'+ID)")&&math.includes("catch{alert('수학 문제를 준비하지 못했어요."),'math entry must also stop when its allowance cannot be confirmed');
+assert.ok(math.includes("const allowance=await fetchJson('/api/player/me/activity-attempt-status/'+ID)"),'math entry must confirm its remaining allowance before starting');
+assert.ok(math.includes('if(!allowance.allowed)'),'math entry must stop when the daily allowance is exhausted');
+const start=math.slice(math.indexOf('async function start()'),math.indexOf('async function next()'));
+assert.ok(start.includes("catch{alert('수학")&&start.includes('문제를 준비하지 못했어요.'),'math entry must also stop and explain when its allowance cannot be confirmed');
+assert.ok(!start.includes('catch{}'),'math start failures must not be silently ignored');
 console.log('student attempt status fail-closed contract self-test passed');
