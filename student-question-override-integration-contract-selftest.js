@@ -1,0 +1,18 @@
+const assert=require('assert');
+const fs=require('fs');
+const index=fs.readFileSync('index.html','utf8');
+const loader=fs.readFileSync('assets/student-question-overrides.js','utf8');
+const library=fs.readFileSync('library-game.js','utf8');
+const expedition=fs.readFileSync('assets/student-study-menu.js','utf8');
+const data=fs.readFileSync('question-data.js','utf8');
+assert.match(index,/question-data\.js[\s\S]*assets\/student-question-overrides\.js[\s\S]*library-game\.js[\s\S]*assets\/student-study-menu\.js/,'shared overrides must load after question data and before student activities');
+assert.match(loader,/\/api\/question-overrides/,'shared loader must read teacher overrides');
+assert.match(loader,/set\.questions=set\.questions\.map/,'shared loader must apply overrides to every registered question set');
+assert.match(loader,/\.sv-exp-card\[data-expedition\]/,'expedition entry must wait for shared overrides');
+assert.match(loader,/ready\.finally/,'expedition gate must release even when override service is unavailable');
+assert.match(loader,/TIMEOUT_MS=5000/,'override loading must have a bounded timeout');
+assert.match(library,/const allSets=\(\)=>Object\.values\(window\.StudyVillageQuestionSets\|\|\{\}\)/,'Bookmaru must aggregate registered question sets');
+assert.match(library,/_sourceActivityId:set\.activityId/,'Bookmaru must retain source activity ids for teacher edits');
+assert.match(expedition,/StudyVillageQuestionSets\?\.explorationRiddles/,'riddle expeditions must use the shared registered question set');
+assert((data.match(/id:'r\d{2}'/g)||[]).length===30,'riddle bank must keep 30 starter questions');
+console.log('student shared question override integration contract selftest passed');
