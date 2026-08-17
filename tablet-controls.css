@@ -1,0 +1,34 @@
+/* Tablet/touch viewport guard.
+   Mobile Safari/Chrome can report 100vh taller than the visible area while browser chrome is shown.
+   Use the dynamic viewport so the HUD + world + controls always fit without vertical scrolling. */
+@media (pointer:coarse), (max-width:700px) {
+  html,body{height:100%;min-height:100%;overflow:hidden}
+  #game-screen.screen{
+    height:100svh;
+    height:100dvh;
+    max-height:100dvh;
+    min-height:0;
+    overflow:hidden;
+  }
+  #game-screen>#world{flex:1 1 auto;min-height:0}
+  #game-screen>.mobile-controls{
+    flex:0 0 auto;
+    position:relative;
+    z-index:60;
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+}
+
+/* Short landscape tablets (Galaxy Tab/iPad browser UI visible):
+   reclaim a little vertical room from the HUD and control pad while keeping tap targets usable. */
+@media (pointer:coarse) and (orientation:landscape) and (max-height:760px) {
+  #game-screen>.hud{min-height:48px;padding-top:4px;padding-bottom:4px}
+  #game-screen>.mobile-controls{
+    grid-template-rows:40px 40px;
+    padding-top:4px;
+    padding-bottom:max(8px,env(safe-area-inset-bottom));
+  }
+  #game-screen>.mobile-controls button{height:38px}
+  #game-screen>.mobile-controls .talk-button{height:80px}
+  #game-screen .dialogue{bottom:94px}
+}
