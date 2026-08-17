@@ -19,6 +19,8 @@ const SLOT_NAMES=new Set(['hat','glasses','bag','pet']);
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n),mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
 const compatibilityKeysFor=name=>['compat:stars:','compat:base-character:','compat:owned-items:'].map(prefix=>`${prefix}${encodeURIComponent(clean(name,12))}`);
 const validStarBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=MAX_STARS;
+const xpForLevel=level=>{const n=Math.max(0,(Number(level)||1)-1);return 200*n+25*n*(n-1)};
+const levelFromXp=xp=>{const value=Math.max(0,Number(xp)||0);let level=1;while(value>=xpForLevel(level+1))level++;return level};
 function openDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,db=new Database(path.join(dataDir,'studyvillage.db'));db.pragma('busy_timeout = 3000');return db}
 function getSetting(db,key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null}
 function setSetting(db,key,value){db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,value)}
@@ -26,6 +28,8 @@ function ensureSchema(db){
   const cols=db.prepare('PRAGMA table_info(players)').all().map(r=>r.name);
   if(!cols.includes('stars'))db.exec('ALTER TABLE players ADD COLUMN stars INTEGER NOT NULL DEFAULT 0');
   if(!cols.includes('owned_items_json'))db.exec("ALTER TABLE players ADD COLUMN owned_items_json TEXT NOT NULL DEFAULT '[]'");
+  if(!cols.includes('level'))db.exec('ALTER TABLE players ADD COLUMN level INTEGER NOT NULL DEFAULT 1');
+  if(cols.includes('xp')){const rows=db.prepare('SELECT name,xp,level FROM players').all(),update=db.prepare('UPDATE players SET level=? WHERE name=?');for(const row of rows){const level=levelFromXp(row.xp);if(Number(row.level)!==level)update.run(level,row.name)}}
   db.exec(`
 CREATE TABLE IF NOT EXISTS star_ledger(id INTEGER PRIMARY KEY AUTOINCREMENT,player_name TEXT NOT NULL,before_value INTEGER NOT NULL,after_value INTEGER NOT NULL,delta INTEGER NOT NULL,kind TEXT NOT NULL,reference_id TEXT,detail TEXT,created_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_star_ledger_player_id ON star_ledger(player_name,id DESC);
