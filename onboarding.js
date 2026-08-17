@@ -7,6 +7,10 @@
   style.textContent=`
     [hidden]{display:none!important;pointer-events:none!important}
     #game-screen.active{pointer-events:auto!important}
+    body.student-playing>#game-screen{pointer-events:auto!important}
+    body.student-playing>*:not(#game-screen):not(script):not(style){pointer-events:none!important}
+    #game-screen.active .hud,#game-screen.active .hud *,#game-screen.active #world,#game-screen.active #world-map,#game-screen.active .building,#game-screen.active .npc{pointer-events:auto!important}
+    #game-screen.active button,#game-screen.active a{pointer-events:auto!important;touch-action:manipulation!important}
     .guide-button{border:0;border-radius:12px;padding:8px 11px;background:#fff8d8;color:#69551d;font-weight:900;cursor:pointer;box-shadow:0 2px 8px #0001}
     .welcome-guide{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:#17392388;backdrop-filter:blur(3px)}
     .welcome-guide[hidden]{display:none!important}.welcome-card{width:min(520px,94vw);border-radius:24px;background:#fff;padding:24px;box-shadow:0 20px 60px #10271955;color:#294332}
@@ -16,7 +20,7 @@
     .teacher-preview-return{position:fixed;left:12px;top:12px;z-index:20000;padding:10px 14px;border-radius:999px;background:#fff;color:#315d3b;font-weight:900;text-decoration:none;box-shadow:0 5px 20px #0003;touch-action:manipulation}
     .tap-target{position:absolute;z-index:9;width:26px;height:26px;border:3px solid #fff;border-radius:50%;background:#5e9fff66;box-shadow:0 0 0 3px #2f78d655;transform:translate(-50%,-50%);pointer-events:none;animation:tap-pulse .65s ease-out infinite alternate}
     @keyframes tap-pulse{to{transform:translate(-50%,-50%) scale(1.22);opacity:.55}}
-    @media(max-width:720px),(pointer:coarse){.mobile-controls{display:none!important}.control-help{display:none!important}#world{touch-action:none}.interaction-hint.visible{font-size:12px;bottom:10px}.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
+    @media(max-width:720px),(pointer:coarse){.mobile-controls{display:none!important}.control-help{display:none!important}#world{touch-action:none!important}.interaction-hint.visible{font-size:12px;bottom:10px;pointer-events:none!important}.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
   `;
   document.head.appendChild(style);
   if(new URLSearchParams(location.search).get('teacher-preview')==='1'){const back=document.createElement('a');back.href='/admin.html';back.className='teacher-preview-return';back.textContent='← 교사 화면으로';document.body.appendChild(back)}
@@ -31,14 +35,14 @@
   const overlay=document.createElement('div');overlay.className='welcome-guide';overlay.hidden=true;overlay.innerHTML=`<section class="welcome-card" role="dialog" aria-modal="true" aria-label="마을 이용 안내"><div id="guide-icon" class="guide-icon"></div><h2 id="guide-title"></h2><p id="guide-text"></p><div id="guide-dots" class="guide-dots"></div><div class="guide-actions"><button id="guide-skip" class="guide-skip" type="button">닫기</button><button id="guide-next" class="guide-next" type="button">다음 ▶</button></div></section>`;document.body.appendChild(overlay);
   const icon=overlay.querySelector('#guide-icon'),title=overlay.querySelector('#guide-title'),text=overlay.querySelector('#guide-text'),dots=overlay.querySelector('#guide-dots'),next=overlay.querySelector('#guide-next'),skip=overlay.querySelector('#guide-skip');
   function renderGuide(){const s=steps[guideIndex];icon.textContent=s.icon;title.textContent=s.title;text.textContent=s.text;dots.innerHTML=steps.map((_,i)=>`<span class="${i===guideIndex?'active':''}"></span>`).join('');next.textContent=guideIndex===steps.length-1?'마을로 돌아가기 ✓':'다음 ▶'}
-  function openGuide(){guideIndex=0;renderGuide();overlay.hidden=false}
-  function finishGuide(){overlay.hidden=true}
+  function openGuide(){guideIndex=0;renderGuide();overlay.hidden=false;overlay.style.pointerEvents='auto'}
+  function finishGuide(){overlay.hidden=true;overlay.style.pointerEvents='none'}
   next.addEventListener('click',()=>{if(guideIndex<steps.length-1){guideIndex++;renderGuide()}else finishGuide()});skip.addEventListener('click',finishGuide);overlay.addEventListener('click',e=>{if(e.target===overlay)finishGuide()});window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finishGuide()}},true);
   const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',openGuide);hudRight.insertBefore(b,hudRight.firstChild)}
 
   const hint=document.querySelector('#interaction-hint');
   function normalizeHint(){if(!touchMode()||!hint)return;const current=hint.textContent||'';if(current.includes('도우미 선생님'))hint.textContent='도우미 선생님을 직접 터치해 이야기하기';else if(current.includes('수수께끼'))hint.textContent='도전관을 직접 터치해 들어가기'}
-  if(hint){new MutationObserver(normalizeHint).observe(hint,{childList:true,characterData:true,subtree:true});window.addEventListener('resize',normalizeHint)}
+  if(hint){hint.style.pointerEvents='none';new MutationObserver(normalizeHint).observe(hint,{childList:true,characterData:true,subtree:true});window.addEventListener('resize',normalizeHint)}
 
   const marker=document.createElement('div');marker.className='tap-target';marker.hidden=true;(document.querySelector('#world-map')||world).appendChild(marker);
   let target=null,pendingSpace=false,held=new Set(),moveFrame=0;
@@ -50,10 +54,22 @@
   function beginMove(clientX,clientY,spaceAfter=false){if(!touchMode()||!game.classList.contains('active'))return;const p=worldPoint(clientX,clientY);target={x:p.x,y:p.y};pendingSpace=spaceAfter;marker.style.left=`${Math.max(2,Math.min(98,p.left))}%`;marker.style.top=`${Math.max(2,Math.min(98,p.top))}%`;marker.hidden=false;if(!moveFrame)moveFrame=requestAnimationFrame(stepMove)}
   function stepMove(){moveFrame=0;if(!target||!game.classList.contains('active')||document.hidden){stopMove();return}const r=player.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=target.x-cx,dy=target.y-cy,dist=Math.hypot(dx,dy);if(dist<20){const interact=pendingSpace;stopMove();if(interact){setTimeout(()=>{fire(' ','keydown');fire(' ','keyup')},30)}return}const wanted=new Set();if(Math.abs(dx)>12)wanted.add(dx<0?'left':'right');if(Math.abs(dy)>12)wanted.add(dy<0?'up':'down');setHeld(wanted);moveFrame=requestAnimationFrame(stepMove)}
 
-  world.addEventListener('click',e=>{if(!touchMode()||!game.classList.contains('active'))return;const interactive=e.target.closest('.building,.npc,.shop-zone,button,a,input');if(interactive)return;e.preventDefault();beginMove(e.clientX,e.clientY,false)},false);
-  const npc=document.querySelector('#guide-npc');if(npc){npc.style.cursor='pointer';npc.addEventListener('click',e=>{if(!touchMode())return;e.preventDefault();e.stopImmediatePropagation();if(!confirm('도우미 선생님과 이야기할까요?'))return;const r=npc.getBoundingClientRect();beginMove(r.left+r.width/2,r.top+r.height/2,true)},true)}
+  function handleWorldTap(e){if(!touchMode()||!game.classList.contains('active'))return;const interactive=e.target.closest?.('.building,.npc,.shop-zone,button,a,input');if(interactive)return;e.preventDefault();beginMove(e.clientX,e.clientY,false)}
+  world.addEventListener('pointerup',handleWorldTap,{passive:false});
+  const npc=document.querySelector('#guide-npc');if(npc){npc.style.cursor='pointer';npc.addEventListener('pointerup',e=>{if(!touchMode())return;e.preventDefault();e.stopImmediatePropagation();if(!confirm('도우미 선생님과 이야기할까요?'))return;const r=npc.getBoundingClientRect();beginMove(r.left+r.width/2,r.top+r.height/2,true)},true)}
   window.addEventListener('blur',stopMove);document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMove()});
 
-  function resetTransientUi(){if(!game.classList.contains('active'))return;overlay.hidden=true;stopMove();for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true});document.body.classList.remove('inside-building','near-building-interaction');game.style.pointerEvents='auto';document.querySelectorAll('.hud button').forEach(button=>{button.style.pointerEvents='auto';button.disabled=false});document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'));normalizeHint()}
-  let wasActive=game.classList.contains('active');new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});if(wasActive)requestAnimationFrame(resetTransientUi);window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true;stopMove()});
+  function resetTransientUi(){
+    if(!game.classList.contains('active'))return;
+    document.body.classList.add('student-playing');
+    overlay.hidden=true;overlay.style.pointerEvents='none';stopMove();
+    for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue'])document.querySelectorAll(selector).forEach(node=>{node.hidden=true;node.style.pointerEvents='none'});
+    document.body.classList.remove('inside-building','near-building-interaction');
+    game.style.pointerEvents='auto';world.style.pointerEvents='auto';
+    const worldMap=document.querySelector('#world-map');if(worldMap)worldMap.style.pointerEvents='auto';
+    document.querySelectorAll('.hud,.hud *,#world .building,#world .npc,#game-screen button,#game-screen a').forEach(node=>{node.style.pointerEvents='auto';if('disabled'in node)node.disabled=false});
+    document.querySelectorAll('#world-map .obstacle').forEach(node=>node.classList.remove('obstacle'));
+    normalizeHint();
+  }
+  let wasActive=game.classList.contains('active');new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);if(!active)document.body.classList.remove('student-playing');wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});if(wasActive)requestAnimationFrame(resetTransientUi);window.addEventListener('studyvillage:session-cleared',()=>{document.body.classList.remove('student-playing');overlay.hidden=true;overlay.style.pointerEvents='none';stopMove()});
 })();
