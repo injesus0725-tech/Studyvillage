@@ -4,6 +4,8 @@ const questions=fs.readFileSync('question-data.js','utf8');
 const hub=fs.readFileSync('assets/student-study-menu.js','utf8');
 const taxonomy=fs.readFileSync('activity-taxonomy.js','utf8');
 const metadata=fs.readFileSync('server/activity-metadata.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+const overrideLoader=fs.readFileSync('assets/student-question-overrides.js','utf8');
 
 const ids=[...questions.matchAll(/id:'(r\d{2})'/g)].map(match=>match[1]);
 assert.strictEqual(ids.length,30,'exploration needs 30 riddles');
@@ -17,6 +19,11 @@ assert.match(hub,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/,'questions must use
 assert.match(hub,/shuffle\(pool\)\.slice\(0,exp\.count\)/,'each run must draw a random subset');
 assert.match(hub,/options=shuffle\(item\.options\)/,'answer choices must be shuffled');
 assert.match(hub,/answer:options\.indexOf\(correctText\)/,'answer index must follow shuffled choices');
+assert.match(index,/question-data\.js[\s\S]*assets\/student-question-overrides\.js[\s\S]*library-game\.js[\s\S]*assets\/student-study-menu\.js/,'teacher overrides must load before Bookmaru and expeditions');
+assert.match(overrideLoader,/\/api\/question-overrides/,'student override loader must fetch teacher-reviewed edits');
+assert.match(overrideLoader,/set\.questions=set\.questions\.map/,'teacher edits must apply across registered question sets');
+assert.match(overrideLoader,/\.sv-exp-card\[data-expedition\]/,'expedition entry must wait for override readiness');
+assert.match(overrideLoader,/TIMEOUT_MS=5000/,'override loading must fail safely instead of hanging');
 assert.match(hub,/wizard:\{label:'고위험 보상형'[\s\S]*eventChance:\.82,risk:true/,'wizard must keep high-risk high-reward discovery rules');
 assert.match(hub,/dragon:\{label:'도전형'[\s\S]*eventChance:\.70,risk:true/,'dragon must keep challenge discovery rules');
 assert.match(hub,/chance=trait\.risk&&!firstCorrect\?0:trait\.eventChance/,'risk NPC first-answer penalty must affect discovery chance');
