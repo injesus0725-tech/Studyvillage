@@ -1,15 +1,15 @@
 const assert=require('assert');
 const fs=require('fs');
-const css=fs.readFileSync('style.css','utf8');
-
-assert.ok(css.includes('@media(max-width:700px),(pointer:coarse)'),'touch devices must show mobile controls even on wide tablets');
-assert.ok(css.includes('grid-template-columns:156px minmax(112px,1fr)'),'mobile controls must place the direction pad and interaction button side by side');
-assert.ok(css.includes('.mobile-controls .talk-button{grid-column:2;grid-row:1/3;width:100%;height:88px'),'interaction must remain visible beside both direction rows');
-assert.ok(css.includes('env(safe-area-inset-bottom)'),'mobile controls must stay above the device safe area');
-assert.ok(css.includes('touch-action:none'),'direction presses must not turn into browser gestures');
-assert.ok(css.includes('-webkit-user-select:none;user-select:none;-webkit-touch-callout:none'),'long-press selection and touch callouts must be disabled on controls');
+const html=fs.readFileSync('index.html','utf8');
 const game=fs.readFileSync('game.js','utf8');
-assert.ok(game.includes("b.addEventListener('contextmenu',blockNative)"),'direction buttons must suppress native long-press menus');
-assert.ok(game.includes("b.addEventListener('selectstart',blockNative)"),'direction buttons must suppress text selection starts');
-assert.ok(game.includes('b.draggable=false'),'direction buttons must not become draggable browser content');
-console.log('student mobile controls contract selftest passed');
+const movement=fs.readFileSync('student-direct-movement.js','utf8');
+
+assert.ok(html.includes('<footer class="mobile-controls" hidden aria-hidden="true"></footer>'),'legacy mobile control shell must remain inert and inaccessible while old CSS is phased out');
+assert.ok(!html.includes('data-key="Arrow')&&!html.includes('talk-button'),'student markup must not expose direction or talk controls');
+assert.ok(!game.includes(".mobile-controls button[data-key]"),'core runtime must not bind legacy mobile direction handlers');
+assert.ok(!game.includes('setPointerCapture(e.pointerId)'),'core runtime must not capture pointers for removed direction buttons');
+assert.ok(!game.includes("addEventListener('contextmenu',blockNative)"),'removed direction controls must not retain long-press interception code');
+assert.ok(movement.includes("world.addEventListener('pointerup'"),'touch movement must be owned by direct world pointer input');
+assert.ok(movement.includes("event.button!==undefined&&event.button!==0"),'mouse preview movement must ignore non-primary clicks');
+assert.ok(movement.includes("#world{touch-action:none!important}"),'the active touch surface must suppress browser gesture takeover');
+console.log('student mobile controls retirement contract selftest passed');
