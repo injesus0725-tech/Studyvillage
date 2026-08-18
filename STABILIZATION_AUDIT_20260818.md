@@ -12,7 +12,7 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 - Mobile input was duplicated: `onboarding.js` captured pointer/touch and proxied movement through synthetic keyboard/d-pad events while `game.js` owned keyboard movement.
 - `onboarding.js` mixed guide UI, hit testing, touch routing, movement timers, and transient UI reset.
 - School, Bookmaru, and challenge hall currently collapse into the same expedition action.
-- Expedition attempt routes exist, but errors are hidden behind a generic server message.
+- Expedition attempt routes exist, but errors were hidden behind generic server messages.
 - Current expedition maps are not truly traversable; the player sprite is static and NPC click advances play.
 - Early leveling is intentionally very fast under the current reward curve and must be rebalanced after baseline stability.
 - Electron still loads a legacy activity-state hook in addition to canonical server activity-state routes.
@@ -41,10 +41,16 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 - opening a building or modal stops current map movement.
 - contract tests guard the direct movement and direct building-input architecture in CI.
 
+## Phase 7 — attempt/gate stabilization
+- `activity-gate.js` no longer intercepts keyboard or the legacy talk button. It only guards the activity that actually asks it for permission and exposes one reusable `StudyVillageActivityGate` API.
+- attempt failures now distinguish missing/expired student session (401), missing route (404), server policy failure (5xx), timeout/network failure, and genuine attempt exhaustion instead of reporting every failure as a classroom-server problem.
+- an isolated expedition runtime test now proves both `exploration-forest-riddle` and `exploration-mountain-riddle` are allowed/unlimited by default, require a valid student session, and immediately reflect teacher-saved limited policies.
+- this means the field message “탐험 참여 횟수를 확인하지 못했어요” is not expected from the canonical server path; when it appears after the candidate build is tested, its real status/code can now be isolated instead of guessed.
+
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
 2. Complete student baseline flow checks: login -> village -> direct movement -> building/menu -> close/back.
-3. Fix expedition attempt-policy visibility and remaining-attempt error reporting.
+3. Make expedition attempt status visible in the student hub and align teacher labels so exploration settings are easy to find.
 4. Remove remaining legacy keyboard/d-pad implementation from `game.js` only after the direct movement path is proven stable in-browser.
 5. Implement true expedition traversal only after baseline stability.
 6. Split building roles, rebalance XP/stars, and clean avatar assets.
