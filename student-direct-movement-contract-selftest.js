@@ -1,6 +1,7 @@
 const fs=require('fs');const assert=require('assert');
 const index=fs.readFileSync('index.html','utf8'),onboarding=fs.readFileSync('onboarding.js','utf8'),movement=fs.readFileSync('student-direct-movement.js','utf8'),game=fs.readFileSync('game.js','utf8');
-assert.ok(index.includes('<script src="student-direct-movement.js?v=20260819a"></script>'),'index must load the direct movement controller deterministically');
+assert.ok(index.includes('<script src="student-direct-movement.js?v=20260819b"></script>'),'index must load the direct movement controller deterministically');
+assert.ok(index.indexOf('world-camera.js')<index.indexOf('village-layout.js')&&index.indexOf('village-layout.js')<index.indexOf('student-direct-movement.js'),'direct movement must load after canonical map layer and village layout creation');
 assert.ok(index.indexOf('student-direct-movement.js')>index.indexOf('game.js'),'direct movement must load after canonical game state and collision helpers');
 assert.ok(!onboarding.includes('createElement(\'script\')'),'onboarding must not dynamically inject movement scripts');
 assert.ok(!onboarding.includes('KeyboardEvent'),'onboarding must not synthesize keyboard movement');
