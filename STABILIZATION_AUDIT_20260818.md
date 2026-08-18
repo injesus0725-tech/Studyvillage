@@ -59,19 +59,37 @@ Source tracing confirms the main teacher clients point at matching server routes
 
 Therefore the reported failures are likely runtime/auth/data/validation/route-order problems rather than simply missing buttons or missing endpoint strings. A source-level teacher write wiring guard has been added, but each operation still needs real authenticated runtime verification.
 
-### 24. Stabilization verification now covers route wiring for both student and teacher controls
-The audit branch now runs:
-- repository verification;
-- classroom regression bundle;
-- stabilization student/attempt route wiring guard;
-- stabilization teacher write wiring guard.
+### 24. Teacher attempt settings had a real persistence bug
+Math and Bookmaru daily defaults were previously forced over teacher-saved policy values every time policies were read. The audit branch now keeps the daily period for those built-in activities while honoring the teacher's saved mode/limit/XP setting. The teacher attempt panel also reloads after admin login instead of remaining stuck after an early unauthenticated fetch.
 
-These guards prevent another round of adding UI that points at absent/mismatched server routes. They do not replace live functional testing.
+## Phase 5 — teacher writes now have an end-to-end server test
+
+### 25. Static route checks were not enough
+The earlier guards only proved that matching route strings existed. They could not prove that an authenticated teacher write actually changed SQLite and could be read back.
+
+A new isolated runtime integration test now boots the real classroom server against a temporary SQLite directory and exercises the same HTTP APIs used by the teacher UI.
+
+It covers:
+- create/login a temporary student;
+- admin login;
+- star read -> +5 grant -> -2 subtraction -> reread balance/ledger;
+- XP correction -> reread `/api/admin/players`;
+- student activity completion -> teacher activity-record correction;
+- exploration attempt-policy save -> student attempt-status read;
+- per-student +1 extra attempt -> student remaining-attempt reread;
+- teacher change-history visibility for XP/activity corrections.
+
+The test deletes its temporary DB after completion and is now part of the audit-branch Verify workflow. This gives us a true server-side pass/fail signal for the teacher mutations that were reported as unreliable, without touching classroom data.
+
+### 26. Star and XP code paths themselves are structurally complete
+Source inspection shows star adjustment is transactional and writes an immutable star ledger plus backup mirror. XP correction writes directly to the player row and logs a teacher correction event. The new runtime integration test is intended to distinguish a server write failure from a teacher-page lifecycle/auth/UI failure.
+
+If the server integration passes while field UI still fails, the next target is the admin-page lifecycle and error visibility rather than rewriting the database logic.
 
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
-2. Finish route/runtime diagnostics before changing gameplay behavior.
-3. Verify teacher write APIs end-to-end, starting with stars and activity-attempt controls because they are visibly failing in field use.
+2. Let the runtime teacher-write integration identify any failing server mutation before touching gameplay.
+3. Repair any failing teacher write path and add its regression to the same integration test.
 4. Simplify student movement to one direct tap/click target path; remove keyboard/d-pad support.
 5. Establish one stable student flow: login -> village -> tap/click movement -> building/menu -> close/back.
 6. Fix expedition attempt-policy visibility and remaining-attempt display.
