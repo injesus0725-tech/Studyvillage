@@ -4,7 +4,7 @@
   if(!game||!world||!player)return;
   const map=document.querySelector('#world-map')||world;
   const style=document.createElement('style');
-  style.textContent=`.sv-move-target{position:absolute;z-index:9;width:24px;height:24px;border:3px solid #fff;border-radius:50%;background:#5e9fff66;box-shadow:0 0 0 3px #2f78d655;transform:translate(-50%,-50%);pointer-events:none!important}@media(max-width:720px),(pointer:coarse){#world{touch-action:none!important}.interaction-hint{display:none!important}}`;
+  style.textContent=`.sv-move-target{position:absolute;z-index:9;width:24px;height:24px;border:3px solid #fff;border-radius:50%;background:#5e9fff66;box-shadow:0 0 0 3px #2f78d655;transform:translate(-50%,-50%);pointer-events:none!important}.mobile-controls,.mobile-controls button,.talk-button{display:none!important}@media(max-width:720px),(pointer:coarse){#world{touch-action:none!important}.interaction-hint{display:none!important}.dialogue{bottom:max(18px,env(safe-area-inset-bottom))!important}.quiz-panel,.record-panel{top:50%!important;max-height:calc(100vh - 86px - env(safe-area-inset-bottom))!important;overflow:auto}.sv-expedition-panel{bottom:max(8px,env(safe-area-inset-bottom))!important}}`;
   document.head.appendChild(style);
   const marker=document.createElement('div');marker.className='sv-move-target';marker.hidden=true;map.appendChild(marker);
   let target=null,raf=0;
