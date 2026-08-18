@@ -5,7 +5,7 @@
   const hint=document.createElement('div');hint.id='building-interaction-hint';hint.className='interaction-hint';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');game.appendChild(hint);
   let current=null,open=false,lastCheck=0;
   const buildings=[
-    {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'교과 학습과 연습을 하는 공간입니다.',action:'math',button:'➕ 수학 랜덤 복습 시작'},
+    {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'교과 학습과 문제 탐험을 시작하는 공간입니다.',action:'explore',button:'🧭 문제 탐험 열기'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'수수께끼·어휘·상식·교과 문제를 매일 다양하게 만나는 공간입니다.',action:'library',button:'📚 일일 책마루 도전'},
     {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'도전 문제로 실력을 확인하는 공간입니다.',action:'quiz',button:'❓ 수수께끼 도전'},
     {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize',button:'🎨 내 캐릭터 꾸미기'}
@@ -20,7 +20,7 @@
   function leave(){window.StudyVillageMovement?.stop?.();open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building')}
   function launch(action){
     window.StudyVillageMovement?.stop?.();
-    if(action==='math'){leave();window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'));return}
+    if(action==='explore'){leave();requestAnimationFrame(()=>window.dispatchEvent(new Event('studyvillage:open-expedition-hub')));return}
     if(action==='library'){leave();window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'));return}
     if(action==='quiz'){leave();requestAnimationFrame(()=>{if(typeof window.openQuiz==='function')window.openQuiz();else flash('도전관 문제를 열지 못했어요.')});return}
     if(action==='customize'){leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click());return}
