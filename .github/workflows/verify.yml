@@ -55,3 +55,5 @@ jobs:
         run: node avatar-stabilization-contract-selftest.js
       - name: Run reward economy stabilization guard
         run: node reward-economy-stabilization-selftest.js
+      - name: Run expedition direct movement guard
+        run: node expedition-direct-movement-contract-selftest.js
