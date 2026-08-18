@@ -37,3 +37,5 @@ jobs:
         run: node stabilization-admin-runtime-integration-selftest.js
       - name: Run stabilized pointer routing guard
         run: node stabilization-pointer-routing-selftest.js
+      - name: Run direct movement architecture guard
+        run: node student-direct-movement-contract-selftest.js
