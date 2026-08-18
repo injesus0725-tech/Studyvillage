@@ -1,12 +1,13 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('onboarding.js','utf8');
-assert.ok(src.includes("overlay.hidden=true"),'학생 안내는 기본적으로 닫힌 상태여야 합니다.');
-assert.ok(src.includes("b.addEventListener('click',openGuide)"),'마을 안내는 학생이 직접 버튼을 눌렀을 때만 열려야 합니다.');
+assert.ok(src.includes('overlay.hidden=true'),'학생 안내는 기본적으로 닫힌 상태여야 합니다.');
+assert.ok(src.includes("button.addEventListener('click',open)"),'마을 안내는 학생이 직접 안내 버튼을 눌렀을 때만 열려야 합니다.');
 assert.ok(!src.includes('studyvillage:first-character-choice'),'로그인 직후 첫 캐릭터 선택 모달을 자동으로 열면 안 됩니다.');
 assert.ok(!src.includes('MutationObserver(showGuideOnce)'),'로그인 직후 안내 모달을 자동으로 열면 안 됩니다.');
 assert.ok(src.includes("next.textContent=guideIndex===steps.length-1?'마을로 돌아가기 ✓':'다음 ▶'"),'수동 안내 마지막 단계에서 마을로 돌아갈 수 있어야 합니다.');
-assert.ok(src.includes("if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finishGuide()}"),'Esc는 수동 안내만 닫고 게임 입력으로 전달되면 안 됩니다.');
+assert.ok(src.includes("if(!overlay.hidden&&event.key==='Escape'){event.preventDefault();close()}"),'Esc는 열린 수동 안내만 닫고 기본 브라우저 입력으로 전달되면 안 됩니다.');
 assert.ok(src.includes('모은 별은 상점과 꾸미기에 사용할 수 있습니다.'),'현재 별 상점과 꾸미기 기능을 안내해야 합니다.');
-assert.ok(src.includes('tap-to-move')||src.includes('tapTarget')||src.includes('터치'),'태블릿 안내는 터치 이동 구조를 포함해야 합니다.');
+assert.ok(src.includes('터치하면 캐릭터가 이동합니다')&&src.includes('마우스로 클릭하면 됩니다'),'태블릿과 컴퓨터의 직접 이동 안내를 모두 포함해야 합니다.');
+assert.ok(src.includes("studyvillage:session-cleared")&&src.includes('overlay.hidden=true'),'세션 종료 시 열린 안내가 남아 있으면 안 됩니다.');
 console.log('student manual onboarding and tap-to-move contract self-test passed');
