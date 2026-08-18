@@ -51,3 +51,5 @@ jobs:
         run: node student-baseline-flow-contract-selftest.js
       - name: Run building role separation guard
         run: node building-role-separation-selftest.js
+      - name: Run avatar stabilization guard
+        run: node avatar-stabilization-contract-selftest.js
