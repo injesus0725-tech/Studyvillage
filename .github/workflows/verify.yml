@@ -33,3 +33,5 @@ jobs:
         run: node stabilization-admin-write-wiring-selftest.js
       - name: Run teacher attempt override guard
         run: node activity-attempt-settings-override-selftest.js
+      - name: Run teacher write runtime integration
+        run: node stabilization-admin-runtime-integration-selftest.js
