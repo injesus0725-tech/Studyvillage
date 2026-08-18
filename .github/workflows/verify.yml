@@ -31,3 +31,5 @@ jobs:
         run: node stabilization-route-wiring-selftest.js
       - name: Run teacher write wiring audit
         run: node stabilization-admin-write-wiring-selftest.js
+      - name: Run teacher attempt override guard
+        run: node activity-attempt-settings-override-selftest.js
