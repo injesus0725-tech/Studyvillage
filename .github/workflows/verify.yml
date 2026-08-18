@@ -41,3 +41,5 @@ jobs:
         run: node student-direct-movement-contract-selftest.js
       - name: Run direct building input guard
         run: node building-direct-input-contract-selftest.js
+      - name: Run student activity gate guard
+        run: node stabilization-activity-gate-selftest.js
