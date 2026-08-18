@@ -61,3 +61,5 @@ jobs:
         run: node expedition-discovery-walk-contract-selftest.js
       - name: Run expedition lifecycle and collision guard
         run: node expedition-lifecycle-collision-selftest.js
+      - name: Run teacher runtime fixes load guard
+        run: node teacher-runtime-fixes-load-selftest.js
