@@ -8,4 +8,8 @@ assert.ok(movement.includes("addEventListener('pointerup'"),'expedition must acc
 assert.ok(movement.includes('requestAnimationFrame(animate)'),'expedition player must travel toward the chosen destination');
 assert.ok(movement.includes('nearNpc()'),'NPC interaction must require approaching the NPC');
 assert.ok(movement.includes('event.stopImmediatePropagation()'),'far NPC taps must not open questions immediately');
+assert.ok(movement.includes('function bounds(')&&movement.includes('function safePoint('),'movement must stay inside safe room bounds');
+assert.ok(movement.includes('function approachNpc('),'far NPC taps must move toward a safe interaction point');
+assert.ok(movement.includes("addEventListener('resize'"),'movement must survive tablet/browser viewport changes');
+assert.ok(movement.includes('260*elapsed/1000'),'movement speed must be time based rather than frame-rate based');
 console.log('expedition direct movement contract self-test passed');
