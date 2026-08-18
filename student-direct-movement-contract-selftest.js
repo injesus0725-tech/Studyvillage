@@ -1,0 +1,11 @@
+const fs=require('fs');const assert=require('assert');
+const onboarding=fs.readFileSync('onboarding.js','utf8'),movement=fs.readFileSync('student-direct-movement.js','utf8');
+assert.ok(onboarding.includes('student-direct-movement.js'),'onboarding must load the direct movement controller');
+assert.ok(!onboarding.includes('KeyboardEvent'),'onboarding must not synthesize keyboard movement');
+assert.ok(!onboarding.includes('directionButtons'),'onboarding must not proxy movement through hidden d-pad buttons');
+assert.ok(movement.includes("world.addEventListener('pointerup'"),'movement must be driven from world pointer input');
+assert.ok(movement.includes('tryMove(dx,dy)'),'movement must reuse canonical collision-aware movement');
+assert.ok(movement.includes("window.addEventListener('keydown',blockKeyboard,true)"),'legacy movement keys must be blocked before old listeners');
+assert.ok(movement.includes("interactive(event.target)"),'buttons/buildings/NPC input must be excluded from map movement');
+assert.ok(movement.includes('.mobile-controls,.control-help{display:none!important}'),'legacy controls must stay hidden');
+console.log('student direct movement contract self-test passed');
