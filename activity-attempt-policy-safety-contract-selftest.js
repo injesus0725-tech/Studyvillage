@@ -4,12 +4,15 @@ const settings=fs.readFileSync('server/activity-attempt-settings.js','utf8');
 const policy=fs.readFileSync('server/activity-attempt-policy.js','utf8');
 for(const token of [
   "const STORE_KEY='activity-attempt-policies:v1'",
+  "const CLASSROOM_DEFAULTS=Object.freeze({'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY})",
+  'function mergeStoredPolicies(stored={})',
   'const checked=validateAttemptPolicyMap(raw)',
-  "return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}",
+  'return checked.ok?mergeStoredPolicies(checked.policies):mergeStoredPolicies()',
   "app.put('/api/admin/activity-attempt-policies',requireAdmin",
   'if(!checked.ok)return res.status(400)',
   'setSetting(STORE_KEY,JSON.stringify(checked.policies))'
 ])assert.ok(settings.includes(token),`activity attempt settings guard missing: ${token}`);
+assert.ok(settings.includes('period:classroomDefault.period'),'stored overrides must not remove the classroom daily period from protected defaults');
 for(const token of [
   'const MAX_LIMIT=1000',
   "const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/",
