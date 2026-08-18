@@ -1,7 +1,7 @@
 const fs=require('fs'),assert=require('assert');
 const html=fs.readFileSync('index.html','utf8'),layout=fs.readFileSync('village-layout.js','utf8'),study=fs.readFileSync('assets/student-study-menu.js','utf8'),movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8'),direct=fs.readFileSync('student-direct-movement.js','utf8'),onboarding=fs.readFileSync('onboarding.js','utf8');
 const order=name=>html.indexOf(name);
-assert.ok(order('game.js')<order('student-direct-movement.js')&&order('student-direct-movement.js')<order('onboarding.js'),'home movement must load once, after game state and before guide code');
+assert.ok(order('game.js')<order('world-camera.js')&&order('world-camera.js')<order('village-layout.js')&&order('village-layout.js')<order('student-direct-movement.js')&&order('student-direct-movement.js')<order('onboarding.js'),'home movement must load once after canonical game/map initialization and before guide code');
 assert.ok(!onboarding.includes("createElement('script')"),'guide code must not inject movement asynchronously');
 assert.ok(!direct.includes('movementKeys')&&!direct.includes('blockKeyboard'),'home pointer movement must not compete for keyboard ownership');
 assert.ok(order('village-layout.js')<order('assets/student-study-menu.js'),'new student study menu must load after legacy village layout and take ownership of the exploration hub');
