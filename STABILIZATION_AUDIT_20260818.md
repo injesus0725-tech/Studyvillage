@@ -124,6 +124,52 @@ The verify script syntax-checks attempt modules and many contract tests, but the
 
 This should be added before merging stabilization changes.
 
+## Phase 3 findings
+
+### 16. The core movement engine itself is simpler than the mobile wrapper around it
+`game.js` already owns a single authoritative movement state (`state.x`, `state.y`, `state.keys`) and collision checks. Native PC keyboard input and the old mobile direction-pad both feed that state directly.
+
+The current tap-to-move layer does not use a dedicated movement API. Instead `onboarding.js` repeatedly emits synthetic `keydown`/`keyup` events, which are then re-consumed by `game.js`. This extra event loop is unnecessary and increases browser-specific risk.
+
+Stabilization target:
+- expose a small movement API from the core (for example target coordinates / direct movement intent),
+- let PC keyboard and mobile tap use the same underlying state without synthetic DOM keyboard events,
+- remove the mobile direction pad after tap movement is verified.
+
+### 17. The student runtime has overlapping observers/timers, but no single catastrophic camera loop now
+Current always-on runtime work includes:
+- `game.js`: `requestAnimationFrame(gameLoop)` for movement and interaction hints;
+- `building-interiors.js`: another `requestAnimationFrame` loop for proximity checks, throttled internally to ~160 ms;
+- `avatar-motion.js`: 120 ms interval sampling `getBoundingClientRect()`;
+- `onboarding.js`: 80 ms interval while tap-to-move is active;
+- several MutationObservers for panel/login/motion state.
+
+`world-camera.js` itself is now lightweight and static: it wraps the village children in `#world-map` and explicitly disables camera transforms. So the recent Chrome/touch instability is more likely in the layered input/event path than in the current camera file.
+
+### 18. A stale Electron activity-state hook duplicates canonical server routes
+Electron imports `server/activity-state-hook.js` before `server/server.js`. The hook monkey-patches `express.application.listen` and installs legacy activity-state routes at listen time.
+
+But `server/server.js` already installs the newer canonical `installActivityStateRoutes(...)` from `server/activity-state.js`, including the same `/api/activity-state/:id` family.
+
+Because the canonical routes are registered earlier they should normally win, so this is not yet identified as the expedition-attempt failure. However it is clear technical debt and a source of confusing duplicate server behavior. The hook only knows old riddle/vocabulary defaults and should be removed or reduced once startup regression tests confirm the canonical routes work in Electron.
+
+### 19. Attempt-policy wiring is deliberately nested inside unrelated feature installers
+Student attempt routes are installed from `star-ledger.js`; teacher attempt routes are installed from `question-review.js`. This explains why simple inspection of `server.js` was misleading and makes future regressions easier.
+
+After stabilization, route installers should be assembled explicitly in one server bootstrap section rather than hidden under star/question modules. Do not refactor this before route behavior is verified, but record it as structural cleanup.
+
+### 20. The exact expedition failure now requires runtime response visibility, not more guessing
+The code path is now fully traced:
+1. student clicks an expedition card;
+2. `startExpedition(exp)` calls `attemptAllowed(exp)`;
+3. it fetches `/api/player/me/activity-attempt-status/{activityId}` with auth headers;
+4. the server route is installed indirectly through `star-ledger.js`;
+5. missing exploration policy should normalize to unlimited and return allowed;
+6. any non-OK response is swallowed and converted to `null`;
+7. the student sees only the generic server-connection alert.
+
+Therefore the next safe code change should be diagnostic: preserve status/code from the failed response and surface/report it. Only after seeing the real 401/404/500/error code should the attempt subsystem be changed.
+
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
 2. Add diagnostics/tests on the audit branch before changing gameplay behavior.
