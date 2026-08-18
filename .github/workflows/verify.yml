@@ -53,3 +53,5 @@ jobs:
         run: node building-role-separation-selftest.js
       - name: Run avatar stabilization guard
         run: node avatar-stabilization-contract-selftest.js
+      - name: Run reward economy stabilization guard
+        run: node reward-economy-stabilization-selftest.js
