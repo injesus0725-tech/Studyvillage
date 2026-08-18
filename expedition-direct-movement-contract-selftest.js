@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8'),index=fs.readFileSync('index.html','utf8');
+assert.ok(index.includes('assets/expedition-direct-movement.js'),'expedition direct movement must load');
+assert.ok(index.includes('가고 싶은 곳을 터치하거나 클릭하세요'),'student help must describe official pointer controls');
+assert.ok(!index.includes('data-key="ArrowUp"'),'legacy on-screen arrow controls must be removed from student markup');
+assert.ok(!index.includes('id="talk-button"'),'legacy interaction button must be removed from student markup');
+assert.ok(movement.includes("addEventListener('pointerup'"),'expedition must accept direct pointer destinations');
+assert.ok(movement.includes('requestAnimationFrame(animate)'),'expedition player must travel toward the chosen destination');
+assert.ok(movement.includes('nearNpc()'),'NPC interaction must require approaching the NPC');
+assert.ok(movement.includes('event.stopImmediatePropagation()'),'far NPC taps must not open questions immediately');
+console.log('expedition direct movement contract self-test passed');
