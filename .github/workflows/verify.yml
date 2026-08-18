@@ -57,3 +57,5 @@ jobs:
         run: node reward-economy-stabilization-selftest.js
       - name: Run expedition direct movement guard
         run: node expedition-direct-movement-contract-selftest.js
+      - name: Run expedition discovery walk guard
+        run: node expedition-discovery-walk-contract-selftest.js
