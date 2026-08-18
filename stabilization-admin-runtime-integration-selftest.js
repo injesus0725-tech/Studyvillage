@@ -61,8 +61,8 @@ try{
   assert.ok(student,'student must remain listed');
   assert.equal(student.xp,600,'admin player reread must reflect XP correction');
 
-  result=await request('/api/player/me/activity',{method:'POST',token:studentToken,body:{activityId:'vocabulary',score:100}});
-  assert.equal(result.response.status,200,'student activity save must work before teacher correction');
+  result=await request('/api/player/me/activity',{method:'POST',token:studentToken,body:{activityId:'vocabulary',score:100,submissionId:'admin-runtime-vocabulary-0001'}});
+  assert.equal(result.response.status,200,`student activity save must work before teacher correction: ${result.data.code||''} ${result.data.message||''}`);
 
   result=await request('/api/admin/player/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D/activity-records',{token:adminToken});
   const vocabulary=(result.data.records||[]).find(row=>row.activityId==='vocabulary');
