@@ -20,7 +20,7 @@
   function leave(){window.StudyVillageMovement?.stop?.();open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building')}
   function launch(action){
     window.StudyVillageMovement?.stop?.();
-    if(action==='explore'){leave();requestAnimationFrame(()=>window.dispatchEvent(new Event('studyvillage:open-expedition-hub')));return}
+    if(action==='explore'){leave();requestAnimationFrame(()=>{const hub=document.querySelector('#student-explore-panel');if(hub)hub.hidden=false;else flash('문제 탐험을 열지 못했어요.')});return}
     if(action==='library'){leave();window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'));return}
     if(action==='quiz'){leave();requestAnimationFrame(()=>{if(typeof window.openQuiz==='function')window.openQuiz();else flash('도전관 문제를 열지 못했어요.')});return}
     if(action==='customize'){leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click());return}
