@@ -13,8 +13,9 @@ assert.ok(server.includes('!row.finalized'),'a finalized math session cannot aut
 assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
-assert.ok(building.includes("action:'explore'"),'study building interiors must route problem solving through the expedition hub');
-assert.ok(building.includes('문제 탐험 열기'),'study building interiors must expose the expedition entry instead of the legacy direct math button');
-assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'the expedition hub must expose math adventure entries');
+assert.ok(building.includes("action:'math'"),'study building must own the direct classroom math practice action');
+assert.ok(building.includes("studyvillage:open-math-practice"),'study building must open the protected math practice directly');
+assert.ok(!building.includes("action:'explore'"),'study building must not collapse back into the shared expedition hub');
+assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'the separate expedition hub may still expose math adventure entries');
 assert.ok(index.includes('<script src="math-practice.js"></script>'),'the student page must load math practice');
 console.log('math practice server validation contract self-test passed');
