@@ -59,3 +59,5 @@ jobs:
         run: node expedition-direct-movement-contract-selftest.js
       - name: Run expedition discovery walk guard
         run: node expedition-discovery-walk-contract-selftest.js
+      - name: Run expedition lifecycle and collision guard
+        run: node expedition-lifecycle-collision-selftest.js
