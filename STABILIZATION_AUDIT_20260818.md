@@ -13,8 +13,7 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 - `onboarding.js` mixed guide UI, hit testing, touch routing, movement timers, and transient UI reset.
 - School, Bookmaru, and challenge hall collapsed into the same expedition action.
 - Expedition attempt routes exist, but errors were hidden behind generic server messages.
-- Current expedition maps are not truly traversable; the player sprite is static and NPC click advances play.
-- Early leveling is intentionally very fast under the current reward curve and must be rebalanced after baseline stability.
+- Early leveling was too fast under the previous reward curve and required stabilization.
 - Electron still loads a legacy activity-state hook in addition to canonical server activity-state routes.
 - Attempt routes are installed indirectly through unrelated star/question modules, making wiring difficult to audit.
 
@@ -28,14 +27,13 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 ### Official movement contract
 - tablet/phone: tap destination to move;
 - PC student preview: mouse click destination to move;
-- WASD / arrow keys are no longer an official movement path;
+- WASD / arrow keys are not an official movement path;
 - on-screen direction pad stays hidden;
 - buildings, NPCs, HUD buttons, and panels use normal browser click/tap behavior rather than global touch interception.
 
 ### Implemented on audit branch
-- `onboarding.js` is now guide-only and no longer creates synthetic keyboard or d-pad movement.
-- new `student-direct-movement.js` owns map movement and directly updates the canonical player state through the existing collision-aware `tryMove` path.
-- legacy movement-key listeners are blocked in capture phase while the student game is active, preventing old keyboard movement from competing with direct pointer movement.
+- `onboarding.js` is guide-only and no longer creates synthetic keyboard or d-pad movement.
+- `student-direct-movement.js` owns map movement and directly updates the canonical player state through the existing collision-aware `tryMove` path.
 - map movement excludes buttons, buildings, NPCs, and modal panels so clicks are not stolen from UI controls.
 - `building-interiors.js` uses a single normal `click` handler for both touch and mouse; duplicate `click + pointerup`, keyboard entry, and old talk-button entry paths were removed.
 - opening a building or modal stops current map movement.
@@ -45,34 +43,46 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 - `activity-gate.js` no longer intercepts keyboard or the legacy talk button. It only guards the activity that actually asks it for permission and exposes one reusable `StudyVillageActivityGate` API.
 - attempt failures distinguish missing/expired student session (401), missing route (404), server policy failure (5xx), timeout/network failure, and genuine attempt exhaustion.
 - isolated expedition runtime tests prove both riddle expeditions are unlimited by default and immediately reflect teacher-saved limited policies.
-- the student expedition hub now shows unlimited/remaining/exhausted attempt state, and teacher labels clearly identify the matching exploration activities.
+- the student expedition hub shows unlimited/remaining/exhausted attempt state, and teacher labels identify the matching exploration activities.
 
 ## Phase 8 — baseline flow and building separation
-- a complete student baseline contract now guards login -> village -> direct movement -> building/menu -> close/back -> expedition attempt visibility.
+- a complete student baseline contract guards login -> village -> direct movement -> building/menu -> close/back -> expedition attempt visibility.
 - school, Bookmaru, and challenge hall no longer share one `문제 탐험 열기` action.
 - school opens the math learning practice, Bookmaru opens the daily Bookmaru challenge, and challenge hall opens its own riddle challenge.
 - the top `탐험` button remains the dedicated entry point for expedition maps.
 - a dedicated building-role contract prevents the three buildings from collapsing back into one expedition action.
 
+## Phase 9 — legacy movement retirement and runtime crash removal
+- obsolete keyboard/WASD/arrow movement listeners were physically removed from `game.js` instead of only being neutralized later by another script.
+- obsolete mobile d-pad pointer capture, long-press suppression, and direction-button bindings were removed from the core runtime.
+- the removed `#talk-button` was still dereferenced by `game.js`; this could throw during student startup even though the visible button no longer existed. The dereference is now gone.
+- NPC interaction now uses a normal click/tap handler and the hint says to touch the helper directly.
+- the core frame loop only renders canonical player coordinates; destination movement remains owned by `student-direct-movement.js`.
+- stale regression tests that required the deleted keyboard/d-pad implementation were rewritten to protect the pointer-only architecture instead.
+- the legacy empty mobile-control footer remains hidden/inert only as temporary CSS compatibility; it has no direction/talk controls and no JS handlers.
+- after these removals, repository verification and the full stabilization CI bundle pass end-to-end.
+
+## Current candidate state
+- latest audit candidate has a green Verify workflow across repository verification, teacher runtime integration, pointer routing, direct building input, attempt gates, expedition movement/discovery/lifecycle, reward economy, browser ownership collision, avatar stabilization, and legacy-character migration.
+- `main` remains unchanged and the stabilization PR remains Draft.
+- code-side baseline is ready for real browser/device verification before promotion.
+
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
-2. Browser/device verification of the audit candidate: Chrome + Whale/Naver + tablet touch.
-3. After browser verification, physically remove obsolete keyboard/d-pad implementation still left inside `game.js`; it is already neutralized at runtime.
-4. Implement true expedition traversal only after the baseline candidate survives browser testing.
-5. Rebalance XP/stars and clean avatar assets.
-6. Re-run complete teacher-mode regression before promoting the audit branch.
+2. Browser/device verification of the audit candidate: Chrome + Whale/Naver + iPad/tablet touch.
+3. During device verification, specifically exercise login, tap movement, building entry/exit, top exploration entry, attempt counts, Bookmaru, challenge hall, record/customize panels, back/close behavior, and teacher corrections.
+4. If the candidate survives device verification, remove remaining inert mobile-control CSS/footer compatibility and update the visible version.
+5. Only after baseline promotion, continue expedition-content expansion and broader economy tuning.
 
 ## Backlog after baseline stabilization
-1. Restore actual expedition traversal and stage progression.
-2. Rebalance XP and levels; current ~3 completed activities -> Lv.4 is too fast in practice.
-3. Rebalance stars vs XP so exploration is not the dominant XP farming path.
-4. Remove astronaut base character.
-5. Fit hats/glasses/bags/pets with slot-specific scale and position.
-6. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
+1. Expand true expedition traversal/stage progression only after the stable candidate is promoted.
+2. Continue tuning XP/stars from real classroom usage rather than reopening the movement architecture.
+3. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
+4. Remove residual compatibility-only CSS/assets once device verification proves they are unnecessary.
 
 ## Audit rule
 - keep `main` unchanged until a candidate fix is verified;
 - make changes on `stabilization-audit-20260818`;
 - one runtime layer at a time;
 - run repository verification before moving a verified candidate to main;
-- if a change produces a red X/build failure, revert it on the audit branch rather than stacking another fix.
+- if a change produces a red X/build failure, fix or revert the exact failing layer before adding unrelated changes.
