@@ -1,0 +1,13 @@
+/* Stabilization: expedition discoveries become small map finds instead of instant reward buttons. */
+(()=>{
+  const stage=document.querySelector('#study-expedition-stage');if(!stage)return;
+  const map=()=>stage.querySelector('[data-stage-map]'),question=()=>stage.querySelector('[data-stage-question]');let treasure=null,sourceButton=null;
+  const style=document.createElement('style');style.textContent='.sv-stage-find{position:absolute;z-index:8;width:70px;min-height:70px;border:4px solid #fff;border-radius:20px;background:#fff6cfee;font-size:34px;box-shadow:0 8px 20px #263d2d44;cursor:pointer;animation:sv-find-pulse 1.1s ease-in-out infinite alternate}.sv-stage-find small{display:block;font-size:9px;font-weight:1000;color:#6b5a22}.sv-stage-find.near{box-shadow:0 0 0 5px #ffd95c88,0 8px 20px #263d2d44}@keyframes sv-find-pulse{to{transform:translateY(-4px)}}';document.head.appendChild(style);
+  function clear(){treasure?.remove();treasure=null;sourceButton=null}
+  function heroNear(){const host=map(),hero=host?.querySelector('.sv-stage-player');if(!host||!hero||!treasure)return false;const a=hero.getBoundingClientRect(),b=treasure.getBoundingClientRect();return Math.hypot(a.left+a.width/2-(b.left+b.width/2),a.top+a.height/2-(b.top+b.height/2))<105}
+  function spawn(button){const host=map();if(!host||treasure)return;sourceButton=button;const icon=(button.textContent||'✨').trim().slice(0,2)||'✨';treasure=document.createElement('button');treasure.type='button';treasure.className='sv-stage-find';treasure.innerHTML=`<span>${icon}</span><small>가까이 가서 발견</small>`;treasure.style.left=`${Math.round(host.clientWidth*.55)}px`;treasure.style.top=`${Math.round(host.clientHeight*.52)}px`;host.appendChild(treasure);treasure.onclick=()=>{if(!heroNear()){const r=host.getBoundingClientRect(),t=treasure.getBoundingClientRect();window.StudyVillageExpeditionMovement?.setTarget?.(t.left-r.left-55,t.top-r.top+t.height/2);return}const original=sourceButton;clear();question().hidden=false;original.dataset.walkReady='1';original.click()}}
+  stage.addEventListener('click',event=>{const button=event.target.closest('.sv-stage-event');if(!button||button.dataset.walkReady==='1')return;event.preventDefault();event.stopImmediatePropagation();question().hidden=true;spawn(button)},true);
+  stage.addEventListener('click',event=>{if(!treasure||!event.target.closest('.sv-stage-map'))return;treasure.classList.toggle('near',heroNear())},true);
+  new MutationObserver(()=>{if(stage.hidden||!map()?.contains(treasure))clear();else treasure?.classList.toggle('near',heroNear())}).observe(stage,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style']});
+  window.addEventListener('studyvillage:session-cleared',clear);
+})();
