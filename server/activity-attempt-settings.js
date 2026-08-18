@@ -7,13 +7,23 @@ const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
 const DAILY_MATH_POLICY=Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'});
 const DAILY_BOOKMARU_POLICY=Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'});
+const CLASSROOM_DEFAULTS=Object.freeze({'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY});
+
+function mergeStoredPolicies(stored={}){
+  const merged={...CLASSROOM_DEFAULTS};
+  for(const [activityId,policy] of Object.entries(stored||{})){
+    const classroomDefault=CLASSROOM_DEFAULTS[activityId];
+    merged[activityId]=classroomDefault?{...classroomDefault,...policy,period:classroomDefault.period}:{...policy};
+  }
+  return merged;
+}
 
 export function readActivityAttemptPolicies(getSetting){
   try{
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
-    return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}:{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY};
-  }catch{return{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}}
+    return checked.ok?mergeStoredPolicies(checked.policies):mergeStoredPolicies();
+  }catch{return mergeStoredPolicies()}
 }
 
 export function installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting}){
