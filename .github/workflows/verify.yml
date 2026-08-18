@@ -49,3 +49,5 @@ jobs:
         run: node student-expedition-attempt-visibility-selftest.js
       - name: Run complete student baseline flow guard
         run: node student-baseline-flow-contract-selftest.js
+      - name: Run building role separation guard
+        run: node building-role-separation-selftest.js
