@@ -1,11 +1,14 @@
 const fs=require('fs'),assert=require('assert');
-const html=fs.readFileSync('index.html','utf8'),layout=fs.readFileSync('village-layout.js','utf8'),study=fs.readFileSync('assets/student-study-menu.js','utf8'),movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8');
+const html=fs.readFileSync('index.html','utf8'),layout=fs.readFileSync('village-layout.js','utf8'),study=fs.readFileSync('assets/student-study-menu.js','utf8'),movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8'),direct=fs.readFileSync('student-direct-movement.js','utf8'),onboarding=fs.readFileSync('onboarding.js','utf8');
 const order=name=>html.indexOf(name);
+assert.ok(order('game.js')<order('student-direct-movement.js')&&order('student-direct-movement.js')<order('onboarding.js'),'home movement must load once, after game state and before guide code');
+assert.ok(!onboarding.includes("createElement('script')"),'guide code must not inject movement asynchronously');
+assert.ok(!direct.includes('movementKeys')&&!direct.includes('blockKeyboard'),'home pointer movement must not compete for keyboard ownership');
 assert.ok(order('village-layout.js')<order('assets/student-study-menu.js'),'new student study menu must load after legacy village layout and take ownership of the exploration hub');
 assert.ok(study.includes("const oldPanel=document.querySelector('#student-explore-panel')"),'new exploration hub must explicitly reuse the legacy panel instead of creating a duplicate id');
 assert.ok(layout.includes("makePanel('student-explore-panel'")&&study.includes("hub.innerHTML=`"),'legacy exploration shell must be replaced by the stabilized hub content');
 assert.ok(order('assets/expedition-direct-movement.js')<order('assets/expedition-discovery-walk.js')&&order('assets/expedition-discovery-walk.js')<order('assets/expedition-lifecycle-stabilizer.js'),'expedition movement, discovery, and lifecycle guards must load in deterministic order');
 assert.ok(html.includes('assets/student-legacy-character-guard.js'),'legacy astronaut UI guard must load');
-assert.ok(!html.includes('data-key="Arrow')&&!html.includes('id="talk-button"'),'student markup must not restore legacy directional/talk controls');
+assert.ok(!html.includes('data-key="Arrow')&&!html.includes('id="talk-button"')&&!html.includes('class="mobile-controls"'),'student markup must not restore legacy directional/talk controls');
 assert.ok(movement.includes("event.target.closest('.sv-stage-question,.sv-stage-result,.sv-stage-head,.sv-stage-find')"),'expedition pointer routing must leave overlays and discoveries interactive');
 console.log('stabilization browser collision self-test passed');
