@@ -67,3 +67,7 @@ jobs:
         run: node teacher-summary-audit-selftest.js
       - name: Run cross-layer stabilization final audit
         run: node stabilization-final-audit-selftest.js
+      - name: Run browser ownership collision guard
+        run: node stabilization-browser-collision-selftest.js
+      - name: Run legacy character migration guard
+        run: node student-legacy-character-guard-selftest.js
