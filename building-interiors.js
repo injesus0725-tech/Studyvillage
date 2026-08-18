@@ -15,9 +15,21 @@
   const touchMode=()=>matchMedia?.('(pointer:coarse)').matches===true||innerWidth<=700;
   function distance(el){const a=player.getBoundingClientRect(),b=el.getBoundingClientRect();return Math.hypot(a.left+a.width/2-(b.left+b.width/2),a.top+a.height/2-(b.top+b.height/2))}
   function nearest(){let best=null;for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;const d=distance(el);if(d<190&&(!best||d<best.d))best={...b,el,d}}return best}
-  function addActionButton(label,onClick){const btn=document.createElement('button');btn.className='interior-primary';btn.textContent=label;btn.onclick=onClick;actions.appendChild(btn)}
-  function openExpeditionHub(){leave();setTimeout(()=>{const button=[...document.querySelectorAll('button')].find(node=>node.textContent?.includes('탐험')&&!node.closest('#building-interior'));button?.click()},80)}
-  function enter(b){if(!b)return;open=true;current=b;overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';if(b.action==='explore')addActionButton('🧭 문제 탐험 열기',openExpeditionHub);else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();setTimeout(()=>document.querySelector('#customize-button')?.click(),50)});document.body.classList.add('inside-building')}
+  function addActionButton(label,onClick){const btn=document.createElement('button');btn.className='interior-primary';btn.type='button';btn.textContent=label;btn.addEventListener('click',onClick);actions.appendChild(btn)}
+  function openExpeditionHub(){
+    leave();
+    requestAnimationFrame(()=>{
+      const hub=document.querySelector('#student-explore-panel');
+      if(hub){
+        hub.style.removeProperty('pointer-events');
+        hub.hidden=false;
+        return;
+      }
+      const button=[...document.querySelectorAll('.hud button,button')].find(node=>node.textContent?.trim()==='🧭 탐험'||node.textContent?.trim()==='탐험');
+      button?.click();
+    });
+  }
+  function enter(b){if(!b)return;open=true;current=b;overlay.style.removeProperty('pointer-events');overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';if(b.action==='explore')addActionButton('🧭 문제 탐험 열기',openExpeditionHub);else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click())});document.body.classList.add('inside-building')}
   function hideHint(){hint.classList.remove('visible');document.body.classList.remove('near-building-interaction')}
   function leave(){open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building')}
   function interact(e){if(open)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
