@@ -39,3 +39,5 @@ jobs:
         run: node stabilization-pointer-routing-selftest.js
       - name: Run direct movement architecture guard
         run: node student-direct-movement-contract-selftest.js
+      - name: Run direct building input guard
+        run: node building-direct-input-contract-selftest.js
