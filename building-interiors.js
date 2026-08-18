@@ -2,6 +2,17 @@
 (()=>{
   const game=document.querySelector('#game-screen'),player=document.querySelector('#player'),talk=document.querySelector('#talk-button');
   if(!game||!player)return;
+  const style=document.createElement('style');
+  style.textContent=`
+    #student-explore-panel{position:absolute!important;inset:0!important;z-index:240!important;display:grid!important;place-items:center!important;padding:12px!important;background:#183625e8!important;backdrop-filter:blur(5px);pointer-events:auto!important;overflow:auto!important}
+    #student-explore-panel[hidden]{display:none!important}
+    #student-explore-panel *{pointer-events:auto!important}
+    #building-interior{pointer-events:auto!important}
+    #building-interior[hidden]{display:none!important}
+    #interior-action-wrap .interior-primary{pointer-events:auto!important;touch-action:manipulation!important;position:relative!important;z-index:5!important}
+    .sv-flow-status{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30000;padding:8px 12px;border-radius:999px;background:#173923e8;color:#fff;font-size:12px;font-weight:900;box-shadow:0 5px 18px #0003;pointer-events:none}
+  `;
+  document.head.appendChild(style);
   const hint=document.createElement('div');hint.id='building-interaction-hint';hint.className='interaction-hint';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');game.appendChild(hint);
   let current=null,open=false,lastCheck=0;
   const buildings=[
@@ -13,21 +24,22 @@
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
   const exit=overlay.querySelector('#interior-exit'),icon=overlay.querySelector('#interior-icon'),title=overlay.querySelector('#interior-title'),text=overlay.querySelector('#interior-text'),actions=overlay.querySelector('#interior-action-wrap');
   const touchMode=()=>matchMedia?.('(pointer:coarse)').matches===true||innerWidth<=700;
+  const flash=text=>{let n=document.querySelector('.sv-flow-status');if(!n){n=document.createElement('div');n.className='sv-flow-status';document.body.appendChild(n)}n.textContent=text;n.hidden=false;clearTimeout(flash.t);flash.t=setTimeout(()=>n.hidden=true,1400)};
   function distance(el){const a=player.getBoundingClientRect(),b=el.getBoundingClientRect();return Math.hypot(a.left+a.width/2-(b.left+b.width/2),a.top+a.height/2-(b.top+b.height/2))}
   function nearest(){let best=null;for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;const d=distance(el);if(d<190&&(!best||d<best.d))best={...b,el,d}}return best}
-  function addActionButton(label,onClick){const btn=document.createElement('button');btn.className='interior-primary';btn.type='button';btn.textContent=label;btn.addEventListener('click',onClick);actions.appendChild(btn)}
+  function addActionButton(label,onClick){const btn=document.createElement('button');btn.className='interior-primary';btn.type='button';btn.textContent=label;const run=e=>{e?.preventDefault?.();e?.stopPropagation?.();onClick()};btn.addEventListener('click',run);btn.addEventListener('pointerup',run);actions.appendChild(btn)}
   function openExpeditionHub(){
+    flash('탐험 메뉴 여는 중…');
+    const hub=document.querySelector('#student-explore-panel');
+    if(hub){
+      open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building');
+      hub.style.removeProperty('display');hub.style.removeProperty('pointer-events');hub.hidden=false;
+      requestAnimationFrame(()=>{hub.style.pointerEvents='auto';hub.scrollTop=0;flash('탐험 메뉴 열림')});
+      return;
+    }
     leave();
-    requestAnimationFrame(()=>{
-      const hub=document.querySelector('#student-explore-panel');
-      if(hub){
-        hub.style.removeProperty('pointer-events');
-        hub.hidden=false;
-        return;
-      }
-      const button=[...document.querySelectorAll('.hud button,button')].find(node=>node.textContent?.trim()==='🧭 탐험'||node.textContent?.trim()==='탐험');
-      button?.click();
-    });
+    const button=[...document.querySelectorAll('.hud button,button')].find(node=>node.textContent?.trim()==='🧭 탐험'||node.textContent?.trim()==='탐험');
+    if(button){button.click();flash('탐험 버튼 실행')}else flash('탐험 메뉴를 찾지 못함');
   }
   function enter(b){if(!b)return;open=true;current=b;overlay.style.removeProperty('pointer-events');overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';if(b.action==='explore')addActionButton('🧭 문제 탐험 열기',openExpeditionHub);else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click())});document.body.classList.add('inside-building')}
   function hideHint(){hint.classList.remove('visible');document.body.classList.remove('near-building-interaction')}
