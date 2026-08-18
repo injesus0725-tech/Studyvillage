@@ -91,10 +91,73 @@ try{
   result=await request('/api/player/me/activity-attempt-status/exploration-forest-riddle',{token:studentToken});
   assert.equal(result.data.remaining,3,'student remaining attempts must include teacher extra grant');
 
+  result=await request('/api/admin/player/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D/custom-title',{method:'POST',token:adminToken,body:{title:'안정화 용사',reason:'칭호 수정 검증'}});
+  assert.equal(result.response.status,200,'teacher title correction must work');
+  assert.equal(result.data.ok,true,'teacher title correction payload must be ok');
+
+  result=await request('/api/admin/activity-state/riddle-demo',{method:'PUT',token:adminToken,body:{name:'도전관 · 수수께끼',open:false,message:'안정화 점검 중'}});
+  assert.equal(result.response.status,200,'teacher activity close must work');
+  assert.equal(result.data.activity?.open,false,'teacher activity close must persist');
+  result=await request('/api/activity-state/riddle-demo');
+  assert.equal(result.response.status,200,'student activity-state read must work');
+  assert.equal(result.data.activity?.open,false,'student must observe teacher-closed activity');
+
+  result=await request('/api/admin/player/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D/reset-password',{method:'POST',token:adminToken,body:{password:'5678'}});
+  assert.equal(result.response.status,200,'teacher password reset must work');
+  result=await request('/api/player/me',{token:studentToken});
+  assert.equal(result.response.status,401,'password reset must revoke the existing student session');
+  result=await request('/api/login',{method:'POST',body:{name:'안정화학생',password:'1234'}});
+  assert.equal(result.response.status,401,'old student password must stop working');
+  const relogin=await request('/api/login',{method:'POST',body:{name:'안정화학생',password:'5678'}});
+  assert.equal(relogin.response.status,200,'new student password must work');
+  assert.ok(relogin.data.token,'new password login must return a session');
+
+  result=await request('/api/admin/player/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D/rename',{method:'POST',token:adminToken,body:{newName:'안정화학생2',reason:'이름 수정 검증'}});
+  assert.equal(result.response.status,200,'teacher student rename must work');
+  assert.equal(result.data.newName,'안정화학생2','rename response must show the new student name');
+  result=await request('/api/admin/players',{token:adminToken});
+  assert.ok((result.data.players||[]).some(row=>row.name==='안정화학생2'),'renamed student must appear in admin players');
+  assert.ok(!(result.data.players||[]).some(row=>row.name==='안정화학생'),'old student name must disappear after rename');
+  const renamedLogin=await request('/api/login',{method:'POST',body:{name:'안정화학생2',password:'5678'}});
+  assert.equal(renamedLogin.response.status,200,'renamed student must log in with the reset password');
+
+  result=await request('/api/admin/stars/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D2',{token:adminToken});
+  assert.equal(result.response.status,200,'star ledger must move with renamed student');
+  assert.equal(result.data.balance,3,'renamed student must preserve star balance');
+
   result=await request('/api/admin/student-change-history',{token:adminToken});
   assert.equal(result.response.status,200,'teacher change history must load');
   assert.ok((result.data.changes||[]).some(row=>row.type==='xp-correction'),'XP correction must be audited');
   assert.ok((result.data.changes||[]).some(row=>row.type==='activity-record-correction'),'activity correction must be audited');
+  assert.ok((result.data.changes||[]).some(row=>row.type==='teacher-title-correction'),'title correction must be audited');
+  assert.ok((result.data.changes||[]).some(row=>row.type==='account-renamed'),'rename must be audited');
+
+  const backup=await request('/api/admin/backup',{token:adminToken});
+  assert.equal(backup.response.status,200,'teacher backup must work');
+  assert.equal(backup.data.format,'studyvillage-backup','backup payload must have the expected format');
+  assert.ok((backup.data.players||[]).some(row=>row.name==='안정화학생2'),'backup must contain renamed student');
+
+  result=await request('/api/admin/activity-state/riddle-demo',{method:'PUT',token:adminToken,body:{name:'도전관 · 수수께끼',open:true,message:'백업 이후 임시 변경'}});
+  assert.equal(result.response.status,200,'activity must be mutable before restore test');
+  result=await request('/api/activity-state/riddle-demo');
+  assert.equal(result.data.activity?.open,true,'pre-restore mutation must be visible');
+
+  result=await request('/api/admin/restore',{method:'POST',token:adminToken,body:backup.data});
+  assert.equal(result.response.status,200,'teacher restore must work');
+  assert.equal(result.data.ok,true,'restore response must be ok');
+
+  result=await request('/api/activity-state/riddle-demo');
+  assert.equal(result.data.activity?.open,false,'restore must recover the backed-up activity closed state');
+
+  const adminAfterRestore=await request('/api/admin/login',{method:'POST',body:{password:'teacher1234'}});
+  assert.equal(adminAfterRestore.response.status,200,'admin must log in again after restore clears sessions');
+  result=await request('/api/admin/stars/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D2',{token:adminAfterRestore.data.token});
+  assert.equal(result.response.status,200,'restored renamed student star read must work');
+  assert.equal(result.data.balance,3,'backup/restore must preserve teacher-adjusted star balance through the compatibility mirror');
+  result=await request('/api/admin/players',{token:adminAfterRestore.data.token});
+  const restoredStudent=(result.data.players||[]).find(row=>row.name==='안정화학생2');
+  assert.ok(restoredStudent,'backup/restore must preserve renamed student');
+  assert.equal(restoredStudent.xp,600,'backup/restore must preserve teacher-corrected XP');
 
   console.log('stabilization admin runtime integration selftest passed');
 } finally {
