@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const status=fs.readFileSync('assets/student-expedition-attempt-status.js','utf8'),index=fs.readFileSync('index.html','utf8'),admin=fs.readFileSync('admin-attempt-policy.js','utf8');
+assert.ok(index.includes('assets/student-expedition-attempt-status.js'),'student attempt visibility must load after expedition hub');
+for(const id of ['exploration-forest-riddle','exploration-mountain-riddle','math-arithmetic'])assert.ok(status.includes(id),`${id} must be visible in student attempt status`);
+assert.ok(status.includes('/api/player/me/activity-attempt-status/'),'student hub must use canonical attempt status route');
+assert.ok(status.includes("policy?.mode==='unlimited'"),'student hub must label unlimited policies');
+assert.ok(status.includes('회 남음'),'student hub must show remaining attempts');
+assert.ok(status.includes('추가 ${extra}회 포함'),'student hub must disclose extra attempts');
+assert.ok(admin.includes('🧭 탐험 · 수수께끼 숲'),'teacher panel must clearly label forest expedition');
+assert.ok(admin.includes('🧭 탐험 · 수수께끼 던전'),'teacher panel must clearly label challenge expedition');
+assert.ok(admin.includes('학생의 탐험 메뉴와 바로 연결됩니다'),'teacher panel must explain exploration linkage');
+console.log('student expedition attempt visibility self-test passed');
