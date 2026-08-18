@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const css=fs.readFileSync('building-interiors.css','utf8');
+const movement=fs.readFileSync('student-direct-movement.js','utf8');
+assert.ok(!css.includes('@media.math-practice-panel'),'building CSS must not contain malformed @media selector');
+assert.ok(!css.includes('(max-width:700px){'),'legacy malformed mobile media syntax must be removed');
+assert.ok(css.includes('.math-practice-panel{position:absolute'),'math practice panel must have a real base selector');
+assert.ok(css.includes('@media(max-width:700px),(pointer:coarse)'),'building/mobile layout must use a valid responsive media query');
+assert.ok(!css.includes('inset:56px 0 84px'),'building interior must not reserve dead d-pad space');
+assert.ok(css.includes('env(safe-area-inset-bottom)'),'mobile building panels must respect device safe area');
+assert.ok(movement.includes('.mobile-controls,.mobile-controls button,.talk-button{display:none!important}'),'removed mobile controls must remain inert even under legacy CSS');
+assert.ok(movement.includes('.dialogue{bottom:max(18px,env(safe-area-inset-bottom))!important}'),'dialogue must reclaim legacy control space on touch devices');
+assert.ok(movement.includes('.sv-expedition-panel{bottom:max(8px,env(safe-area-inset-bottom))!important}'),'expedition must reclaim legacy control space on touch devices');
+console.log('student mobile layout stabilization self-test passed');
