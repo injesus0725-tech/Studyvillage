@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main]
+    branches: [main, stabilization-audit-20260818]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -27,3 +27,5 @@ jobs:
         run: npm run verify
       - name: Run classroom regression bundle
         run: node v1-classroom-regression-contract-selftest.js
+      - name: Run stabilization route wiring guard
+        run: node stabilization-route-wiring-selftest.js
