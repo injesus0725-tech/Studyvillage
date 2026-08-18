@@ -39,6 +39,8 @@ jobs:
         run: node stabilization-pointer-routing-selftest.js
       - name: Run direct movement architecture guard
         run: node student-direct-movement-contract-selftest.js
+      - name: Run touch layout stabilization guard
+        run: node student-mobile-layout-stabilization-selftest.js
       - name: Run direct building input guard
         run: node building-direct-input-contract-selftest.js
       - name: Run student activity gate guard
