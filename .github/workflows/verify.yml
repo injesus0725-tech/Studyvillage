@@ -65,3 +65,5 @@ jobs:
         run: node teacher-runtime-fixes-load-selftest.js
       - name: Run teacher complete-attempt summary guard
         run: node teacher-summary-audit-selftest.js
+      - name: Run cross-layer stabilization final audit
+        run: node stabilization-final-audit-selftest.js
