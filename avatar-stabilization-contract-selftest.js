@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const renderer=fs.readFileSync('avatar-renderer.js','utf8'),fix=fs.readFileSync('assets/avatar-fullbody-fix.js','utf8');
+assert.ok(!renderer.includes("'student-hero'"),'astronaut base must be removed');
+assert.ok(!renderer.includes('🧑‍🚀'),'astronaut emoji must not remain in base renderer');
+for(const id of ['student-default','student-boy','student-girl'])assert.ok(renderer.includes(`'${id}'`),`${id} base must remain`);
+assert.ok(renderer.includes("const safeId=BASES[id]?id:'student-default'"),'unknown/legacy base must safely fall back');
+assert.ok(!fix.includes('우주 탐험가'),'full-body choice fix must not restore astronaut');
+assert.ok(fix.includes('sv-exp-avatar-hat')&&fix.includes('font-size:20px'),'expedition hat must use fitted scale');
+assert.ok(fix.includes('sv-exp-avatar-glasses')&&fix.includes('font-size:17px'),'expedition glasses must use fitted scale');
+console.log('avatar stabilization contract self-test passed');
