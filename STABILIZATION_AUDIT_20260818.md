@@ -86,17 +86,35 @@ Source inspection shows star adjustment is transactional and writes an immutable
 
 If the server integration passes while field UI still fails, the next target is the admin-page lifecycle and error visibility rather than rewriting the database logic.
 
+## Phase 6 — expanded teacher runtime regression
+
+### 27. Remaining high-value teacher mutations are now covered in the same isolated runtime test
+The teacher runtime integration now also verifies:
+- teacher title correction;
+- activity open/close and student-visible reread;
+- password reset plus old-session revocation and new-password login;
+- student rename plus admin reread and renamed login;
+- star balance surviving rename;
+- change-history entries for title and rename;
+- backup creation;
+- post-backup mutation followed by restore;
+- restored activity state, renamed student, XP, and star balance.
+
+This expands the test from route existence to complete write -> reread -> session/data preservation behavior across the teacher operations most likely to affect real classroom data.
+
+### 28. Movement architecture is now ready for the next stabilization phase
+Source inspection reconfirms that `game.js` still handles keyboard and on-screen direction-pad state, while `onboarding.js` converts tablet taps into synthetic arrow-key events every 80 ms and globally captures pointer/touch end events. This is the next major simplification target after teacher runtime verification: direct target-coordinate movement for both touch and mouse, with keyboard/d-pad support removed.
+
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
-2. Let the runtime teacher-write integration identify any failing server mutation before touching gameplay.
-3. Repair any failing teacher write path and add its regression to the same integration test.
-4. Simplify student movement to one direct tap/click target path; remove keyboard/d-pad support.
-5. Establish one stable student flow: login -> village -> tap/click movement -> building/menu -> close/back.
-6. Fix expedition attempt-policy visibility and remaining-attempt display.
-7. Implement true expedition traversal only after baseline stability.
-8. Split building roles, rebalance XP/stars, and clean avatar assets.
-9. Isolate Chrome compatibility work to the final direct pointer/touch input layer.
-10. Run complete teacher-mode regression again before promoting the audit branch.
+2. Repair any teacher mutation that fails the expanded runtime regression.
+3. Simplify student movement to one direct tap/click target path; remove keyboard/d-pad support.
+4. Establish one stable student flow: login -> village -> tap/click movement -> building/menu -> close/back.
+5. Fix expedition attempt-policy visibility and remaining-attempt display.
+6. Implement true expedition traversal only after baseline stability.
+7. Split building roles, rebalance XP/stars, and clean avatar assets.
+8. Isolate Chrome compatibility work to the final direct pointer/touch input layer.
+9. Run complete teacher-mode regression again before promoting the audit branch.
 
 ## Backlog after baseline stabilization
 1. Restore actual expedition traversal and stage progression.
