@@ -3,14 +3,16 @@ const index=fs.readFileSync('index.html','utf8'),game=fs.readFileSync('game.js',
 const pos=name=>{const p=index.indexOf(name);assert.ok(p>=0,`${name} must load in student client`);return p};
 assert.ok(game.includes('StudyVillageAuth.login'),'baseline login must use canonical student auth');
 assert.ok(game.includes("gameScreen.classList.add('active')"),'successful login must activate the village');
-assert.ok(pos('game.js')<pos('onboarding.js'),'game state must exist before onboarding');
-assert.ok(onboarding.includes("movement.src='student-direct-movement.js")&&onboarding.includes('data-studyvillage-direct-movement'),'onboarding must load exactly one canonical direct movement owner');
+assert.ok(pos('game.js')<pos('student-direct-movement.js')&&pos('student-direct-movement.js')<pos('onboarding.js'),'game, direct movement, and guide must load in deterministic order');
+assert.ok(!onboarding.includes("createElement('script')")&&!onboarding.includes('data-studyvillage-direct-movement'),'onboarding must not dynamically load or duplicate movement ownership');
 assert.ok(movement.includes("world.addEventListener('pointerup'"),'village must accept direct destination pointer movement');
 assert.ok(movement.includes('tryMove(dx,dy)'),'direct movement must preserve collision-aware movement');
+assert.ok(!movement.includes('movementKeys')&&!movement.includes('blockKeyboard'),'direct movement must remain pointer-only');
 assert.ok(buildings.includes("el.addEventListener('click'"),'buildings must open through normal click/tap');
 assert.ok(buildings.includes('StudyVillageMovement?.stop'),'building transitions must stop village movement');
 assert.ok(buildings.includes('overlay.hidden=true'),'building interior must expose a close/back path');
 assert.ok(pos('assets/student-study-menu.js')<pos('assets/student-expedition-attempt-status.js'),'attempt badges must attach after expedition hub');
 assert.ok(attempt.includes('/api/player/me/activity-attempt-status/'),'expedition hub must read canonical attempt status');
+assert.ok(!index.includes('class="mobile-controls"')&&!index.includes('id="talk-button"'),'legacy movement and talk controls must stay removed');
 assert.ok(!onboarding.includes('KeyboardEvent'),'onboarding must not revive synthetic keyboard movement');
 console.log('student baseline flow contract self-test passed');
