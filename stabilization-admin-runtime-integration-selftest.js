@@ -63,6 +63,7 @@ try{
 
   result=await request('/api/player/me/activity',{method:'POST',token:studentToken,body:{activityId:'vocabulary',score:100,submissionId:'admin-runtime-vocabulary-0001'}});
   assert.equal(result.response.status,200,`student activity save must work before teacher correction: ${result.data.code||''} ${result.data.message||''}`);
+  assert.equal(result.data.activityStars,2,'verified perfect Bookmaru completion must award two stars');
 
   result=await request('/api/admin/player/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D/activity-records',{token:adminToken});
   const vocabulary=(result.data.records||[]).find(row=>row.activityId==='vocabulary');
@@ -123,7 +124,7 @@ try{
 
   result=await request('/api/admin/stars/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D2',{token:adminToken});
   assert.equal(result.response.status,200,'star ledger must move with renamed student');
-  assert.equal(result.data.balance,3,'renamed student must preserve star balance');
+  assert.equal(result.data.balance,5,'renamed student must preserve teacher-adjusted plus earned star balance');
 
   result=await request('/api/admin/student-change-history',{token:adminToken});
   assert.equal(result.response.status,200,'teacher change history must load');
@@ -153,7 +154,7 @@ try{
   assert.equal(adminAfterRestore.response.status,200,'admin must log in again after restore clears sessions');
   result=await request('/api/admin/stars/%EC%95%88%EC%A0%95%ED%99%94%ED%95%99%EC%83%9D2',{token:adminAfterRestore.data.token});
   assert.equal(result.response.status,200,'restored renamed student star read must work');
-  assert.equal(result.data.balance,3,'backup/restore must preserve teacher-adjusted star balance through the compatibility mirror');
+  assert.equal(result.data.balance,5,'backup/restore must preserve teacher-adjusted and earned star balance through the compatibility mirror');
   result=await request('/api/admin/players',{token:adminAfterRestore.data.token});
   const restoredStudent=(result.data.players||[]).find(row=>row.name==='안정화학생2');
   assert.ok(restoredStudent,'backup/restore must preserve renamed student');
