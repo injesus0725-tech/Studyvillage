@@ -63,3 +63,5 @@ jobs:
         run: node expedition-lifecycle-collision-selftest.js
       - name: Run teacher runtime fixes load guard
         run: node teacher-runtime-fixes-load-selftest.js
+      - name: Run teacher complete-attempt summary guard
+        run: node teacher-summary-audit-selftest.js
