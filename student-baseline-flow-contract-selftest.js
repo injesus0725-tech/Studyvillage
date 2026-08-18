@@ -4,12 +4,12 @@ const pos=name=>{const p=index.indexOf(name);assert.ok(p>=0,`${name} must load i
 assert.ok(game.includes('StudyVillageAuth.login'),'baseline login must use canonical student auth');
 assert.ok(game.includes("gameScreen.classList.add('active')"),'successful login must activate the village');
 assert.ok(pos('game.js')<pos('onboarding.js'),'game state must exist before onboarding');
-assert.ok(pos('onboarding.js')<pos('student-direct-movement.js'),'guide must load direct movement after its own setup');
+assert.ok(onboarding.includes("movement.src='student-direct-movement.js")&&onboarding.includes('data-studyvillage-direct-movement'),'onboarding must load exactly one canonical direct movement owner');
 assert.ok(movement.includes("world.addEventListener('pointerup'"),'village must accept direct destination pointer movement');
 assert.ok(movement.includes('tryMove(dx,dy)'),'direct movement must preserve collision-aware movement');
 assert.ok(buildings.includes("el.addEventListener('click'"),'buildings must open through normal click/tap');
 assert.ok(buildings.includes('StudyVillageMovement?.stop'),'building transitions must stop village movement');
-assert.ok(buildings.includes('interior.hidden=true')||buildings.includes('interior.hidden = true'),'building interior must expose a close/back path');
+assert.ok(buildings.includes('overlay.hidden=true'),'building interior must expose a close/back path');
 assert.ok(pos('assets/student-study-menu.js')<pos('assets/student-expedition-attempt-status.js'),'attempt badges must attach after expedition hub');
 assert.ok(attempt.includes('/api/player/me/activity-attempt-status/'),'expedition hub must read canonical attempt status');
 assert.ok(!onboarding.includes('KeyboardEvent'),'onboarding must not revive synthetic keyboard movement');
