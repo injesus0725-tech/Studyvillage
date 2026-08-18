@@ -47,3 +47,5 @@ jobs:
         run: node stabilization-expedition-attempt-runtime-selftest.js
       - name: Run expedition attempt visibility guard
         run: node student-expedition-attempt-visibility-selftest.js
+      - name: Run complete student baseline flow guard
+        run: node student-baseline-flow-contract-selftest.js
