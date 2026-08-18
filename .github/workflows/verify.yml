@@ -35,3 +35,5 @@ jobs:
         run: node activity-attempt-settings-override-selftest.js
       - name: Run teacher write runtime integration
         run: node stabilization-admin-runtime-integration-selftest.js
+      - name: Run stabilized pointer routing guard
+        run: node stabilization-pointer-routing-selftest.js
