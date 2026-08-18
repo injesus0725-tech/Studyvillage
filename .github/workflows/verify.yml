@@ -45,3 +45,5 @@ jobs:
         run: node stabilization-activity-gate-selftest.js
       - name: Run expedition attempt runtime guard
         run: node stabilization-expedition-attempt-runtime-selftest.js
+      - name: Run expedition attempt visibility guard
+        run: node student-expedition-attempt-visibility-selftest.js
