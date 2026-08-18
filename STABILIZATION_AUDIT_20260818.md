@@ -8,194 +8,89 @@
 ## Confirmed scope
 The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v0.9.41 spans 166 commits. The changes touch movement/input, camera, buildings, expedition flow, attempt policies, XP/reward economy, sessions, shop/avatar, and teacher controls. This is large enough that point fixes should stop until the runtime paths are simplified.
 
-## Phase 1 findings
+## Key findings retained from phases 1–3
+- Mobile input is duplicated: `onboarding.js` captures pointer/touch globally and converts taps to synthetic keyboard events, while `game.js` owns keyboard/d-pad movement.
+- `onboarding.js` mixes guide UI, preview UI, hit testing, touch routing, movement timers, and transient UI reset.
+- `tablet-controls.css` exists but is not loaded; mobile CSS is also injected from JS.
+- School, Bookmaru, and challenge hall currently collapse into the same expedition action.
+- Expedition attempt routes exist, but errors are hidden behind a generic server message.
+- Current expedition maps are not truly traversable; the player sprite is static and NPC click advances play.
+- Early leveling is intentionally very fast under the current reward curve and must be rebalanced after baseline stability.
+- Electron still loads a legacy activity-state hook in addition to canonical server activity-state routes.
+- Attempt routes are installed indirectly through unrelated star/question modules, making wiring difficult to audit.
 
-### 1. Mobile input is duplicated and high risk
-`onboarding.js` currently owns tablet tap-to-move and also intercepts document-level `pointerup` and `touchend` in capture phase. It then converts touch movement into synthetic keyboard events every 80 ms. This overlaps with the native keyboard movement state in `game.js`, direct building click handlers in `building-interiors.js`, and other panel/button click handlers.
+## Phase 4 — teacher mode and input decision
 
-Decision:
-- PC: keep native WASD/arrow keyboard movement.
-- Tablet/phone: one official tap-to-move path only.
-- Remove mobile direction-pad UI from the final stabilized client.
-- Do not synthesize keyboard events for touch in the final architecture if direct touch coordinates can drive the same movement state safely.
+### 21. Official student movement is now touch/click only
+The real classroom client is tablet-first. PC student play is only a teacher/development fallback.
 
-### 2. `onboarding.js` has too many responsibilities
-It currently handles:
-- guide modal
-- teacher preview return link
-- mobile tap routing
-- tap target animation
-- mobile movement timer
-- HUD/building/NPC hit testing
-- panel blocking detection
-- login-time transient UI reset
+Final stabilization target:
+- tablet/phone: tap destination to move;
+- PC student preview: mouse click destination to move;
+- remove WASD / arrow-key movement as a supported feature;
+- remove the on-screen mobile direction pad;
+- village and future expedition traversal should share the same direct target-coordinate movement API.
 
-This makes a guide script part of the critical runtime input layer. Split guide/preview behavior from touch movement during stabilization.
+This allows the recent synthetic keyboard fallback layers to be removed rather than repaired.
 
-### 3. A tablet stylesheet exists but is not loaded
-`tablet-controls.css` exists and contains dynamic viewport / mobile control layout safeguards, but `index.html` does not link it. Meanwhile `onboarding.js` injects its own mobile CSS and hides `.mobile-controls`. This is stale/duplicated mobile architecture and must be reconciled rather than layered further.
+### 22. Teacher mode must be treated as a full stabilization surface
+Field testing reports that, apart from item-related operations and destructive reset/delete actions, most teacher mutations have not been reliable. Star grant/subtract and other correction/settings operations must therefore be assumed broken until verified end-to-end.
 
-### 4. Building roles are currently collapsed into expedition
-`building-interiors.js` maps school, library, and quiz hall to the same `action:'explore'`, and each shows `문제 탐험 열기`. This does not match the intended product structure.
+Teacher write surfaces to verify individually:
+- student password reset;
+- XP correction;
+- title correction;
+- activity record correction;
+- student rename;
+- equipment repair;
+- item grant;
+- star grant/subtract;
+- activity attempt-policy save;
+- per-student extra attempt grant;
+- activity open/close state;
+- backup/restore;
+- change-history undo where applicable.
 
-Target roles after stabilization:
-- 배움터: subject/class learning
-- 책마루: daily Bookmaru / vocabulary / knowledge / riddles
-- 도전관: competitive/challenge activities and records
-- 탐험: separate RPG-style map adventure
+### 23. Teacher client/server route names are mostly present, but presence is not proof of runtime success
+Source tracing confirms the main teacher clients point at matching server routes. For example:
+- `admin-stars.js` POSTs to `/api/admin/stars/{name}/adjust`;
+- `server/question-review.js` installs `/api/admin/stars/:name/adjust` and calls `changeStars(...)`;
+- XP/title/activity corrections in `admin-student-edit.js` match routes in `server/server.js`.
 
-### 5. Expedition runtime exists but entry/policy wiring is inconsistent
-`assets/student-study-menu.js` contains an expedition hub, randomized map templates, stage progression, NPC traits, treasure/event hooks, and activity IDs such as `exploration-forest-riddle` and `exploration-mountain-riddle`.
+Therefore the reported failures are likely runtime/auth/data/validation/route-order problems rather than simply missing buttons or missing endpoint strings. A source-level teacher write wiring guard has been added, but each operation still needs real authenticated runtime verification.
 
-The current user-visible symptom is that entry fails with an attempt-status/server message before the expedition can be tested. Stabilization must trace the exact request chain from expedition card -> attempt status -> server response -> stage start.
+### 24. Stabilization verification now covers route wiring for both student and teacher controls
+The audit branch now runs:
+- repository verification;
+- classroom regression bundle;
+- stabilization student/attempt route wiring guard;
+- stabilization teacher write wiring guard.
 
-### 6. Teacher attempt-policy UI already contains exploration IDs
-`admin-attempt-policy.js` already lists:
-- `exploration-forest-riddle`
-- `exploration-mountain-riddle`
-
-and `admin.html` does load `admin-attempt-policy.js`.
-
-Do not add a second attempt system; reconcile and surface the existing one.
-
-### 7. Attempt-policy defaults are incomplete for exploration
-`server/activity-attempt-settings.js` hard-codes daily policies only for:
-- `math-arithmetic` = 3/day
-- `library-vocabulary` = 1/day
-
-Exploration activities have no hard-coded default and therefore normalize to unlimited / first-completion-XP until a teacher policy is explicitly stored.
-
-### 8. Error wording currently conflates policy/status failure with server failure
-`activity-gate.js` reports `교실 서버 연결이 돌아오면 다시 시도` whenever the attempt-status request is non-OK or returns `ok:false`. This can mask configuration/auth/API errors as a network error.
-
-## Phase 2 findings
-
-### 9. Attempt routes are wired indirectly, not missing
-Initial source inspection of `server/server.js` alone made the attempt routes look absent. Full tracing corrected that conclusion:
-- `server/server.js` installs `installStarLedgerRoutes(...)`.
-- `server/star-ledger.js` installs `installActivityAttemptStudentRoutes(...)` with expedition reward and math validation adapters.
-- `server/server.js` installs `installQuestionReviewRoutes(...)`.
-- `server/question-review.js` installs attempt setting, overview, and extra-attempt admin routes.
-
-Therefore the student attempt-status endpoint and teacher attempt-policy endpoints are intended to exist in the running server. The current expedition status failure is not explained by a missing import alone.
-
-### 10. Exploration without a stored teacher policy should still be allowed
-`normalizeAttemptPolicy({})` becomes `unlimited`, so an exploration activity with no stored policy should return `allowed:true`. Therefore the observed `탐험 참여 횟수를 확인하지 못했어요` means the fetch is failing or returning non-OK before policy evaluation succeeds. High-priority suspects are:
-- authentication/session response for this request,
-- route/runtime exception,
-- local server/runtime mismatch,
-- a 404/500 hidden by generic client wording.
-
-Next diagnostic must expose the actual HTTP status and server error code instead of showing only the generic server message.
-
-### 11. Current expedition map is not actually traversable
-This is a major product/runtime finding. `assets/student-study-menu.js` renders each expedition stage as:
-- a static `.sv-stage-player` avatar,
-- decorative map elements,
-- one clickable `.sv-stage-npc` button.
-
-There is no player coordinate state, tap-to-move handler, collision/path traversal, or NPC proximity requirement inside the expedition stage. The only way to progress is to click the NPC, exactly matching the user's observation.
-
-So "탐험은 안 되고 NPC만 클릭해서 문제를 푼다" is not merely an input bug. The current expedition implementation is a sequence of illustrated rooms, not a true 2D traversal engine. Restoring real exploration will require a deliberate implementation after baseline stabilization rather than a small bug fix.
-
-### 12. Expedition status gate is separate from the general `activity-gate.js`
-`assets/student-study-menu.js` performs its own direct call to:
-`/api/player/me/activity-attempt-status/{activityId}`
-inside `startExpedition()`.
-
-If that request throws or returns non-OK, it immediately shows the generic `탐험 참여 횟수를 확인하지 못했어요` alert. This means expedition entry can fail even if the older building/quiz activity gate is otherwise healthy. The expedition gate should eventually share one status helper with the rest of the app.
-
-### 13. Teacher attempt settings exist but are easy to miss when loading fails
-The admin attempt panel is dynamically inserted by `admin-attempt-policy.js`. Its exploration entries are rendered only after `/api/admin/activity-attempt-policies` loads successfully. If that fetch fails, the panel can remain effectively empty with a small `설정 불러오기 실패` status instead of clearly explaining why exploration settings are unavailable. This matches the report that there is no obvious exploration-attempt control.
-
-### 14. Early level growth is mathematically consistent with the current economy, but feels too fast
-`server/reward-economy.js` awards roughly 280–335 XP per completed activity. The current level curve requires approximately:
-- Lv.2: 200 total XP
-- Lv.3: 450 total XP
-- Lv.4: 750 total XP
-
-Therefore about three completed activities naturally produce Lv.4. This is not an accidental duplicate-award conclusion yet; it follows directly from the configured curve. The semester target (90 days × ~4.5 activities/day -> Lv.70) was achieved by making early levels extremely fast. Rebalancing should preserve the semester target while slowing the first 10–20 levels.
-
-### 15. Verification coverage has a runtime-wiring blind spot
-The verify script syntax-checks attempt modules and many contract tests, but the current symptoms show that "module exists and parses" is not enough. We need a lightweight route-wiring regression test that proves, from the assembled server, that these authenticated endpoints actually respond:
-- student attempt status
-- admin attempt policies
-- admin attempt overview
-
-This should be added before merging stabilization changes.
-
-## Phase 3 findings
-
-### 16. The core movement engine itself is simpler than the mobile wrapper around it
-`game.js` already owns a single authoritative movement state (`state.x`, `state.y`, `state.keys`) and collision checks. Native PC keyboard input and the old mobile direction-pad both feed that state directly.
-
-The current tap-to-move layer does not use a dedicated movement API. Instead `onboarding.js` repeatedly emits synthetic `keydown`/`keyup` events, which are then re-consumed by `game.js`. This extra event loop is unnecessary and increases browser-specific risk.
-
-Stabilization target:
-- expose a small movement API from the core (for example target coordinates / direct movement intent),
-- let PC keyboard and mobile tap use the same underlying state without synthetic DOM keyboard events,
-- remove the mobile direction pad after tap movement is verified.
-
-### 17. The student runtime has overlapping observers/timers, but no single catastrophic camera loop now
-Current always-on runtime work includes:
-- `game.js`: `requestAnimationFrame(gameLoop)` for movement and interaction hints;
-- `building-interiors.js`: another `requestAnimationFrame` loop for proximity checks, throttled internally to ~160 ms;
-- `avatar-motion.js`: 120 ms interval sampling `getBoundingClientRect()`;
-- `onboarding.js`: 80 ms interval while tap-to-move is active;
-- several MutationObservers for panel/login/motion state.
-
-`world-camera.js` itself is now lightweight and static: it wraps the village children in `#world-map` and explicitly disables camera transforms. So the recent Chrome/touch instability is more likely in the layered input/event path than in the current camera file.
-
-### 18. A stale Electron activity-state hook duplicates canonical server routes
-Electron imports `server/activity-state-hook.js` before `server/server.js`. The hook monkey-patches `express.application.listen` and installs legacy activity-state routes at listen time.
-
-But `server/server.js` already installs the newer canonical `installActivityStateRoutes(...)` from `server/activity-state.js`, including the same `/api/activity-state/:id` family.
-
-Because the canonical routes are registered earlier they should normally win, so this is not yet identified as the expedition-attempt failure. However it is clear technical debt and a source of confusing duplicate server behavior. The hook only knows old riddle/vocabulary defaults and should be removed or reduced once startup regression tests confirm the canonical routes work in Electron.
-
-### 19. Attempt-policy wiring is deliberately nested inside unrelated feature installers
-Student attempt routes are installed from `star-ledger.js`; teacher attempt routes are installed from `question-review.js`. This explains why simple inspection of `server.js` was misleading and makes future regressions easier.
-
-After stabilization, route installers should be assembled explicitly in one server bootstrap section rather than hidden under star/question modules. Do not refactor this before route behavior is verified, but record it as structural cleanup.
-
-### 20. The exact expedition failure now requires runtime response visibility, not more guessing
-The code path is now fully traced:
-1. student clicks an expedition card;
-2. `startExpedition(exp)` calls `attemptAllowed(exp)`;
-3. it fetches `/api/player/me/activity-attempt-status/{activityId}` with auth headers;
-4. the server route is installed indirectly through `star-ledger.js`;
-5. missing exploration policy should normalize to unlimited and return allowed;
-6. any non-OK response is swallowed and converted to `null`;
-7. the student sees only the generic server-connection alert.
-
-Therefore the next safe code change should be diagnostic: preserve status/code from the failed response and surface/report it. Only after seeing the real 401/404/500/error code should the attempt subsystem be changed.
+These guards prevent another round of adding UI that points at absent/mismatched server routes. They do not replace live functional testing.
 
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
-2. Add diagnostics/tests on the audit branch before changing gameplay behavior.
-3. Identify the actual HTTP status/code returned by expedition attempt-status calls.
-4. Simplify mobile input architecture only after the current runtime wiring is understood.
-5. Establish one stable student flow: login -> village -> tap movement -> building/menu -> close/back.
-6. Then fix expedition attempt-policy visibility and teacher controls.
-7. Only after baseline stability, implement real expedition traversal.
-8. Then split building roles, rebalance XP/stars, and clean avatar assets.
-9. Chrome compatibility is handled as an isolated input/browser layer after native flow is stable in the working browser.
+2. Finish route/runtime diagnostics before changing gameplay behavior.
+3. Verify teacher write APIs end-to-end, starting with stars and activity-attempt controls because they are visibly failing in field use.
+4. Simplify student movement to one direct tap/click target path; remove keyboard/d-pad support.
+5. Establish one stable student flow: login -> village -> tap/click movement -> building/menu -> close/back.
+6. Fix expedition attempt-policy visibility and remaining-attempt display.
+7. Implement true expedition traversal only after baseline stability.
+8. Split building roles, rebalance XP/stars, and clean avatar assets.
+9. Isolate Chrome compatibility work to the final direct pointer/touch input layer.
+10. Run complete teacher-mode regression again before promoting the audit branch.
 
 ## Backlog after baseline stabilization
-1. Verify full student flow without adding new features.
-2. Stabilize mobile tap-to-move and Chrome compatibility.
-3. Restore actual expedition traversal and stage progression.
-4. Reconcile expedition attempt IDs with teacher controls and show remaining attempts clearly.
-5. Split school / Bookmaru / challenge hall / expedition roles.
-6. Rebalance XP and levels; current observed ~3 problem sessions -> Lv.4 is explained by the current curve but is too fast in practice.
-7. Rebalance stars vs XP so exploration is not the dominant XP farming path.
-8. Remove astronaut base character.
-9. Fit hats/glasses/bags/pets to the avatar by slot-specific scale and position.
-10. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
-11. Run teacher-mode end-to-end verification after student runtime is stable.
+1. Restore actual expedition traversal and stage progression.
+2. Reconcile expedition attempt IDs with teacher controls and show remaining attempts clearly.
+3. Split school / Bookmaru / challenge hall / expedition roles.
+4. Rebalance XP and levels; current ~3 completed activities -> Lv.4 is too fast in practice.
+5. Rebalance stars vs XP so exploration is not the dominant XP farming path.
+6. Remove astronaut base character.
+7. Fit hats/glasses/bags/pets with slot-specific scale and position.
+8. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
 
 ## Audit rule
-For the next fixes:
 - keep `main` unchanged until a candidate fix is verified;
 - make changes on `stabilization-audit-20260818`;
 - one runtime layer at a time;
