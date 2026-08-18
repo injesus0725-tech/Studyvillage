@@ -3,7 +3,7 @@
 ## Protected baseline
 - Main baseline when audit started: v0.9.41 / commit `86374fac36ba2e8030e54821d449c2edeabbab40`.
 - Audit work is isolated on branch `stabilization-audit-20260818` until changes are verified.
-- Do not add new gameplay features during the audit.
+- Do not add unrelated gameplay features during the audit.
 
 ## Confirmed scope
 The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v0.9.41 spans 166 commits. The changes touch movement/input, camera, buildings, expedition flow, attempt policies, XP/reward economy, sessions, shop/avatar, and teacher controls. This is large enough that point fixes should stop until the runtime paths are simplified.
@@ -11,7 +11,7 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 ## Key findings retained from phases 1–3
 - Mobile input was duplicated: `onboarding.js` captured pointer/touch and proxied movement through synthetic keyboard/d-pad events while `game.js` owned keyboard movement.
 - `onboarding.js` mixed guide UI, hit testing, touch routing, movement timers, and transient UI reset.
-- School, Bookmaru, and challenge hall currently collapse into the same expedition action.
+- School, Bookmaru, and challenge hall collapsed into the same expedition action.
 - Expedition attempt routes exist, but errors were hidden behind generic server messages.
 - Current expedition maps are not truly traversable; the player sprite is static and NPC click advances play.
 - Early leveling is intentionally very fast under the current reward curve and must be rebalanced after baseline stability.
@@ -37,34 +37,38 @@ The expedition/reward baseline (`467ddaf4d1002a9731cedb6a24d3670a8028dc51`) to v
 - new `student-direct-movement.js` owns map movement and directly updates the canonical player state through the existing collision-aware `tryMove` path.
 - legacy movement-key listeners are blocked in capture phase while the student game is active, preventing old keyboard movement from competing with direct pointer movement.
 - map movement excludes buttons, buildings, NPCs, and modal panels so clicks are not stolen from UI controls.
-- `building-interiors.js` now uses a single normal `click` handler for both touch and mouse; duplicate `click + pointerup`, keyboard entry, and old talk-button entry paths were removed.
+- `building-interiors.js` uses a single normal `click` handler for both touch and mouse; duplicate `click + pointerup`, keyboard entry, and old talk-button entry paths were removed.
 - opening a building or modal stops current map movement.
 - contract tests guard the direct movement and direct building-input architecture in CI.
 
 ## Phase 7 — attempt/gate stabilization
 - `activity-gate.js` no longer intercepts keyboard or the legacy talk button. It only guards the activity that actually asks it for permission and exposes one reusable `StudyVillageActivityGate` API.
-- attempt failures now distinguish missing/expired student session (401), missing route (404), server policy failure (5xx), timeout/network failure, and genuine attempt exhaustion instead of reporting every failure as a classroom-server problem.
-- an isolated expedition runtime test now proves both `exploration-forest-riddle` and `exploration-mountain-riddle` are allowed/unlimited by default, require a valid student session, and immediately reflect teacher-saved limited policies.
-- this means the field message “탐험 참여 횟수를 확인하지 못했어요” is not expected from the canonical server path; when it appears after the candidate build is tested, its real status/code can now be isolated instead of guessed.
+- attempt failures distinguish missing/expired student session (401), missing route (404), server policy failure (5xx), timeout/network failure, and genuine attempt exhaustion.
+- isolated expedition runtime tests prove both riddle expeditions are unlimited by default and immediately reflect teacher-saved limited policies.
+- the student expedition hub now shows unlimited/remaining/exhausted attempt state, and teacher labels clearly identify the matching exploration activities.
+
+## Phase 8 — baseline flow and building separation
+- a complete student baseline contract now guards login -> village -> direct movement -> building/menu -> close/back -> expedition attempt visibility.
+- school, Bookmaru, and challenge hall no longer share one `문제 탐험 열기` action.
+- school opens the math learning practice, Bookmaru opens the daily Bookmaru challenge, and challenge hall opens its own riddle challenge.
+- the top `탐험` button remains the dedicated entry point for expedition maps.
+- a dedicated building-role contract prevents the three buildings from collapsing back into one expedition action.
 
 ## Stabilization sequence from here
 1. Keep `main` frozen at v0.9.41.
-2. Complete student baseline flow checks: login -> village -> direct movement -> building/menu -> close/back.
-3. Make expedition attempt status visible in the student hub and align teacher labels so exploration settings are easy to find.
-4. Remove remaining legacy keyboard/d-pad implementation from `game.js` only after the direct movement path is proven stable in-browser.
-5. Implement true expedition traversal only after baseline stability.
-6. Split building roles, rebalance XP/stars, and clean avatar assets.
-7. Re-run complete teacher-mode regression before promoting the audit branch.
+2. Browser/device verification of the audit candidate: Chrome + Whale/Naver + tablet touch.
+3. After browser verification, physically remove obsolete keyboard/d-pad implementation still left inside `game.js`; it is already neutralized at runtime.
+4. Implement true expedition traversal only after the baseline candidate survives browser testing.
+5. Rebalance XP/stars and clean avatar assets.
+6. Re-run complete teacher-mode regression before promoting the audit branch.
 
 ## Backlog after baseline stabilization
 1. Restore actual expedition traversal and stage progression.
-2. Reconcile expedition attempt IDs with teacher controls and show remaining attempts clearly.
-3. Split school / Bookmaru / challenge hall / expedition roles.
-4. Rebalance XP and levels; current ~3 completed activities -> Lv.4 is too fast in practice.
-5. Rebalance stars vs XP so exploration is not the dominant XP farming path.
-6. Remove astronaut base character.
-7. Fit hats/glasses/bags/pets with slot-specific scale and position.
-8. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
+2. Rebalance XP and levels; current ~3 completed activities -> Lv.4 is too fast in practice.
+3. Rebalance stars vs XP so exploration is not the dominant XP farming path.
+4. Remove astronaut base character.
+5. Fit hats/glasses/bags/pets with slot-specific scale and position.
+6. Later: subdivide student-visible rankings (growth, challenge, Bookmaru, weekly, cumulative stars); exploration should emphasize collection/achievements.
 
 ## Audit rule
 - keep `main` unchanged until a candidate fix is verified;
