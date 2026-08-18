@@ -25,4 +25,5 @@
   new MutationObserver(mutations=>{if(mutations.some(m=>m.type==='attributes'||[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.sv-stage-player')||n.querySelector?.('.sv-stage-player')))))requestAnimationFrame(reset)}).observe(stage,{attributes:true,attributeFilter:['hidden'],childList:true,subtree:true});
   window.addEventListener('resize',()=>{const host=map(),hero=player();if(host&&hero&&!stage.hidden){const p=center(hero,host);place(hero,host,p.x,p.y)}});window.addEventListener('studyvillage:session-cleared',stop);
   window.StudyVillageExpeditionMovement={setTarget,nearNpc,reset,stop,canStand};
+  if(!document.querySelector('script[data-expedition-lifecycle-stabilizer]')){const script=document.createElement('script');script.src='assets/expedition-lifecycle-stabilizer.js?v=20260818a';script.dataset.expeditionLifecycleStabilizer='1';document.head.appendChild(script)}
 })();
