@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const src=fs.readFileSync('building-interiors.js','utf8');
+assert.ok(src.includes("action:'math'"),'school must own math learning action');
+assert.ok(src.includes("action:'library'"),'Bookmaru must own daily Bookmaru action');
+assert.ok(src.includes("action:'quiz'"),'challenge hall must own challenge action');
+assert.ok(src.includes("studyvillage:open-math-practice"),'school must open math practice directly');
+assert.ok(src.includes("studyvillage:open-library-game"),'Bookmaru must open Bookmaru directly');
+assert.ok(src.includes('StudyVillageChallengeHall')||src.includes('studyvillage:open-challenge-hall'),'challenge hall must open its own challenge selector');
+assert.ok(!src.includes("action:'explore'"),'school/Bookmaru/challenge hall must not all collapse into expedition hub');
+assert.ok(!src.includes('문제 탐험 열기'),'building interiors must not show one shared expedition button');
+console.log('building role separation self-test passed');

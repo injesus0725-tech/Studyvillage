@@ -1,0 +1,14 @@
+const fs=require('fs'),assert=require('assert');
+const camera=fs.readFileSync('assets/expedition-expanded-camera.js','utf8'),index=fs.readFileSync('index.html','utf8'),discovery=fs.readFileSync('assets/expedition-discovery-walk.js','utf8'),region=fs.readFileSync('assets/expedition-region-variety.js','utf8'),movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8');
+assert(index.includes('assets/expedition-expanded-camera.js'),'expanded expedition camera must load');
+assert(camera.includes('scaleX=coarse?1.45:1.35')&&camera.includes('scaleY=coarse?1.35:1.25'),'expedition map must be larger than the visible room');
+assert(camera.includes('host.style.transform=`translate('),'camera must follow the student across the larger map');
+assert(camera.includes('Math.max(-maxX')&&camera.includes('Math.max(-maxY'),'camera must stay within map bounds');
+assert(camera.includes('assets/expedition-region-variety.js'),'expanded camera must load region variety runtime');
+assert(region.includes("id:'west-grove'")&&region.includes("id:'north-entry'")&&region.includes("id:'east-loop'")&&region.includes("id:'center-fork'")&&region.includes("id:'long-crossing'"),'expedition must provide several region layouts');
+assert(region.includes('host.dataset.startX')&&region.includes('host.dataset.startY'),'region layout must define varied student start positions');
+assert(region.includes("data-region-extra")&&region.includes('themeExtras'),'region layout must add themed obstacle scenery');
+assert(movement.includes('host.dataset.startX')&&movement.includes('host.dataset.startY'),'movement reset must honor randomized region start positions');
+assert(movement.includes("fallbacks=[[.16,.65],[.12,.78],[.28,.78],[.18,.34],[.72,.78]]"),'random starts must retain safe fallback positions');
+assert(discovery.includes('opacity:0')&&discovery.includes("d<190")&&discovery.includes('randomPoint(host)'),'hidden discoveries must remain proximity-based and randomized');
+console.log('expanded expedition camera and region variety contract: ok');

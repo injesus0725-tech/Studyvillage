@@ -12,6 +12,6 @@ assert.ok(server.includes('player:safePlayer(row)'),'로그인 응답은 서버�
 for(const field of ['totalScore','xp','level','baseCharacter','inventory','equipment','activities']){
   assert.ok(server.includes(field),`서버 학생 프로필에 ${field} 데이터가 포함되어야 합니다.`);
 }
-assert.ok(auth.includes('if(await checkServer())return serverLogin(name,password)'),'교실 서버가 있으면 태블릿 로컬 계정보다 서버 로그인을 우선해야 합니다.');
+assert.ok(auth.includes('if(healthy||classroomOrigin)return serverLogin(name,password)'),'교실 HTTP(S) 화면은 health probe가 잠시 실패해도 로컬 계정으로 빠지지 않고 서버 로그인을 우선해야 합니다.');
 
 console.log('student cross-device profile contract self-test passed');

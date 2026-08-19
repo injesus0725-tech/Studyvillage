@@ -1,0 +1,14 @@
+const fs=require('fs'),assert=require('assert');
+const bridge=fs.readFileSync('assets/challenge-hall-attempt-save-bridge.js','utf8');
+const selector=fs.readFileSync('assets/challenge-hall-selector.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+const server=fs.readFileSync('server/activity-attempt-student.js','utf8');
+assert.ok(index.includes('assets/challenge-hall-attempt-save-bridge.js'),'challenge save bridge must load');
+assert.ok(selector.includes("/api/player/me/activity-attempt-status/riddle-demo"),'challenge hall must show the teacher-controlled attempt status');
+assert.ok(bridge.includes("fetch('/api/player/me/activity'"),'challenge completion must save through the activity attempt endpoint');
+assert.ok(bridge.includes("activityId:'riddle'"),'challenge completion must use the riddle policy alias');
+assert.ok(bridge.includes('submissionId:active.submissionId'),'challenge retry must reuse one idempotent submission id');
+assert.ok(bridge.includes('response.status===409'),'server attempt-limit rejection must be recognized');
+assert.ok(server.includes("POLICY_ALIASES={vocabulary:'library-vocabulary',riddle:'riddle-demo'}"),'server must map riddle saves to the teacher challenge policy');
+assert.ok(server.includes("if(!decision.allowed)return res.status(409)"),'server must enforce exhausted attempt limits');
+console.log('challenge hall attempt save contract: ok');

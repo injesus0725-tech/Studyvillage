@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const walk=fs.readFileSync('assets/expedition-discovery-walk.js','utf8'),catalog=fs.readFileSync('random-exploration-events.js','utf8'),index=fs.readFileSync('index.html','utf8');
+assert.ok(index.includes('assets/expedition-discovery-walk.js'),'walk-to-discovery layer must load');
+assert.ok(walk.includes('.sv-stage-find'),'discoveries must appear on the expedition map');
+assert.ok(walk.includes('heroNear()'),'discovery reward must require player proximity');
+assert.ok(walk.includes('StudyVillageExpeditionMovement?.setTarget'),'far discovery taps must move the player toward the find');
+assert.ok(walk.includes("event.stopImmediatePropagation()"),'instant discovery reward click must be intercepted');
+assert.ok(!catalog.includes('talk-button'),'discovery catalog must not depend on legacy talk controls');
+assert.ok(!catalog.includes("addEventListener('keydown'"),'discovery catalog must not restore keyboard interaction');
+for(const type of ['chest','tree','flower'])assert.ok(catalog.includes(`type:'${type}'`),`${type} discovery must remain available`);
+console.log('expedition discovery walk contract self-test passed');

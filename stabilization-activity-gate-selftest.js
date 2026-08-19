@@ -1,0 +1,10 @@
+const fs=require('fs');const assert=require('assert');
+const src=fs.readFileSync('activity-gate.js','utf8');
+assert.ok(src.includes('window.StudyVillageActivityGate={allow,checkAttemptLimit}'),'activity gate must expose one reusable policy check');
+assert.ok(!src.includes("window.addEventListener('keydown'"),'activity gate must not intercept keyboard movement/interaction');
+assert.ok(!src.includes("#talk-button"),'activity gate must not intercept the legacy talk button');
+assert.ok(src.includes("status===401"),'activity gate must distinguish expired/missing student sessions');
+assert.ok(src.includes("status===404"),'activity gate must distinguish missing server routes');
+assert.ok(src.includes("status>=500"),'activity gate must distinguish server policy failures');
+assert.ok(src.includes("request-timeout"),'activity gate must distinguish timeouts from policy exhaustion');
+console.log('stabilization activity gate self-test passed');

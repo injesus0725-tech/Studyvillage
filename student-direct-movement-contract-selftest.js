@@ -1,0 +1,15 @@
+const fs=require('fs');const assert=require('assert');
+const index=fs.readFileSync('index.html','utf8'),onboarding=fs.readFileSync('onboarding.js','utf8'),movement=fs.readFileSync('student-direct-movement.js','utf8'),game=fs.readFileSync('game.js','utf8');
+assert.ok(index.includes('<script src="student-direct-movement.js?v=20260819b"></script>'),'index must load the direct movement controller deterministically');
+assert.ok(index.indexOf('world-camera.js')<index.indexOf('village-layout.js')&&index.indexOf('village-layout.js')<index.indexOf('student-direct-movement.js'),'direct movement must load after canonical map layer and village layout creation');
+assert.ok(index.indexOf('student-direct-movement.js')>index.indexOf('game.js'),'direct movement must load after canonical game state and collision helpers');
+assert.ok(!onboarding.includes('createElement(\'script\')'),'onboarding must not dynamically inject movement scripts');
+assert.ok(!onboarding.includes('KeyboardEvent'),'onboarding must not synthesize keyboard movement');
+assert.ok(movement.includes("world.addEventListener('pointerup'"),'movement must be driven from world pointer input');
+assert.ok(movement.includes('tryMove(dx,dy)'),'movement must reuse canonical collision-aware movement');
+assert.ok(movement.includes("interactive(event.target)"),'buttons/buildings/NPC input must be excluded from map movement');
+assert.ok(!movement.includes('movementKeys'),'direct movement must not retain keyboard ownership');
+assert.ok(!movement.includes('blockKeyboard'),'direct movement must not globally intercept keyboard events');
+assert.ok(!game.includes("movementKeys=new Set(['ArrowUp'"),'game must not retain legacy keyboard movement');
+assert.ok(!index.includes('class="mobile-controls"'),'dead mobile direction-pad markup must be removed');
+console.log('student direct movement contract self-test passed');

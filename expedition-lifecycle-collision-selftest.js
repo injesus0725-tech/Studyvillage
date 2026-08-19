@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const movement=fs.readFileSync('assets/expedition-direct-movement.js','utf8'),life=fs.readFileSync('assets/expedition-lifecycle-stabilizer.js','utf8'),study=fs.readFileSync('assets/student-study-menu.js','utf8');
+assert.ok(movement.includes("querySelectorAll('.sv-stage-decor')"),'expedition decor must participate in collision');
+assert.ok(movement.includes('function canStand('),'movement must validate walkable positions');
+assert.ok(movement.includes('function nextStep('),'movement must steer around blocked direct steps');
+assert.ok(movement.includes('function stop()'),'movement must have explicit cleanup');
+assert.ok(movement.includes('expedition-lifecycle-stabilizer.js'),'movement controller must load lifecycle cleanup');
+assert.ok(life.includes("querySelectorAll('.sv-stage-find')"),'leaving expedition must clear transient discoveries');
+assert.ok(life.includes("study-expedition-active"),'body expedition state must follow stage visibility');
+assert.ok(life.includes("visibilitychange"),'backgrounding tablet must stop expedition movement');
+assert.ok(study.includes("confirm('지금 탐험을 중단하고 마을로 돌아갈까요?"),'unfinished expedition exit must require confirmation');
+assert.ok(study.includes("이번 미완료 기록은 저장되지 않습니다"),'exit confirmation must explain unsaved incomplete attempt');
+console.log('expedition lifecycle/collision self-test passed');

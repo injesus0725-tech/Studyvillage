@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const movement=fs.readFileSync('student-direct-movement.js','utf8');
+const auth=fs.readFileSync('auth.js','utf8');
+assert.ok(movement.includes("if(!marker.hidden)marker.hidden=true"),'movement stop must not repeatedly mutate hidden state');
+assert.ok(movement.includes("if(!target&&!raf)return"),'panel mutation observer must be inert when no movement is active');
+assert.ok(movement.includes("observer.observe(game"),'movement observer must be scoped to the game screen');
+assert.ok(!movement.includes("observe(document.body"),'movement observer must not watch the entire document body');
+assert.ok(auth.includes("const classroomOrigin=location.protocol==='http:'||location.protocol==='https:'"),'HTTP classroom pages must be recognized as server mode');
+assert.ok(auth.includes('if(healthy||classroomOrigin)return serverLogin(name,password)'),'classroom login must not fall into insecure local crypto fallback after a failed health probe');
+assert.ok(auth.includes('serverAvailable=true;saveSession'),'successful direct login must restore server mode');
+console.log('browser freeze/login regression self-test passed');

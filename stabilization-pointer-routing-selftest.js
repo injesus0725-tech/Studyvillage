@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const html=fs.readFileSync('index.html','utf8');
+const onboarding=fs.readFileSync('onboarding.js','utf8');
+const movement=fs.readFileSync('student-direct-movement.js','utf8');
+const game=fs.readFileSync('game.js','utf8');
+assert.ok(!onboarding.includes("document.addEventListener('pointerup'"),'global pointerup interception must stay removed from onboarding');
+assert.ok(!onboarding.includes("document.addEventListener('touchend'"),'global touchend interception must stay removed from onboarding');
+assert.ok(!onboarding.includes('new KeyboardEvent(')&&!movement.includes('new KeyboardEvent('),'tap movement must not synthesize keyboard events');
+assert.ok(html.includes('student-direct-movement.js?v=20260819b'),'direct movement must load explicitly from the page');
+assert.ok(html.indexOf('world-camera.js')<html.indexOf('village-layout.js')&&html.indexOf('village-layout.js')<html.indexOf('student-direct-movement.js'),'pointer movement must bind only after the canonical map layer exists');
+assert.ok(html.indexOf('game.js')<html.indexOf('student-direct-movement.js'),'direct movement must load after canonical game helpers');
+assert.ok(movement.includes("world.addEventListener('pointerup'"),'movement input must be scoped to the world');
+assert.ok(movement.includes('const interactive=')&&movement.includes('interactive(event.target)'),'interactive controls must be excluded from movement taps');
+assert.ok(!html.includes('class="mobile-controls"')&&!html.includes('data-key="Arrow')&&!html.includes('id="talk-button"'),'legacy direction/talk UI must be removed rather than merely hidden');
+assert.ok(!movement.includes('blockKeyboard')&&!movement.includes('movementKeys'),'direct movement must not intercept obsolete keyboard movement');
+assert.ok(!game.includes("movementKeys=new Set(['ArrowUp'"),'core game must not retain keyboard movement ownership');
+assert.ok(onboarding.includes('컴퓨터에서 확인할 때는 마우스로 클릭'),'guide must describe mouse click preview instead of keyboard movement');
+assert.ok(onboarding.includes('Movement is owned by student-direct-movement.js loaded directly by index.html'),'onboarding must not silently reclaim or dynamically load movement ownership');
+console.log('stabilization pointer routing selftest passed');

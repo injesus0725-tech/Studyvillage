@@ -3,6 +3,7 @@ const assert=require('assert');
 
 const adminHtml=fs.readFileSync('admin.html','utf8');
 const adminEdits=fs.readFileSync('admin-student-edit.js','utf8');
+const adminRuntime=fs.readFileSync('assets/admin-runtime-fixes.js','utf8');
 const delivery=fs.readFileSync('assets/admin-delivery-notifications.js','utf8');
 const onboarding=fs.readFileSync('onboarding.js','utf8');
 const avatar=fs.readFileSync('avatar-renderer.js','utf8');
@@ -10,9 +11,10 @@ const css=fs.readFileSync('activity-records.css','utf8');
 const customize=fs.readFileSync('customize.js','utf8');
 const explorer=fs.readFileSync('assets/student-study-menu.js','utf8');
 
-// Teacher write actions must use one canonical handler; duplicate capture interception caused real classroom failures.
+// Teacher writes use the edit module for controls and one final capture guard for single-write ownership.
 for(const marker of ['/xp','/custom-title','/rename','/reset-equipment'])assert.ok(adminEdits.includes(marker),`canonical teacher edit missing ${marker}`);
-assert.ok(!adminHtml.includes('assets/admin-runtime-fixes.js'),'duplicate teacher write interceptor must not load');
+assert.ok(adminHtml.indexOf('assets/admin-runtime-fixes.js')>adminHtml.indexOf('admin-student-edit.js'),'stabilized teacher write guard must load after the edit controls');
+assert.ok(adminRuntime.includes("document.addEventListener('click'")&&adminRuntime.includes('event.stopImmediatePropagation()')&&adminRuntime.includes('},true)'),'final teacher write guard must capture each supported edit once and block duplicate bubbling handlers');
 assert.ok(adminHtml.includes('/?teacher-preview=1'),'teacher student preview must carry a safe return marker');
 assert.ok(delivery.includes('/api/admin/shop'),'teacher delivery notification must poll shop state');
 
@@ -36,4 +38,4 @@ assert.ok(explorer.includes("ready:false"),'future curriculum expeditions should
 assert.ok(explorer.includes('MAP_TEMPLATES'),'expeditions must use bounded validated map templates instead of unrestricted procedural maps');
 assert.ok(explorer.includes('맞')||explorer.includes('correct'),'expedition flow must gate progression on answer checking');
 
-console.log('v1 classroom regression contract self-test passed');
+console.log('v1 classroom stabilized regression contract self-test passed');

@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main]
+    branches: [main, stabilization-audit-20260818]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -27,3 +27,83 @@ jobs:
         run: npm run verify
       - name: Run classroom regression bundle
         run: node v1-classroom-regression-contract-selftest.js
+      - name: Run stabilization route wiring guard
+        run: node stabilization-route-wiring-selftest.js
+      - name: Run teacher write wiring audit
+        run: node stabilization-admin-write-wiring-selftest.js
+      - name: Run teacher attempt override guard
+        run: node activity-attempt-settings-override-selftest.js
+      - name: Run daily reset and multi-NPC classroom guard
+        run: node daily-attempt-npc-admin-convenience-contract-selftest.js
+      - name: Run teacher dashboard connection audit
+        run: node admin-dashboard-connection-contract-selftest.js
+      - name: Run teacher write runtime integration
+        run: node stabilization-admin-runtime-integration-selftest.js
+      - name: Run Electron-safe teacher edit guard
+        run: node admin-modal-actions-contract-selftest.js
+      - name: Run live shop runtime guard
+        run: node stabilization-shop-runtime-selftest.js
+      - name: Run bundled release candidate classroom critical path guard
+        run: node release-candidate-classroom-critical-path-selftest.js
+      - name: Run stabilized pointer routing guard
+        run: node stabilization-pointer-routing-selftest.js
+      - name: Run direct movement architecture guard
+        run: node student-direct-movement-contract-selftest.js
+      - name: Run browser freeze/login regression guard
+        run: node browser-freeze-login-regression-selftest.js
+      - name: Run authenticated classroom save guard
+        run: node data-service-authenticated-save-contract-selftest.js
+      - name: Run touch layout stabilization guard
+        run: node student-mobile-layout-stabilization-selftest.js
+      - name: Run packaged runtime completeness guard
+        run: node release-package-runtime-contract-selftest.js
+      - name: Run Windows candidate build contract guard
+        run: node windows-candidate-build-contract-selftest.js
+      - name: Run direct building input guard
+        run: node building-direct-input-contract-selftest.js
+      - name: Run student activity gate guard
+        run: node stabilization-activity-gate-selftest.js
+      - name: Run expedition attempt runtime guard
+        run: node stabilization-expedition-attempt-runtime-selftest.js
+      - name: Run expedition attempt visibility guard
+        run: node student-expedition-attempt-visibility-selftest.js
+      - name: Run complete student baseline flow guard
+        run: node student-baseline-flow-contract-selftest.js
+      - name: Run building role separation guard
+        run: node building-role-separation-selftest.js
+      - name: Run avatar stabilization guard
+        run: node avatar-stabilization-contract-selftest.js
+      - name: Run reward economy stabilization guard
+        run: node reward-economy-stabilization-selftest.js
+      - name: Run expedition direct movement guard
+        run: node expedition-direct-movement-contract-selftest.js
+      - name: Run expedition discovery walk guard
+        run: node expedition-discovery-walk-contract-selftest.js
+      - name: Run expedition lifecycle and collision guard
+        run: node expedition-lifecycle-collision-selftest.js
+      - name: Run teacher runtime fixes load guard
+        run: node teacher-runtime-fixes-load-selftest.js
+      - name: Run teacher complete-attempt summary guard
+        run: node teacher-summary-audit-selftest.js
+      - name: Run cross-layer stabilization final audit
+        run: node stabilization-final-audit-selftest.js
+      - name: Run browser ownership collision guard
+        run: node stabilization-browser-collision-selftest.js
+      - name: Run legacy character migration guard
+        run: node student-legacy-character-guard-selftest.js
+      - name: Run avatar equipment standard guard
+        run: node avatar-equipment-standard-contract-selftest.js
+      - name: Run challenge hall selector guard
+        run: node challenge-hall-selector-contract-selftest.js
+      - name: Run expanded expedition camera guard
+        run: node expedition-expanded-camera-contract-selftest.js
+      - name: Run expanded expedition NPC spread guard
+        run: node expedition-npc-spread-contract-selftest.js
+      - name: Run varied expedition search and completion guard
+        run: node expedition-search-completion-contract-selftest.js
+      - name: Run challenge hall server attempt save guard
+        run: node challenge-hall-attempt-save-contract-selftest.js
+      - name: Run final V1 release candidate cross-layer guard
+        run: node v1-release-candidate-final-contract-selftest.js
+      - name: Run expedition V2 search-before-NPC guard
+        run: node expedition-v2-search-loop-contract-selftest.js
