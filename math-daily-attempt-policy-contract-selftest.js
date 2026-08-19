@@ -14,6 +14,7 @@ assert.ok(student.includes('latestAttemptRecord=policyRecord'),'the transaction 
 assert.ok(student.includes('consumeExtraAttempts'),'the existing teacher extra-attempt grant must remain available after the daily three attempts');
 assert.ok(student.includes("period:latestPolicy?.period||'all-time'"),'the save response must explain the daily policy');
 assert.ok(overview.includes('periodAttempts:decision.attempts'),'the teacher overview must separate today attempts from cumulative attempts');
-assert.ok(admin.includes("daily?'오늘 ':''"),'the teacher overview must label daily remaining attempts');
+assert.ok(admin.includes("daily?'오늘 ':'전체 기간 '"),'the teacher overview must clearly distinguish daily and all-time remaining attempts');
+assert.ok(admin.includes('자정 리셋'),'the teacher overview must explain that daily attempts reset at midnight');
 
 console.log('math daily three-attempt policy contract self-test passed');
