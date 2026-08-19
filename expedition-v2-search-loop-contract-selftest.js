@@ -5,10 +5,13 @@ assert(index.includes('assets/expedition-v2-search-loop.js'),'V2 expedition loop
 for(const token of ["id:'dragon'","id:'robot'","id:'fairy'","id:'fox'","id:'wizard'","id:'owl'"])assert(src.includes(token),`NPC missing: ${token}`);
 for(const token of ["kind:'stars'","kind:'xp'","kind:'item'","kind:'blank'","kind:'trap'","kind:'npc'"])assert(src.includes(token),`search result missing: ${token}`);
 assert(src.includes("stars:-1")&&src.includes("xp:-10"),'negative surprise outcomes must exist');
+assert(src.includes('searchTotal=5')&&src.includes('buildAssignments'),'each room must behave like a five-object hidden-card search');
+assert(src.includes("el===npcObject?{kind:'npc'")&&src.includes('randomNonNpc()'),'exactly one chosen search object must hide the room NPC');
 assert(src.includes('locked=true')&&src.includes("classList.remove('sv-v2-searchable')"),'NPC reveal must end searching in current room');
 assert(src.includes('if(key!==roomKey)')&&src.includes('locked=false'),'next room must reset search lock instead of ending expedition');
-assert(src.includes("setTimeout(()=>target.click(),180)"),'NPC intro must hand off to exactly one question after touch settles');
-assert(src.includes("addEventListener('pointerdown',e=>e.stopPropagation(),true)"),'NPC intro must guard touch-through accidental answers');
+assert(src.includes("setTimeout(()=>target.click(),260)"),'NPC intro must hand off to exactly one question after touch settles');
+assert(src.includes("addEventListener('pointerdown'")&&src.includes('stopImmediatePropagation'),'NPC intro must guard touch-through accidental answers');
 assert(src.includes("style.visibility='hidden'")&&src.includes("pointerEvents='none'"),'NPCs must not be pre-positioned as direct map choices');
+assert(src.includes('NPC를 찾으면 남은 곳은 열 수 없어요'),'student must be told that finding the NPC ends this room search');
 assert(!src.includes("label:'안전형'"),'V2 must not introduce generic safe mode');
-console.log('expedition V2 search loop contract: ok');
+console.log('expedition V2 hidden-card search contract: ok');
