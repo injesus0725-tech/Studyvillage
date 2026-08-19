@@ -10,15 +10,28 @@
   let target=null,raf=0;
   const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
   const panelVisible=el=>!!el&&!el.hidden&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).visibility!=='hidden'&&el.getClientRects().length>0;
-  const blocked=()=>[...document.querySelectorAll('#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide,.math-practice-panel,#library-game,.sv-hub-panel,.sv-mission-panel,.sv-collection-panel,.sv-discovery-panel')].some(panelVisible);
+  const BLOCKING_SELECTOR='#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide,.math-practice-panel,#library-game,.sv-hub-panel,.sv-mission-panel,.sv-collection-panel,.sv-discovery-panel';
+  const blocked=()=>[...document.querySelectorAll(BLOCKING_SELECTOR)].some(panelVisible);
   const interactive=node=>!!node?.closest?.('button,a,input,select,textarea,label,.building,.npc,[role="button"],#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide,.math-practice-panel,#library-game');
-  function stop(){target=null;marker.hidden=true;if(raf){cancelAnimationFrame(raf);raf=0}}
+  function stop(){
+    target=null;
+    if(!marker.hidden)marker.hidden=true;
+    if(raf){cancelAnimationFrame(raf);raf=0}
+  }
   function worldPoint(clientX,clientY){const r=world.getBoundingClientRect();return{x:clamp((clientX-r.left)/r.width*100,3,97),y:clamp((clientY-r.top)/r.height*100,5,95)}}
   function tick(){raf=0;if(!target||!game.classList.contains('active')||document.hidden||blocked())return stop();let dx=target.x-state.x,dy=target.y-state.y,dist=Math.hypot(dx,dy);if(dist<.8)return stop();dx/=dist;dy/=dist;tryMove(dx,dy);player.style.left=`${state.x}%`;player.style.top=`${state.y}%`;raf=requestAnimationFrame(tick)}
-  function moveTo(clientX,clientY){if(!game.classList.contains('active')||blocked())return;stop();target=worldPoint(clientX,clientY);marker.style.left=`${target.x}%`;marker.style.top=`${target.y}%`;marker.hidden=false;raf=requestAnimationFrame(tick)}
+  function moveTo(clientX,clientY){if(!game.classList.contains('active')||blocked())return;stop();target=worldPoint(clientX,clientY);marker.style.left=`${target.x}%`;marker.style.top=`${target.y}%`;if(marker.hidden)marker.hidden=false;raf=requestAnimationFrame(tick)}
   world.addEventListener('pointerup',event=>{if(interactive(event.target)||blocked())return;if(event.button!==undefined&&event.button!==0)return;moveTo(event.clientX,event.clientY)});
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
-  new MutationObserver(()=>{if(blocked())stop()}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
+  const observer=new MutationObserver(mutations=>{
+    if(!target&&!raf)return;
+    const relevant=mutations.some(m=>{
+      const el=m.target?.nodeType===1?m.target:null;
+      return !!el&&(el.matches?.(BLOCKING_SELECTOR)||el.closest?.(BLOCKING_SELECTOR));
+    });
+    if(relevant&&blocked())stop();
+  });
+  observer.observe(game,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
   window.addEventListener('studyvillage:session-cleared',stop);
   window.StudyVillageMovement={stop,moveTo};
 })();
