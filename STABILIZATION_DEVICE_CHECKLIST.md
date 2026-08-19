@@ -1,43 +1,46 @@
-# Studyvillage stabilization device checklist
+# Studyvillage v1 최종 실기기 점검표
 
-This is the single release-gate checklist for the stabilization candidate before merging to `main`.
+`stabilization-audit-20260818` 후보판을 `main`에 합치기 전 마지막 교실 점검입니다. 자동 검증을 통과해도 아래 실기기 확인 전에는 병합하지 않습니다.
 
-## Student — PC Chrome
-- Login once, reload, and confirm the same student session restores without a refresh loop.
-- Click several empty map positions; the character moves by destination click only.
-- Click 배움터, 책마루, 도전관 separately; each opens its own learning role and closes back to the village.
-- Confirm no arrow pad, WASD/arrow-key movement, `Space` interaction requirement, or talk button appears.
-- Open 🧭 탐험; remaining/unlimited attempt state is visible.
-- Start 수수께끼 숲; click the map to move, click the NPC from far away, confirm the character approaches instead of opening the question instantly.
-- Answer a question, approach a spawned discovery/treasure, claim it, then continue.
-- Exit an unfinished expedition and confirm movement/discovery state does not remain in the village.
-- Complete an expedition and confirm XP/level/attempt count refresh once.
-- Open 꾸미기; astronaut is not selectable and hat/glasses/bag/pet remain aligned on the character.
-- Open 내 기록 and ranking; confirm current title/level and avatar agree with the profile.
+## 1. 학생 PC — Chrome (약 5분)
+1. 로그인 → 새로고침 후 같은 학생으로 정상 복귀.
+2. 빈 지도 3곳 클릭 → 목적지 이동만 되고 방향키/WASD/Space/말하기 버튼이 없음.
+3. 배움터 → 책마루 → 도전관을 각각 열고 닫기. 건물 클릭이 이동 클릭으로 먹히지 않음.
+4. 🧭 탐험 → 수수께끼 숲. 멀리 있는 NPC 클릭 시 즉시 문제가 뜨지 않고 먼저 접근.
+5. 문제 1개 해결 → 발견물/보물 접근 및 획득 → 중간 종료 후 마을 이동 정상.
+6. 다시 탐험 완료 → XP·레벨·남은 횟수가 한 번만 갱신.
+7. 꾸미기/내 기록/랭킹 → 캐릭터·장비·칭호·레벨이 서로 일치.
 
-## Student — Whale / Naver browser
-Repeat login/reload, several map clicks, all three buildings, one expedition NPC approach, close/return, and customize checks. Pay special attention to click ownership: a building or HUD click must never be stolen by map movement.
+## 2. 학생 PC — Whale/네이버 계열 (약 3분)
+로그인/새로고침 → 지도 클릭 → 세 건물 → 탐험 NPC 접근 → 닫기/복귀 → 꾸미기만 빠르게 반복합니다. 특히 건물/HUD 클릭을 지도 이동이 가로채지 않는지 확인합니다.
 
-## Student — iPad / touch
-- Tap several empty map positions; movement follows the taps and no page scroll/gesture steals the input.
-- Tap buildings and HUD buttons directly; they open immediately without also moving the character.
-- Open 🧭 탐험 and enter one expedition; touch movement stays inside walkable bounds and obstacles are respected.
-- Tap the NPC from far away and verify approach-first interaction.
-- Rotate the iPad once if practical; the character remains in bounds and UI stays tappable.
-- Put the browser in the background and return once; stale movement must not continue.
-- Exit the expedition and confirm village controls still respond normally.
+## 3. 학생 iPad — Safari 또는 실제 수업 브라우저 (약 5분)
+1. 빈 지도 여러 곳 터치 → 페이지 스크롤 없이 캐릭터 이동.
+2. 건물/HUD 직접 터치 → 캐릭터가 같이 움직이지 않고 즉시 열림.
+3. 배움터·책마루 화면에서 하단에 옛 방향키용 큰 빈 공간이 없고 버튼/입력칸이 잘림 없이 보임.
+4. 탐험 진입 → 터치 이동·장애물 충돌 → 먼 NPC 터치 시 접근 후 상호작용.
+5. 가능하면 세로/가로 회전 1회 → UI와 캐릭터가 화면 밖으로 이탈하지 않음.
+6. 브라우저를 잠깐 백그라운드로 보냈다가 복귀 → 이전 이동이 혼자 계속되지 않음.
+7. 탐험 종료 → 마을의 건물/HUD가 다시 정상 터치됨.
 
-## Teacher — admin
-- Login and refresh; no panel stays permanently on “loading”.
-- Stars: add then deduct a small amount and verify the new balance.
-- XP, title, name, and password: edit one test student and verify each value after refresh.
-- Activity record: edit one test record and verify after refresh.
-- Attempt policy: change one exploration limit, verify student remaining attempts, grant +1 to one student, verify immediately.
-- Activity open/close: change state and verify student access.
-- Rename one disposable test student and confirm stars/equipment/profile follow the new name.
-- Backup: download JSON and verify the file exists.
-- Restore: make one visible disposable change, restore the backup, and verify XP/stars/equipment/activity state return exactly.
-- Check recent activity/audit history for the teacher actions above.
+## 4. 교사 모드 (약 7분, 테스트 학생 1명)
+1. 로그인/새로고침 → 로딩 고착 없음.
+2. 별 소량 지급 후 차감 → 잔액 확인.
+3. XP·칭호·이름·비밀번호 중 테스트 가능한 값을 수정 → 새로고침 후 유지 확인.
+4. 활동 기록 1건 수정 → 새로고침 후 확인.
+5. 탐험 횟수 제한 변경 → 학생 화면 남은 횟수 확인 → 해당 학생 +1 지급 → 즉시 반영 확인.
+6. 활동 열기/닫기 변경 → 학생 접근 여부 확인.
+7. 백업 JSON 다운로드 → 눈에 보이는 테스트 변경 1개 → 복원 → XP/별/장비/활동 상태가 백업 시점으로 돌아오는지 확인.
+8. 최근 활동/감사 기록에 위 교사 작업이 남는지 확인.
+
+## 실패 시 기록할 것
+- 기기/브라우저
+- 학생 또는 교사 화면
+- 누른 순서 2~5단계
+- 기대한 결과 / 실제 결과
+- 가능하면 화면 캡처 1장
+
+이 다섯 가지만 있으면 해당 경로만 재현해 수정하기 쉽습니다.
 
 ## Release gate
-Do not merge to `main` until PC Chrome, Whale/Naver, iPad touch, and teacher write-action passes complete without a blocking issue. If any browser fails, fix only on `stabilization-audit-20260818`, rerun the full CI bundle, then repeat the failed device path before promotion.
+Chrome, Whale/네이버 계열, iPad 터치, 교사 쓰기/백업·복원이 모두 막힘 없이 통과한 뒤에만 `main`으로 승격합니다. 하나라도 실패하면 `stabilization-audit-20260818`에서만 수정 → 전체 CI → 실패한 실기기 경로 재시험 순서로 진행합니다.
