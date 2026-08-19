@@ -7,7 +7,8 @@ const bridge=fs.readFileSync('assets/challenge-hall-attempt-save-bridge.js','utf
 const camera=fs.readFileSync('assets/expedition-expanded-camera.js','utf8');
 const npc=fs.readFileSync('assets/expedition-npc-variety.js','utf8');
 const discovery=fs.readFileSync('assets/expedition-discovery-walk.js','utf8');
-const avatar=fs.readFileSync('assets/avatar-accessory-standard.js','utf8');
+const avatar=fs.readFileSync('avatar-renderer.js','utf8');
+const avatarCss=fs.readFileSync('avatar-assets.css','utf8');
 
 for(const script of [
   'assets/challenge-hall-selector.js',
@@ -27,7 +28,8 @@ assert.ok(bridge.includes("fetch('/api/player/me/activity'"),'challenge hall com
 assert.ok(camera.includes('sv-expanded-map'),'expedition expanded map missing');
 assert.ok(npc.includes('2+Math.floor(Math.random()*2)'),'expedition must keep 2-3 NPC variety');
 assert.ok(discovery.includes('opacity:0')&&discovery.includes('randomPoint(host)'),'expedition hidden discovery must remain proximity-based and randomized');
-assert.ok(avatar.includes('anchor')&&avatar.includes('slot')&&avatar.includes('layer'),'avatar equipment standard must retain anchor/slot/layer rules');
+for(const token of ["hat:{anchor:'head'","glasses:{anchor:'eyes'","bag:{anchor:'back'","pet:{anchor:'pet-right'","hand:{anchor:'hand-right'","shoes:{anchor:'feet'",'applyPlacement'])assert.ok(avatar.includes(token),`avatar equipment standard missing ${token}`);
+assert.ok(avatarCss.includes('--sv-item-scale')&&avatarCss.includes('--sv-item-x')&&avatarCss.includes('--sv-item-y'),'avatar equipment CSS placement variables missing');
 
 assert.ok(checklist.includes('QR → 네이버/Whale 계열'),'manual gate must prioritize the actual classroom browser path');
 assert.ok(checklist.includes('Chrome은 이번 교실 V1 후보판의 **병합 차단 조건이 아닙니다.**'),'Chrome must remain non-blocking for this classroom release');
