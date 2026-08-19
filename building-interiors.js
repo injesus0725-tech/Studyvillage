@@ -7,7 +7,7 @@
   const buildings=[
     {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수학 랜덤 복습으로 교과 학습을 이어가는 공간입니다.',action:'math',button:'➕ 수학 랜덤 복습'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'수수께끼·어휘·상식·교과 문제를 매일 다양하게 만나는 공간입니다.',action:'library',button:'📚 일일 책마루 도전'},
-    {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'도전 문제로 실력을 확인하는 공간입니다.',action:'quiz',button:'❓ 수수께끼 도전'},
+    {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'문제 종류와 난이도를 직접 골라 실력을 확인하는 공간입니다.',action:'quiz',button:'❓ 도전 선택하기'},
     {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize',button:'🎨 내 캐릭터 꾸미기'}
   ];
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
@@ -22,7 +22,7 @@
     window.StudyVillageMovement?.stop?.();
     if(action==='math'){leave();window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'));return}
     if(action==='library'){leave();window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'));return}
-    if(action==='quiz'){leave();requestAnimationFrame(()=>{if(typeof window.openQuiz==='function')window.openQuiz();else flash('도전관 문제를 열지 못했어요.')});return}
+    if(action==='quiz'){leave();requestAnimationFrame(()=>{if(window.StudyVillageChallengeHall?.open)window.StudyVillageChallengeHall.open();else window.dispatchEvent(new CustomEvent('studyvillage:open-challenge-hall'))});return}
     if(action==='customize'){leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click());return}
   }
   function enter(b){if(!b)return;window.StudyVillageMovement?.stop?.();open=true;current=b;overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';addActionButton(b.button||'열기',()=>launch(b.action));document.body.classList.add('inside-building')}
