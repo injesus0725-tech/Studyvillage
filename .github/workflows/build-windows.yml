@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - stabilization-audit-20260818
     tags:
       - 'v*'
 
@@ -25,8 +26,11 @@ jobs:
       - name: Install dependencies and rebuild native modules
         run: npm install
 
-      - name: Verify source syntax
-        run: npm run verify
+      - name: Verify source and packaged runtime contract
+        shell: pwsh
+        run: |
+          npm run verify
+          node release-package-runtime-contract-selftest.js
 
       - name: Build portable EXE
         run: npm run dist:win
@@ -38,16 +42,19 @@ jobs:
           if (-not $files) { throw "Portable EXE was not created." }
           $files | ForEach-Object { Write-Host "Built: $($_.FullName) ($($_.Length) bytes)" }
 
-      - name: Add classroom quick guide
+      - name: Add classroom guides
         shell: pwsh
-        run: Copy-Item CLASSROOM-QUICKSTART.txt dist/CLASSROOM-QUICKSTART.txt
+        run: |
+          Copy-Item CLASSROOM-QUICKSTART.txt dist/CLASSROOM-QUICKSTART.txt
+          Copy-Item STABILIZATION_DEVICE_CHECKLIST.md dist/STABILIZATION_DEVICE_CHECKLIST.md
 
       - name: Upload Windows classroom package
         uses: actions/upload-artifact@v4
         with:
-          name: Studyvillage-Windows-latest
+          name: Studyvillage-Windows-${{ github.ref_name }}
           path: |
             dist/*.exe
             dist/CLASSROOM-QUICKSTART.txt
+            dist/STABILIZATION_DEVICE_CHECKLIST.md
           if-no-files-found: error
           retention-days: 30
