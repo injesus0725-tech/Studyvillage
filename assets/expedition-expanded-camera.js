@@ -1,4 +1,4 @@
-/* Expedition map v1.1: make exploration larger than the visible room and follow the student. */
+/* Expedition map v1.2: make exploration larger than the visible room, follow the student, and load varied room layouts. */
 (()=>{
   const stage=document.querySelector('#study-expedition-stage');if(!stage)return;
   const map=()=>stage.querySelector('[data-stage-map]'),hero=()=>map()?.querySelector('.sv-stage-player');
@@ -13,4 +13,5 @@
   new MutationObserver(mutations=>{if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='hidden'))stage.hidden?stop():start();if(!stage.hidden&&mutations.some(m=>m.type==='childList'))requestAnimationFrame(ensureSize)}).observe(stage,{attributes:true,attributeFilter:['hidden'],subtree:true,childList:true});
   addEventListener('resize',()=>requestAnimationFrame(ensureSize));addEventListener('studyvillage:session-cleared',stop);
   window.StudyVillageExpeditionCamera={ensureSize,follow,stop};
+  if(!document.querySelector('script[data-expedition-region-variety]')){const script=document.createElement('script');script.src='assets/expedition-region-variety.js?v=20260819a';script.dataset.expeditionRegionVariety='1';document.body.appendChild(script)}
 })();
