@@ -101,3 +101,5 @@ jobs:
         run: node expedition-npc-spread-contract-selftest.js
       - name: Run varied expedition search and completion guard
         run: node expedition-search-completion-contract-selftest.js
+      - name: Run challenge hall server attempt save guard
+        run: node challenge-hall-attempt-save-contract-selftest.js
