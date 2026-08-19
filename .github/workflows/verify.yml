@@ -93,3 +93,5 @@ jobs:
         run: node student-legacy-character-guard-selftest.js
       - name: Run avatar equipment standard guard
         run: node avatar-equipment-standard-contract-selftest.js
+      - name: Run challenge hall selector guard
+        run: node challenge-hall-selector-contract-selftest.js
