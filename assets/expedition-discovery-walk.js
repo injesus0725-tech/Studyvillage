@@ -10,4 +10,5 @@
   stage.addEventListener('click',event=>{if(!treasure||!event.target.closest('.sv-stage-map'))return;treasure.classList.toggle('near',heroNear())},true);
   new MutationObserver(()=>{if(stage.hidden||!map()?.contains(treasure))clear();else treasure?.classList.toggle('near',heroNear())}).observe(stage,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style']});
   window.addEventListener('studyvillage:session-cleared',clear);
+  if(!document.querySelector('script[data-expedition-decor-interactions]')){const script=document.createElement('script');script.src='assets/expedition-decor-interactions.js?v=20260819a';script.dataset.expeditionDecorInteractions='1';document.body.appendChild(script)}
 })();
