@@ -106,7 +106,7 @@ try{
   const shopUi=fs.readFileSync('admin-shop.js','utf8');
   for(const token of ['data-delivery-action="complete"','data-delivery-action="refund"','/api/admin/shop/delivery/'])assert.ok(shopUi.includes(token),`teacher delivery UI must keep ${token}`);
   const attemptUi=fs.readFileSync('admin-attempt-policy.js','utf8');
-  assert.ok(attemptUi.includes("daily?'오늘 ':''"),'teacher attempt overview must distinguish daily remaining attempts');
+  assert.ok(attemptUi.includes("daily?'오늘 ':'전체 기간 '"),'teacher attempt overview must distinguish daily and all-time remaining attempts');
   const studentAttemptUi=fs.readFileSync('assets/student-expedition-attempt-status.js','utf8');
   assert.ok(studentAttemptUi.includes("scope=daily?'오늘':'전체 기간'"),'student expedition cards must distinguish daily and all-time policies');
 
