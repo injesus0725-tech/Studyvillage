@@ -35,6 +35,8 @@ jobs:
         run: node activity-attempt-settings-override-selftest.js
       - name: Run daily reset and multi-NPC classroom guard
         run: node daily-attempt-npc-admin-convenience-contract-selftest.js
+      - name: Run teacher dashboard connection audit
+        run: node admin-dashboard-connection-contract-selftest.js
       - name: Run teacher write runtime integration
         run: node stabilization-admin-runtime-integration-selftest.js
       - name: Run Electron-safe teacher edit guard
