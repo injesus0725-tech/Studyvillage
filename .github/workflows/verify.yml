@@ -97,3 +97,5 @@ jobs:
         run: node challenge-hall-selector-contract-selftest.js
       - name: Run expanded expedition camera guard
         run: node expedition-expanded-camera-contract-selftest.js
+      - name: Run expanded expedition NPC spread guard
+        run: node expedition-npc-spread-contract-selftest.js
