@@ -1,0 +1,12 @@
+const fs=require('fs');
+const assert=require('assert');
+const selector=fs.readFileSync('assets/challenge-hall-selector.js','utf8');
+const interiors=fs.readFileSync('building-interiors.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+assert(selector.includes("easy:{label:'쉬움',count:5}"),'easy challenge option missing');
+assert(selector.includes("normal:{label:'보통',count:7}"),'normal challenge option missing');
+assert(selector.includes("hard:{label:'어려움',count:10}"),'hard challenge option missing');
+assert(selector.includes("id:'riddle'")&&selector.includes("id:'vocabulary'")&&selector.includes("id:'general'")&&selector.includes("id:'subject'"),'challenge types incomplete');
+assert(interiors.includes('StudyVillageChallengeHall')||interiors.includes('studyvillage:open-challenge-hall'),'challenge hall building is not routed through selector');
+assert(index.includes('assets/challenge-hall-selector.js'),'challenge selector is not loaded');
+console.log('challenge hall selector contract: ok');
