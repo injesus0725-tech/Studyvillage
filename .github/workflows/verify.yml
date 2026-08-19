@@ -39,6 +39,8 @@ jobs:
         run: node stabilization-pointer-routing-selftest.js
       - name: Run direct movement architecture guard
         run: node student-direct-movement-contract-selftest.js
+      - name: Run browser freeze/login regression guard
+        run: node browser-freeze-login-regression-selftest.js
       - name: Run touch layout stabilization guard
         run: node student-mobile-layout-stabilization-selftest.js
       - name: Run packaged runtime completeness guard
