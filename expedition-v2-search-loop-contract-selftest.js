@@ -13,5 +13,9 @@ assert(src.includes("setTimeout(()=>target.click(),260)"),'NPC intro must hand o
 assert(src.includes("addEventListener('pointerdown'")&&src.includes('stopImmediatePropagation'),'NPC intro must guard touch-through accidental answers');
 assert(src.includes("style.visibility='hidden'")&&src.includes("pointerEvents='none'"),'NPCs must not be pre-positioned as direct map choices');
 assert(src.includes('NPC를 찾으면 남은 곳은 열 수 없어요'),'student must be told that finding the NPC ends this room search');
+assert(src.includes('function showFind(result)')&&src.includes('sv-v2-find-modal'),'non-NPC discoveries must open a large result card');
+assert(src.includes('화면을 터치하면 탐험 지도로 돌아갑니다.'),'large result card must explain tap-to-return behavior');
+assert(src.includes("modal.addEventListener('click',dismiss,true)"),'tapping the result overlay must dismiss it and return to the map');
+assert(src.includes('if(locked||modal||el.classList.contains'),'another search object must not open while a result card is visible');
 assert(!src.includes("label:'안전형'"),'V2 must not introduce generic safe mode');
 console.log('expedition V2 hidden-card search contract: ok');
