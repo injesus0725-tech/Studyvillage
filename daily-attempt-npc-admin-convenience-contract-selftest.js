@@ -11,7 +11,7 @@ const html=fs.readFileSync('admin.html','utf8');
 assert.ok(policy.includes("DAILY:'daily'")&&policy.includes("ALL_TIME:'all-time'"),'policy must preserve explicit daily/all-time periods');
 assert.ok(settings.includes("period:policy?.period||'all-time'")&&settings.includes('validateAttemptPolicyMap(raw)'),'stored teacher policies must retain normalized periods and be validated before merge');
 assert.ok(settings.includes('period:classroomDefault.period'),'protected classroom daily cadences must stay daily after stored overrides');
-assert.ok(admin.includes('매일 밤 12시 리셋')&&admin.includes('data-daily-preset="1"')&&admin.includes('data-daily-preset="2"'),'teacher UI must provide simple daily presets');
+assert.ok(admin.includes('매일 밤 12시 리셋')&&admin.includes('[1,2,3,5].map')&&admin.includes('data-daily-preset="${n}"'),'teacher UI must generate simple daily presets including 1 and 2 attempts');
 assert.ok(riddle.includes("rawPolicy.period==='daily'")&&riddle.includes('dailyRiddleAttempts'),'challenge hall save must enforce daily attempts using Seoul day counts');
 assert.ok(move.includes('nearNpc(guide=npc())')&&move.includes('expedition-npc-variety.js'),'movement must support multiple NPC targets and load variety');
 for(const marker of ['선택형','랜덤형','핵심어형','힌트형','판단형','도전형'])assert.ok(npc.includes(marker),`NPC variety must keep ${marker}`);
