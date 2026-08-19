@@ -108,7 +108,7 @@ try{
   const attemptUi=fs.readFileSync('admin-attempt-policy.js','utf8');
   assert.ok(attemptUi.includes("daily?'오늘 ':''"),'teacher attempt overview must distinguish daily remaining attempts');
   const studentAttemptUi=fs.readFileSync('assets/student-expedition-attempt-status.js','utf8');
-  assert.ok(studentAttemptUi.includes("daily?'오늘 ':'전체 기간 '"),'student expedition cards must distinguish daily and all-time policies');
+  assert.ok(studentAttemptUi.includes("scope=daily?'오늘':'전체 기간'"),'student expedition cards must distinguish daily and all-time policies');
 
   console.log('release candidate classroom critical path selftest passed');
 }finally{
