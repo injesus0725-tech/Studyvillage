@@ -105,3 +105,5 @@ jobs:
         run: node challenge-hall-attempt-save-contract-selftest.js
       - name: Run final V1 release candidate cross-layer guard
         run: node v1-release-candidate-final-contract-selftest.js
+      - name: Run expedition V2 search-before-NPC guard
+        run: node expedition-v2-search-loop-contract-selftest.js
