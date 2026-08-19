@@ -10,11 +10,20 @@ const CLASSROOM_DEFAULTS=Object.freeze({'math-arithmetic':DAILY_MATH_POLICY,'lib
 
 function mergeStoredPolicies(stored={}){
   const merged={...CLASSROOM_DEFAULTS};
-  for(const[activityId,policy]of Object.entries(stored||{})){const base=CLASSROOM_DEFAULTS[activityId]||{};merged[activityId]={...base,...policy,period:policy?.period||base.period||'all-time'}}
+  for(const[activityId,policy]of Object.entries(stored||{})){
+    const classroomDefault=CLASSROOM_DEFAULTS[activityId];
+    merged[activityId]=classroomDefault
+      ?{...classroomDefault,...policy,period:classroomDefault.period}
+      :{...policy,period:policy?.period||'all-time'};
+  }
   return merged;
 }
 export function readActivityAttemptPolicies(getSetting){
-  try{const raw=JSON.parse(getSetting(STORE_KEY)||'{}'),checked=validateAttemptPolicyMap(raw);return checked.ok?mergeStoredPolicies(checked.policies):mergeStoredPolicies()}catch{return mergeStoredPolicies()}
+  try{
+    const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
+    const checked=validateAttemptPolicyMap(raw);
+    return checked.ok?mergeStoredPolicies(checked.policies):mergeStoredPolicies();
+  }catch{return mergeStoredPolicies()}
 }
 export function installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting}){
   app.get('/api/activity-attempt-policy/:activityId',(req,res)=>{const activityId=String(req.params.activityId??'').trim();if(!SAFE_ACTIVITY.test(activityId))return res.status(400).json({ok:false,code:'invalid-activity-id'});const policies=readActivityAttemptPolicies(getSetting),raw=policies[activityId]||{},policy=normalizeAttemptPolicy(raw);res.json({ok:true,activityId,policy:{...policy,period:raw.period||policy.period||'all-time'}})});
