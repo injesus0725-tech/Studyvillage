@@ -67,6 +67,28 @@ try{
   for(const item of items){prices[item.id]=Number(item.price)||0;availability[item.id]=item.available!==false;levelRequirements[item.id]=Number(item.requiredLevel)||1;limited[item.id]=!!item.limited;saleStarts[item.id]=item.saleStartsAt||null;saleEnds[item.id]=item.saleEndsAt||null;}
   result=await request('/api/admin/shop',{method:'PUT',token:admin,body:{enabled:true,prices,availability,levelRequirements,limited,saleStarts,saleEnds}});
   assert.equal(result.response.status,200,'teacher shop save button path must work');assert.equal(result.data.ok,true);
+
+  result=await request(`/api/admin/stars/${encodeURIComponent('후보판학생')}/adjust`,{method:'POST',token:admin,body:{delta:40,reason:'후보판 실물 전달 검증'}});
+  assert.equal(result.response.status,200,'teacher star grant must work');assert.equal(result.data.afterValue,40);
+  result=await request('/api/shop/purchase',{method:'POST',token:student,body:{itemId:'candy'}});
+  assert.equal(result.response.status,200,'physical candy purchase must work');assert.equal(result.data.fulfillment,'teacher-delivery');
+  const candyRequestId=result.data.deliveryRequestId;assert.ok(Number.isInteger(candyRequestId));assert.equal(result.data.balance,35);
+  result=await request('/api/admin/shop',{token:admin});
+  assert.ok((result.data.deliveryRequests||[]).some(row=>row.id===candyRequestId&&row.status==='pending'),'teacher delivery list must show pending candy request');
+  result=await request(`/api/admin/shop/delivery/${candyRequestId}/refund`,{method:'POST',token:admin,body:{}});
+  assert.equal(result.response.status,200,'teacher refund button path must work');assert.equal(result.data.action,'refund');assert.equal(result.data.balance,40,'refund must restore spent stars exactly once');
+  result=await request(`/api/admin/shop/delivery/${candyRequestId}/refund`,{method:'POST',token:admin,body:{}});
+  assert.equal(result.response.status,409,'resolved delivery request must not refund twice');
+
+  result=await request('/api/shop/purchase',{method:'POST',token:student,body:{itemId:'stationery'}});
+  assert.equal(result.response.status,200,'physical stationery purchase must work');const stationeryRequestId=result.data.deliveryRequestId;assert.equal(result.data.balance,25);
+  result=await request(`/api/admin/shop/delivery/${stationeryRequestId}/complete`,{method:'POST',token:admin,body:{}});
+  assert.equal(result.response.status,200,'teacher delivery complete button path must work');assert.equal(result.data.action,'delivered');
+  result=await request(`/api/admin/stars/${encodeURIComponent('후보판학생')}`,{token:admin});
+  assert.equal(result.response.status,200);assert.equal(result.data.balance,25,'completed physical delivery must keep stars spent');
+  result=await request('/api/admin/shop',{token:admin});
+  assert.ok((result.data.deliveryRequests||[]).some(row=>row.id===stationeryRequestId&&row.status==='delivered'),'teacher delivery list must preserve completed state');
+
   const concurrent=await Promise.all(Array.from({length:8},()=>request('/api/shop',{token:student})));
   for(const row of concurrent){assert.equal(row.response.status,200,'student shop concurrent reads must not return 500');assert.equal(row.data.ok,true);}
 
@@ -81,6 +103,8 @@ try{
 
   const adminUi=fs.readFileSync('admin.html','utf8');
   for(const script of ['admin-student-edit.js','admin-checkpoints.js','admin-stars.js','admin-shop.js','admin-attempt-policy.js','admin-activity-state.js','assets/admin-modal-actions.js'])assert.ok(adminUi.includes(script),`${script} must load in teacher UI`);
+  const shopUi=fs.readFileSync('admin-shop.js','utf8');
+  for(const token of ['data-delivery-action="complete"','data-delivery-action="refund"','/api/admin/shop/delivery/'])assert.ok(shopUi.includes(token),`teacher delivery UI must keep ${token}`);
   const attemptUi=fs.readFileSync('admin-attempt-policy.js','utf8');
   assert.ok(attemptUi.includes("daily?'오늘 ':''"),'teacher attempt overview must distinguish daily remaining attempts');
   const studentAttemptUi=fs.readFileSync('assets/student-expedition-attempt-status.js','utf8');
