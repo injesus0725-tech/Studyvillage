@@ -39,6 +39,8 @@ jobs:
         run: node admin-modal-actions-contract-selftest.js
       - name: Run live shop runtime guard
         run: node stabilization-shop-runtime-selftest.js
+      - name: Run bundled release candidate classroom critical path guard
+        run: node release-candidate-classroom-critical-path-selftest.js
       - name: Run stabilized pointer routing guard
         run: node stabilization-pointer-routing-selftest.js
       - name: Run direct movement architecture guard
