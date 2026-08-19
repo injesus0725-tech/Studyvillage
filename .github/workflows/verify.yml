@@ -43,6 +43,8 @@ jobs:
         run: node student-mobile-layout-stabilization-selftest.js
       - name: Run packaged runtime completeness guard
         run: node release-package-runtime-contract-selftest.js
+      - name: Run Windows candidate build contract guard
+        run: node windows-candidate-build-contract-selftest.js
       - name: Run direct building input guard
         run: node building-direct-input-contract-selftest.js
       - name: Run student activity gate guard
