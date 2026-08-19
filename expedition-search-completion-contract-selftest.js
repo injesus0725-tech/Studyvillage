@@ -1,0 +1,16 @@
+const fs=require('fs'),assert=require('assert');
+const discovery=fs.readFileSync('assets/expedition-discovery-walk.js','utf8');
+const variety=fs.readFileSync('assets/expedition-search-variety.js','utf8');
+const study=fs.readFileSync('assets/student-study-menu.js','utf8');
+assert.ok(discovery.includes('studyvillage:expedition-find-spawned'),'hidden discovery must announce spawned coordinates');
+assert.ok(discovery.includes('expedition-search-variety.js'),'hidden discovery must load search variety layer');
+assert.ok(discovery.includes('const spots=[[') && discovery.includes('.90,.80'),'hidden discovery should use wide map candidate points');
+assert.ok(variety.includes("['trail','landmark','fork']"),'search variety must provide multiple route styles');
+assert.ok(variety.includes("classList.toggle('visible'")||variety.includes("classList.toggle('visible',"),'clues must reveal by walking nearby');
+assert.ok(variety.includes('decoy'),'fork route should support a false lead');
+assert.ok(study.includes("index===active.count-1?'탐험 결과 보기 🏁':'다음 지역으로 ▶'"),'final region must transition to result, not another map');
+assert.ok(study.includes('async function finish()'),'expedition must have a single completion save function');
+assert.ok(study.includes("resultBox.querySelector('button').onclick=returnVillage"),'successful completion must provide village return');
+assert.ok(study.includes("resultBox.querySelector('button').onclick=()=>{saving=false;finish()}"),'failed completion save must provide bounded retry');
+assert.ok(study.includes("window.dispatchEvent(new Event('studyvillage:activity-record-refresh'))"),'completion must refresh confirmed activity/profile state');
+console.log('expedition varied search and completion flow contract: ok');
