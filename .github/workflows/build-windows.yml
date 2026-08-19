@@ -8,6 +8,9 @@ on:
       - stabilization-audit-20260818
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-windows:
@@ -51,7 +54,7 @@ jobs:
       - name: Upload Windows classroom package
         uses: actions/upload-artifact@v4
         with:
-          name: Studyvillage-Windows-${{ github.ref_name }}
+          name: Studyvillage-Windows-${{ github.event.pull_request.head.ref || github.ref_name }}
           path: |
             dist/*.exe
             dist/CLASSROOM-QUICKSTART.txt
