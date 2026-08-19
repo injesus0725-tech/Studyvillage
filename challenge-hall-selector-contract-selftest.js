@@ -7,6 +7,10 @@ assert(selector.includes("easy:{label:'쉬움',count:5}"),'easy challenge option
 assert(selector.includes("normal:{label:'보통',count:7}"),'normal challenge option missing');
 assert(selector.includes("hard:{label:'어려움',count:10}"),'hard challenge option missing');
 assert(selector.includes("id:'riddle'")&&selector.includes("id:'vocabulary'")&&selector.includes("id:'general'")&&selector.includes("id:'subject'"),'challenge types incomplete');
+assert(selector.includes("q.difficulty==='easy'")&&selector.includes("q.difficulty==='challenge'"),'selected riddle difficulty must use the real difficulty-tagged question bank');
+assert(selector.includes('Math.ceil(count/2)')&&selector.includes('Math.floor(count/2)'),'normal difficulty must mix easy and challenge questions');
+assert(selector.includes('/api/player/me/activity-attempt-status/riddle-demo'),'challenge hall must show/check remaining attempts before starting');
+assert(selector.includes('savePlayerConfirmed')&&selector.includes('correct/questions.length*1000'),'challenge score must be normalized and server-confirmed');
 assert(interiors.includes('StudyVillageChallengeHall')||interiors.includes('studyvillage:open-challenge-hall'),'challenge hall building is not routed through selector');
 assert(index.includes('assets/challenge-hall-selector.js'),'challenge selector is not loaded');
 console.log('challenge hall selector contract: ok');
