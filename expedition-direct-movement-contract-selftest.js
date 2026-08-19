@@ -6,7 +6,7 @@ assert.ok(!index.includes('data-key="ArrowUp"'),'legacy on-screen arrow controls
 assert.ok(!index.includes('id="talk-button"'),'legacy interaction button must be removed from student markup');
 assert.ok(movement.includes("addEventListener('pointerup'"),'expedition must accept direct pointer destinations');
 assert.ok(movement.includes('requestAnimationFrame(animate)'),'expedition player must travel toward the chosen destination');
-assert.ok(movement.includes('nearNpc()'),'NPC interaction must require approaching the NPC');
+assert.ok(movement.includes('function nearNpc(guide=')&&movement.includes('nearNpc(guide)'),'NPC interaction must require approaching the tapped NPC');
 assert.ok(movement.includes('event.stopImmediatePropagation()'),'far NPC taps must not open questions immediately');
 assert.ok(movement.includes('function bounds(')&&movement.includes('function safePoint('),'movement must stay inside safe room bounds');
 assert.ok(movement.includes('function approachNpc('),'far NPC taps must move toward a safe interaction point');
