@@ -41,6 +41,8 @@ jobs:
         run: node student-direct-movement-contract-selftest.js
       - name: Run browser freeze/login regression guard
         run: node browser-freeze-login-regression-selftest.js
+      - name: Run authenticated classroom save guard
+        run: node data-service-authenticated-save-contract-selftest.js
       - name: Run touch layout stabilization guard
         run: node student-mobile-layout-stabilization-selftest.js
       - name: Run packaged runtime completeness guard
