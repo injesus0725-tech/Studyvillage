@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const html=fs.readFileSync('admin.html','utf8'),src=fs.readFileSync('assets/admin-modal-actions.js','utf8');
+assert.ok(html.includes('assets/admin-modal-actions.js'),'admin modal action fix must load');
+assert.ok(!src.includes('prompt('),'Electron-safe admin edit actions must not use window.prompt');
+for(const route of ['/api/admin/player/','/api/admin/shop','/api/admin/password','/api/admin/errors/review/'])assert.ok(src.includes(route),`modal action fix must wire ${route}`);
+for(const marker of ['data.xpName','data.titleName','data.renameName','data.equipmentName','data.grantName','data.recordName'])assert.ok(src.includes(marker),`teacher action ${marker} must be handled`);
+assert.ok(src.includes("b.dataset.action==='password'"),'student password action must be Electron-safe');
+assert.ok(src.includes("b.id==='change-admin-password'"),'admin password action must be Electron-safe');
+assert.ok(src.includes('b.dataset.errorReview'),'error review action must be Electron-safe');
+console.log('admin modal actions contract self-test passed');
