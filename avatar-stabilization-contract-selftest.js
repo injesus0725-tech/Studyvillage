@@ -6,6 +6,8 @@ for(const id of ['student-default','student-boy','student-girl'])assert.ok(rende
 assert.ok(renderer.includes("const safeId=BASES[id]?id:'student-default'"),'unknown/legacy base must safely fall back');
 assert.ok(fix.includes("if(name==='우주 탐험가'){button.remove();continue}"),'full-body compatibility pass must remove any legacy astronaut choice rather than render it');
 assert.ok(legacyGuard.includes("'우주 탐험가'")&&legacyGuard.includes('fallback?.click()'),'dedicated legacy guard must migrate/remove an old astronaut selection');
-assert.ok(fix.includes('sv-exp-avatar-hat')&&fix.includes('font-size:20px'),'expedition hat must use fitted scale');
-assert.ok(fix.includes('sv-exp-avatar-glasses')&&fix.includes('font-size:17px'),'expedition glasses must use fitted scale');
+assert.ok(fix.includes('sv-exp-avatar-hat')&&fix.includes('font-size:18px')&&fix.includes('top:18%'),'expedition hat must use fitted scale and face anchor');
+assert.ok(fix.includes('sv-exp-avatar-glasses')&&fix.includes('font-size:16px')&&fix.includes('top:36%'),'expedition glasses must use fitted scale and face anchor');
+assert.ok(fix.includes('font-size:15px;top:20%'),'coarse pointer hat must use smaller fitted scale');
+assert.ok(fix.includes('font-size:13px;top:38%'),'coarse pointer glasses must use smaller fitted scale');
 console.log('avatar stabilization contract self-test passed');
