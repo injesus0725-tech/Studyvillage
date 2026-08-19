@@ -14,5 +14,5 @@ assert.equal(policies['math-arithmetic'].period,'daily','math classroom cadence 
 assert.equal(policies['library-vocabulary'].mode,'unlimited','teacher Bookmaru mode must override classroom default');
 assert.equal(policies['library-vocabulary'].period,'daily','Bookmaru classroom cadence stays daily');
 assert.equal(policies['exploration-forest-riddle'].limit,2,'exploration teacher policy must persist');
-assert.equal(policies['exploration-forest-riddle'].period,undefined);
+assert.equal(policies['exploration-forest-riddle'].period,'all-time','non-classroom-default activities use explicit all-time cadence unless teacher selects daily');
 console.log('activity attempt settings override selftest passed');
