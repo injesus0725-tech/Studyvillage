@@ -1,0 +1,14 @@
+const fs=require('fs'),assert=require('assert');
+const policy=fs.readFileSync('server/activity-attempt-policy.js','utf8');
+const settings=fs.readFileSync('server/activity-attempt-settings.js','utf8');
+const admin=fs.readFileSync('admin-attempt-policy.js','utf8');
+const move=fs.readFileSync('assets/expedition-direct-movement.js','utf8');
+const npc=fs.readFileSync('assets/expedition-npc-variety.js','utf8');
+const html=fs.readFileSync('admin.html','utf8');
+assert.ok(policy.includes("DAILY:'daily'"),'policy must preserve daily period');
+assert.ok(settings.includes("period:policy?.period||base.period||'all-time'"),'teacher-selected period must survive storage');
+assert.ok(admin.includes('매일 밤 12시 리셋')&&admin.includes('data-daily-preset="1"')&&admin.includes('data-daily-preset="2"'),'teacher UI must provide simple daily presets');
+assert.ok(move.includes('nearNpc(guide=npc())')&&move.includes('expedition-npc-variety.js'),'movement must support multiple NPC targets and load variety');
+for(const marker of ['선택형','랜덤형','핵심어형','힌트형','판단형','도전형'])assert.ok(npc.includes(marker),`NPC variety must keep ${marker}`);
+assert.ok(html.includes('assets/admin-local-autologin.js'),'teacher auto-login helper must load');
+console.log('daily attempt, multi-NPC, teacher convenience contract self-test passed');
