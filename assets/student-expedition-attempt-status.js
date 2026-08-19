@@ -5,9 +5,9 @@
   const statusText=data=>{
     if(!data?.ok)return '참여 상태 확인 필요';
     if(data.policy?.mode==='unlimited'||data.remaining===null)return '♾️ 자유롭게 도전';
-    const extra=Math.max(0,Number(data.extraAttempts)||0),remaining=Math.max(0,Number(data.remaining)||0),daily=data.policy?.period==='daily';
-    if(!data.allowed)return `🔒 ${daily?'오늘 ':''}도전 횟수 사용 완료`;
-    return `🎟️ ${daily?'오늘 ':''}${remaining}회 남음${extra?` · 추가 ${extra}회 포함`:''}`;
+    const extra=Math.max(0,Number(data.extraAttempts)||0),remaining=Math.max(0,Number(data.remaining)||0),daily=data.policy?.period==='daily',scope=daily?'오늘':'전체 기간';
+    if(!data.allowed)return `🔒 ${scope} 도전 횟수 사용 완료`;
+    return `🎟️ ${scope} ${remaining}회 남음${extra?` · 추가 ${extra}회 포함`:''}`;
   };
   async function read(activityId){
     try{const response=await fetch(`/api/player/me/activity-attempt-status/${encodeURIComponent(activityId)}`,{headers:auth(),cache:'no-store'}),data=await response.json().catch(()=>({}));return response.ok&&data.ok?data:{ok:false,status:response.status,code:data.code||`http-${response.status}`}}catch(error){return{ok:false,status:0,code:error?.name==='AbortError'?'request-timeout':'network-error'}}
