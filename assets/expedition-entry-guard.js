@@ -27,7 +27,7 @@
   window.fetch=async(input,options)=>consumeApproved(input)||originalFetch(input,options);
 
   function messageFor(status,code){
-    if(status===401||code==='not-authenticated')return'교실 서버 로그인 정보가 만료되었어요. 마을에서 나간 뒤 다시 로그인해 주세요.';
+    if(status===401||code==='not-authenticated'||code==='session-replaced')return'교실 서버 로그인 정보가 만료되었거나 다른 기기 로그인으로 교체되었어요. 마을에서 나간 뒤 다시 로그인해 주세요.';
     if(status===404)return'현재 실행 중인 교실 서버가 탐험 참여 확인 기능을 지원하지 않아요. 선생님 프로그램을 최신 버전으로 다시 실행해 주세요.';
     if(status>=500)return'교실 서버가 참여 횟수를 확인하는 중 문제가 생겼어요. 잠시 후 다시 눌러 주세요.';
     return'탐험 참여 횟수를 확인하지 못했어요. 교실 서버 연결을 확인해 주세요.';
@@ -53,7 +53,7 @@
       const {response,data}=await fetchStatus(activityId);
       if(!response.ok||data.ok===false){
         alert(messageFor(response.status,data.code));
-        if(response.status===401&&data.code==='not-authenticated')window.StudyVillageAuth?.clearSession?.();
+        if(response.status===401)window.StudyVillageAuth?.clearSession?.();
         return null;
       }
       if(!data.allowed){
