@@ -18,5 +18,5 @@ assert.ok(building.includes("studyvillage:open-math-practice"),'배움터 수학
 assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브로 강제 라우팅하면 안 됩니다.');
 assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
 assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');
-assert.ok(index.includes('<script src="math-practice.js"></script>'),'the student page must load math practice');
+assert.ok(/<script src="math-practice\.js(?:\?v=[^"]+)?"><\/script>/.test(index),'the student page must load math practice');
 console.log('math practice server validation and direct building entry contract self-test passed');
