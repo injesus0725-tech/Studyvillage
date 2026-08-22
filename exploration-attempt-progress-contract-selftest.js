@@ -1,6 +1,10 @@
 const assert=require('assert');
 const fs=require('fs');
-const server=fs.readFileSync('server/activity-attempt-student.js','utf8'),admin=fs.readFileSync('admin-attempt-policy.js','utf8'),client=fs.readFileSync('village-layout.js','utf8');
+const server=fs.readFileSync('server/activity-attempt-student.js','utf8');
+const admin=fs.readFileSync('admin-attempt-policy.js','utf8');
+const hub=fs.readFileSync('assets/student-study-menu.js','utf8');
+const guard=fs.readFileSync('assets/expedition-entry-guard.js','utf8');
+const layout=fs.readFileSync('village-layout.js','utf8');
 
 assert.match(server,/app\.get\('\/api\/player\/me\/activity-attempt-status\/:activityId',requireSession/,'attempt status must require a student session');
 assert.match(server,/attemptRecord=policyRecord\(db,name,activityId,policy,record\)/,'status must resolve the current policy period before evaluating allowance');
@@ -8,10 +12,12 @@ assert.match(server,/extra=readExtraAttempts\([^;]+name,policyId\)/,'status must
 assert.match(server,/decision=evaluateWithExtra\(policy,attemptRecord,extra\)/,'status must include teacher-granted extra attempts in the authoritative decision');
 assert.match(server,/allowed:decision\.allowed,remaining:decision\.remaining,extraAttempts:extra/,'status must expose the authoritative allowance and extra attempts');
 for(const id of ['exploration-forest-riddle','exploration-mountain-riddle'])assert(admin.includes(`'${id}'`),`${id} must appear in teacher attempt settings`);
-assert.match(client,/await attemptStatus\(region\.id\)/,'the map must verify allowance before starting questions');
-assert.match(client,/if\(!status\.allowed\)/,'an exhausted expedition must be blocked before play');
-assert.match(client,/교실 서버 연결을 확인해 주세요/,'failure to verify a controlled attempt must fail closed');
-assert.match(client,/⭐ 최고 \$\{best\}점/,'completed nodes must show the best score');
-assert.match(client,/\$\{attempts\}회 완료/,'completed nodes must show attempt count');
-assert.match(client,/studyvillage:exploration-map-open/,'opening the map must refresh progress');
-console.log('exploration attempt progress contract selftest passed');
+assert.match(hub,/async function attemptAllowed\(exp\)/,'the unified expedition hub must own the allowance check');
+assert.match(hub,/activity-attempt-status\/\$\{encodeURIComponent\(exp\.activityId\)\}/,'the unified hub must check the configured activity id');
+assert.match(hub,/if\(!status\.allowed\)/,'an exhausted expedition must be blocked before play');
+assert.match(hub,/탐험 참여 횟수를 확인하지 못했어요/,'failure to verify a controlled attempt must fail closed');
+assert.ok(guard.includes('Attempt-limit preflight is owned by student-study-menu.js'),'entry guard must not duplicate the expedition allowance request');
+assert.ok(!guard.includes('approvedStatus')&&!guard.includes('consumeApproved(input)'),'retired duplicate allowance-cache preflight must not return');
+assert.ok(!layout.includes('activity-attempt-status/'),'retired village layout must never check expedition attempts');
+assert.ok(!layout.includes('studyvillage:exploration-map-open'),'retired legacy progress refresh event must not survive in village layout');
+console.log('unified exploration attempt progress contract selftest passed');

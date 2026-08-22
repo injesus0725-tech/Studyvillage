@@ -13,8 +13,10 @@ assert.ok(server.includes('!row.finalized'),'a finalized math session cannot aut
 assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
-assert.ok(building.includes("action:'explore'"),'study building interiors must route problem solving through the expedition hub');
-assert.ok(building.includes('문제 탐험 열기'),'study building interiors must expose the expedition entry instead of the legacy direct math button');
-assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'the expedition hub must expose math adventure entries');
-assert.ok(index.includes('<script src="math-practice.js"></script>'),'the student page must load math practice');
-console.log('math practice server validation contract self-test passed');
+assert.ok(building.includes("{id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:'math'}"),'배움터는 탐험과 분리된 직접 수학 활동 진입점이어야 합니다.');
+assert.ok(building.includes("studyvillage:open-math-practice"),'배움터 수학 버튼은 기존 서버 검증 수학 활동을 열어야 합니다.');
+assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브로 강제 라우팅하면 안 됩니다.');
+assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
+assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');
+assert.ok(/<script src="math-practice\.js(?:\?v=[^"]+)?"><\/script>/.test(index),'the student page must load math practice');
+console.log('math practice server validation and direct building entry contract self-test passed');

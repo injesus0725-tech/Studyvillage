@@ -1,7 +1,11 @@
 /* v1.9 student activity gate.
    Teacher open/close state and configured attempt limits are checked before an activity starts.
-   Existing checkpoints are preserved; repeated gate input is suppressed. */
+   Existing checkpoints are preserved; repeated gate input is suppressed.
+   This file loads immediately before game.js, so required dialogue controls are created here first. */
 (()=>{
+  const dialogue=document.querySelector('#dialogue');
+  if(dialogue&&!document.querySelector('#dialogue-next'))dialogue.innerHTML='<div class="dialogue-avatar">👩‍🏫</div><div class="dialogue-body"><strong id="dialogue-name">도우미 선생님</strong><p id="dialogue-text"></p></div><button id="dialogue-next" type="button">다음 ▶</button>';
+
   const activityState=()=>window.StudyVillageActivityState;
   const recordIds={'riddle-demo':'riddle','library-vocabulary':'vocabulary'};
   const REQUEST_TIMEOUT_MS=5000;

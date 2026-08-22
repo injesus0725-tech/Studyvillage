@@ -17,7 +17,7 @@ assert.ok(game.includes('correctCount=saved.correctCount'),'resuming must restor
 assert.ok(game.includes("if(!Number.isInteger(savedCorrect))savedCorrect=Math.round"),'legacy five-question checkpoints must migrate safely');
 assert.ok(game.includes('questions=buildRound(questionBank)'),'a new challenge must create a fresh random round');
 assert.ok(game.includes('/api/question-overrides'),'Bookmaru must load teacher question overrides');
-assert.ok(game.includes('invalid question override ignored'),'invalid teacher overrides must fail safely');
+assert.ok(game.includes('if(!row||!validQuestion(row))return base'),'invalid teacher overrides must fail safely');
 assert.ok(game.includes('수수께끼·어휘·상식·교과 문제'),'the student guide must describe the cumulative mixed question bank');
 assert.ok(!game.includes('score+=20'),'Bookmaru scoring must not retain fixed five-question increments');
 assert.ok(!game.includes('score/20'),'Bookmaru result counts must not depend on five-question scoring');

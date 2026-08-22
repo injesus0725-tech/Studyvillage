@@ -1,8 +1,6 @@
-/* v1.9 legacy riddle record enforcement.
-   Intercepts /api/player/me/record before the legacy server route so the riddle activity follows
-   the same teacher attempt policy and per-student extra-attempt grants as newer activities.
-   Snapshot retries are idempotent; multi-attempt legacy jumps are handled conservatively without
-   multiplying XP from a single lastScore value. */
+/* v2.0 riddle record enforcement.
+   The legacy challenge-hall aggregate record remains compatible, while the teacher attempt policy
+   is evaluated against the current Korea classroom day when period=daily. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +17,12 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)||0));
 function openDb(){const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname,db=new Database(path.join(dataDir,'studyvillage.db'));db.pragma('busy_timeout = 3000');return db}
 function getSetting(db,key){return db.prepare('SELECT value FROM settings WHERE key=?').get(key)?.value||null}
 function setSetting(db,key,value){db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key,String(value))}
+function classroomDayRange(now=new Date()){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now),value=type=>parts.find(part=>part.type===type)?.value;
+  const start=new Date(`${value('year')}-${value('month')}-${value('day')}T00:00:00+09:00`),end=new Date(start.getTime()+86400000);
+  return{start:start.toISOString(),end:end.toISOString()}
+}
+function dailyRiddleAttempts(db,name,range=classroomDayRange()){return Number(db.prepare("SELECT COUNT(*) AS count FROM activity_log WHERE player_name=? AND type='quiz-complete' AND created_at>=? AND created_at<?").get(name,range.start,range.end)?.count)||0}
 const xpForLevel=level=>{const n=Math.max(0,(Number(level)||1)-1);return 200*n+25*n*(n-1)},levelFromXp=xp=>{const value=Math.max(0,Number(xp)||0);let level=1;while(value>=xpForLevel(level+1))level++;return level},progressFromXp=xp=>{const value=Math.max(0,Number(xp)||0),level=levelFromXp(value),start=xpForLevel(level),next=xpForLevel(level+1);return{level,xpIntoLevel:value-start,xpToNext:next-start}};
 const nextGrowthRewardFor=level=>level<2?{level:2,title:'배움 여행자',badge:null}:level<3?{level:3,title:'성장하는 도전자',badge:{icon:'⭐',name:'성장하는 학습자'}}:level<5?{level:5,title:'학습 탐험가',badge:{icon:'🎓',name:'학습 탐험가'}}:level<10?{level:10,title:'숲길 개척자',badge:{icon:'🌲',name:'숲길 개척자'}}:level<20?{level:20,title:'지혜의 길잡이',badge:{icon:'🧭',name:'지혜의 길잡이'}}:level<30?{level:30,title:'별빛 연구자',badge:{icon:'🔭',name:'별빛 연구자'}}:level<40?{level:40,title:'마을 수호자',badge:{icon:'🛡️',name:'마을 수호자'}}:level<50?{level:50,title:'전설의 학습가',badge:{icon:'🌈',name:'전설의 학습가'}}:level<60?{level:60,title:'나만의 칭호',badge:null}:null;
 const nextNpcUnlockFor=level=>level<10?{level:10,id:'wizard',icon:'🧙',name:'별빛 마법사'}:level<20?{level:20,id:'dragon',icon:'🐲',name:'꼬마 용'}:level<30?{level:30,id:'owl',icon:'🦉',name:'지혜 부엉이'}:null;
@@ -35,27 +39,28 @@ export function installRiddleAttemptStudentRoutes(app,{requireSession,publishLiv
       const name=req.session.name,current=db.prepare('SELECT * FROM players WHERE name=?').get(name);if(!current)return res.status(404).json({ok:false,code:'player-not-found'});
       const incoming={totalScore:clamp(req.body?.totalScore,0,100000000),attempts:clamp(req.body?.attempts,0,1000000),bestScore:clamp(req.body?.bestScore,0,1000),lastScore:clamp(req.body?.lastScore,0,1000)};
       const newAttempts=Math.max(0,incoming.attempts-current.attempts);
-      const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policy=normalizeAttemptPolicy(policies[POLICY_ID]||{});
-      const unlimited=policy.mode==='unlimited',baseRemaining=unlimited?Number.POSITIVE_INFINITY:Math.max(0,Number(policy.limit||1)-Number(current.attempts||0));
+      const policies=readActivityAttemptPolicies(key=>getSetting(db,key)),policy=normalizeAttemptPolicy(policies[POLICY_ID]||{}),daily=policy.period==='daily',periodAttempts=daily?dailyRiddleAttempts(db,name):Number(current.attempts||0);
+      const unlimited=policy.mode==='unlimited',baseRemaining=unlimited?Number.POSITIVE_INFINITY:Math.max(0,Number(policy.limit||1)-periodAttempts);
       const extraBefore=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID),extraNeeded=newAttempts?Math.max(0,newAttempts-(Number.isFinite(baseRemaining)?baseRemaining:newAttempts)):0;
-      if(extraNeeded>extraBefore)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId:POLICY_ID,attempts:current.attempts,remaining:Number.isFinite(baseRemaining)?baseRemaining:null,extraAttempts:extraBefore,policy});
+      if(extraNeeded>extraBefore)return res.status(409).json({ok:false,code:'attempt-limit-reached',activityId:POLICY_ID,attempts:periodAttempts,remaining:Number.isFinite(baseRemaining)?baseRemaining:null,extraAttempts:extraBefore,policy});
       const tx=db.transaction(()=>{
         const latest=db.prepare('SELECT * FROM players WHERE name=?').get(name);if(!latest)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
         if(latest.attempts!==current.attempts)throw Object.assign(new Error('record-changed'),{code:'record-changed'});
-        const latestExtra=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID);if(extraNeeded>latestExtra)throw Object.assign(new Error('attempt-limit-reached'),{code:'attempt-limit-reached'});
-        if(extraNeeded){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,POLICY_ID,extraNeeded,'수수께끼 추가 도전 사용');if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
-        const awardXp=newAttempts>0&&(policy.xpMode==='every-attempt'||current.attempts===0),gained=awardXp?activityXpReward('riddle',incoming.lastScore):0,now=new Date().toISOString();
-        const nextTotal=Math.max(Number(current.total_score)||0,incoming.totalScore),nextBest=Math.max(Number(current.best_score)||0,incoming.bestScore),nextAttempts=Math.max(Number(current.attempts)||0,incoming.attempts),nextLast=newAttempts>0?incoming.lastScore:Number(current.last_score)||0;
+        const latestPeriodAttempts=daily?dailyRiddleAttempts(db,name):Number(latest.attempts||0),latestBaseRemaining=unlimited?Number.POSITIVE_INFINITY:Math.max(0,Number(policy.limit||1)-latestPeriodAttempts),latestExtra=readExtraAttempts(key=>getSetting(db,key),name,POLICY_ID),latestExtraNeeded=newAttempts?Math.max(0,newAttempts-(Number.isFinite(latestBaseRemaining)?latestBaseRemaining:newAttempts)):0;
+        if(latestExtraNeeded>latestExtra)throw Object.assign(new Error('attempt-limit-reached'),{code:'attempt-limit-reached'});
+        if(latestExtraNeeded){const consumed=consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,POLICY_ID,latestExtraNeeded,'수수께끼 추가 도전 사용');if(!consumed.ok)throw Object.assign(new Error(consumed.code),{code:consumed.code})}
+        const awardXp=newAttempts>0&&(policy.xpMode==='every-attempt'||latestPeriodAttempts===0),gained=awardXp?activityXpReward('riddle',incoming.lastScore):0,now=new Date().toISOString();
+        const nextTotal=Math.max(Number(latest.total_score)||0,incoming.totalScore),nextBest=Math.max(Number(latest.best_score)||0,incoming.bestScore),nextAttempts=Math.max(Number(latest.attempts)||0,incoming.attempts),nextLast=newAttempts>0?incoming.lastScore:Number(latest.last_score)||0;
         db.prepare('UPDATE players SET total_score=?,attempts=?,best_score=?,last_score=?,xp=xp+?,updated_at=? WHERE name=?').run(nextTotal,nextAttempts,nextBest,nextLast,gained,now,name);
-        if(newAttempts>0)logActivity(db,name,'quiz-complete',`${incoming.lastScore}점${gained?` · +${gained}XP`:' · XP 추가 없음'}${extraNeeded?` · 추가 도전권 ${extraNeeded}회 사용`:''}${newAttempts>1?' · 레거시 묶음 기록':''}`);
+        if(newAttempts>0)logActivity(db,name,'quiz-complete',`${incoming.lastScore}점${gained?` · +${gained}XP`:' · XP 추가 없음'}${latestExtraNeeded?` · 추가 도전권 ${latestExtraNeeded}회 사용`:''}${newAttempts>1?' · 레거시 묶음 기록':''}`);
         const starReward=newAttempts>0&&commitRiddleReward?commitRiddleReward(db,{name,attempt:nextAttempts,score:incoming.lastScore,now}):{stars:0,balance:null};
         const updated=db.prepare('SELECT * FROM players WHERE name=?').get(name),oldLevel=levelFromXp(current.xp),newLevel=levelFromXp(updated.xp),npcUnlocks=NPC_LEVEL_UNLOCKS.filter(npc=>oldLevel<npc.level&&newLevel>=npc.level);
         if(newLevel>oldLevel)logActivity(db,name,'level-up',`Lv.${newLevel} 달성`);
-        for(const npc of npcUnlocks)logActivity(db,name,'npc-unlock',`Lv.${npc.level} · ${npc.name}`);
-        return{player:playerView(db,updated),gainedXp:gained,riddleStars:starReward.stars,starBalance:starReward.balance,extraAttemptsUsed:extraNeeded,extraAttemptsRemaining:Math.max(0,latestExtra-extraNeeded),liveLevelUp:newLevel>oldLevel?newLevel:null,liveNpcUnlocks:npcUnlocks};
+        for(const npcUnlock of npcUnlocks)logActivity(db,name,'npc-unlock',`Lv.${npcUnlock.level} · ${npcUnlock.name}`);
+        return{player:playerView(db,updated),gainedXp:gained,riddleStars:starReward.stars,starBalance:starReward.balance,extraAttemptsUsed:latestExtraNeeded,extraAttemptsRemaining:Math.max(0,latestExtra-latestExtraNeeded),periodAttempts:latestPeriodAttempts+newAttempts,resetAt:daily?classroomDayRange().end:null,liveLevelUp:newLevel>oldLevel?newLevel:null,liveNpcUnlocks:npcUnlocks};
       });
       const result=tx(),{liveLevelUp,liveNpcUnlocks,...response}=result;
-      try{if(liveLevelUp)publishLiveEvent?.('🎉',`${name} 학생이 Lv.${liveLevelUp}에 올랐습니다!`,'level-up');for(const npc of liveNpcUnlocks)publishLiveEvent?.(npc.icon,`${name} 학생이 새 마을 친구 “${npc.name}”을 만날 수 있게 되었습니다!`,'npc-unlock')}catch{}
+      try{if(liveLevelUp)publishLiveEvent?.('🎉',`${name} 학생이 Lv.${liveLevelUp}에 올랐습니다!`,'level-up');for(const npcUnlock of liveNpcUnlocks)publishLiveEvent?.(npcUnlock.icon,`${name} 학생이 새 마을 친구 “${npcUnlock.name}”을 만날 수 있게 되었습니다!`,'npc-unlock')}catch{}
       res.json({ok:true,...response});
     }catch(err){const code=clean(err?.code||'riddle-record-save-failed',80);res.status(code==='attempt-limit-reached'||code==='record-changed'?409:500).json({ok:false,code,message:clean(err?.message||err,160)})}
     finally{try{db?.close()}catch{}}
