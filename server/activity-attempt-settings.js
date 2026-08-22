@@ -1,12 +1,17 @@
 /* v1.9 teacher-configurable activity attempt policies.
-   Stored in settings so backup/restore preserves them. Limited classroom attempts reset at Korea midnight. */
+   Stored in settings so backup/restore preserves them. Core classroom attempts reset at Korea midnight. */
 import { validateAttemptPolicyMap, normalizeAttemptPolicy } from './activity-attempt-policy.js';
 
 const STORE_KEY='activity-attempt-policies:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
-const DAILY_MATH_POLICY=Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'});
-const DAILY_BOOKMARU_POLICY=Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'});
+const DAILY_CORE_POLICIES=Object.freeze({
+  'riddle-demo':Object.freeze({mode:'limited',limit:1,xpMode:'first-completion',period:'daily'}),
+  'library-vocabulary':Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'}),
+  'math-arithmetic':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-forest-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
+  'exploration-mountain-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'})
+});
 const withDailyReset=policy=>{
   const normalized=normalizeAttemptPolicy(policy||{});
   return normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'};
@@ -17,8 +22,8 @@ export function readActivityAttemptPolicies(getSetting){
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
     const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).map(([id,policy])=>[id,withDailyReset(policy)])):{};
-    return{...saved,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY};
-  }catch{return{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}}
+    return{...saved,...DAILY_CORE_POLICIES};
+  }catch{return{...DAILY_CORE_POLICIES}}
 }
 
 export function installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting}){
