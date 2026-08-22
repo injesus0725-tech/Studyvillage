@@ -1,5 +1,5 @@
 /* v1.9 teacher-configurable activity attempt policies.
-   Stored in settings so backup/restore preserves them. Student route exposes only one read-only policy. */
+   Stored in settings so backup/restore preserves them. Limited classroom attempts reset at Korea midnight. */
 import { validateAttemptPolicyMap, normalizeAttemptPolicy } from './activity-attempt-policy.js';
 
 const STORE_KEY='activity-attempt-policies:v1';
@@ -7,12 +7,17 @@ const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
 const DAILY_MATH_POLICY=Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'});
 const DAILY_BOOKMARU_POLICY=Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'});
+const withDailyReset=policy=>{
+  const normalized=normalizeAttemptPolicy(policy||{});
+  return normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'};
+};
 
 export function readActivityAttemptPolicies(getSetting){
   try{
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
-    return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}:{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY};
+    const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).map(([id,policy])=>[id,withDailyReset(policy)])):{};
+    return{...saved,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY};
   }catch{return{'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}}
 }
 
