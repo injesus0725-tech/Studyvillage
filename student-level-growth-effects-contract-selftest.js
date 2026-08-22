@@ -11,5 +11,5 @@ assert.ok(src.includes("!document.hidden&&game.classList.contains('active')"),'h
 assert.ok(src.includes("matchMedia('(prefers-reduced-motion: reduce)')"),'reduced-motion preference must disable animated trails');
 for(const tier of ['red','orange','yellow','green','blue','indigo','violet','star'])assert.ok(css.includes(`.avatar-growth-trail.tier-${tier}`),`growth trail CSS missing ${tier}`);
 assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'),'CSS must also respect reduced motion');
-assert.ok(index.includes('<script src="avatar-growth-effects.js"></script>'),'student page must load growth effects after avatar motion');
+const motion=index.search(/<script src="avatar-motion\.js(?:\?[^\"]*)?"><\/script>/),growth=index.search(/<script src="avatar-growth-effects\.js(?:\?[^\"]*)?"><\/script>/);assert.ok(motion>=0&&growth>motion,'student page must load growth effects after avatar motion');
 console.log('student level growth effects contract self-test passed');
