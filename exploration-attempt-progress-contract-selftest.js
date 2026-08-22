@@ -16,7 +16,8 @@ assert.match(hub,/async function attemptAllowed\(exp\)/,'the unified expedition 
 assert.match(hub,/activity-attempt-status\/\$\{encodeURIComponent\(exp\.activityId\)\}/,'the unified hub must check the configured activity id');
 assert.match(hub,/if\(!status\.allowed\)/,'an exhausted expedition must be blocked before play');
 assert.match(hub,/탐험 참여 횟수를 확인하지 못했어요/,'failure to verify a controlled attempt must fail closed');
-assert.ok(guard.includes('approvedStatus')&&guard.includes('consumeApproved(input)'),'entry preflight must reuse its allowance result instead of creating a second real request');
+assert.ok(guard.includes('Attempt-limit preflight is owned by student-study-menu.js'),'entry guard must not duplicate the expedition allowance request');
+assert.ok(!guard.includes('approvedStatus')&&!guard.includes('consumeApproved(input)'),'retired duplicate allowance-cache preflight must not return');
 assert.ok(!layout.includes('activity-attempt-status/'),'retired village layout must never check expedition attempts');
 assert.ok(!layout.includes('studyvillage:exploration-map-open'),'retired legacy progress refresh event must not survive in village layout');
 console.log('unified exploration attempt progress contract selftest passed');
