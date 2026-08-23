@@ -12,5 +12,5 @@ for(const token of [
 const key='`${name}\\u0000${activityId}\\u0000${submissionId}`';
 assert.ok(src.includes(key),'retry cache key must keep student, activity and validated submission id separated');
 assert.ok(src.includes('if(!submissionId)return null'),'invalid or empty submission id must not read retry cache');
-assert.ok(src.includes('if(!submissionId)return;'),'invalid or empty submission id must not populate retry cache');
+assert.ok(src.includes('if(!submissionId)return;')||/function rememberSubmission\([^)]*submissionId[^)]*\)\{if\(submissionId\)recentSubmissions\.set/.test(src),'invalid or empty submission id must not populate retry cache');
 console.log('activity submission id bounds contract self-test passed');
