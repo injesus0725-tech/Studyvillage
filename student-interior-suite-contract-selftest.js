@@ -1,7 +1,8 @@
 const assert=require('assert');
 const fs=require('fs');
 const layout=fs.readFileSync('village-layout.js','utf8');
-const expedition=fs.readFileSync('assets/student-study-menu.js','utf8');
+const expedition=fs.readFileSync('assets/student-exploration-v2.js','utf8');
+const html=fs.readFileSync('index.html','utf8');
 
 for(const token of [
   'student-facing interior theme',
@@ -17,7 +18,9 @@ assert.ok(layout.includes("if(event.key!=='Escape'||ranking.hidden)return"),'ran
 assert.ok(!layout.includes('activity-attempt-status/'),'village layout must not perform expedition attempt checks');
 assert.ok(!layout.includes('sv-expedition-panel'),'legacy expedition panel must be retired from village layout');
 assert.ok(!layout.includes("makeButton('explore'"),'village layout must not create a second exploration entry button');
-assert.ok(expedition.includes('const EXPEDITIONS=['),'student study menu must be the single owner of expedition catalog and entry UI');
-assert.ok(expedition.includes("exploreButton.textContent='🧭 탐험'"),'student study menu must own the exploration button when no legacy button exists');
+assert.ok(expedition.includes("explore.textContent='🧭 탐험'"),'exploration v2 must own the exploration button when no button exists');
+assert.ok(expedition.includes("hub.id='student-explore-panel'"),'exploration v2 must own the expedition catalog and hub');
+assert.ok(html.includes('assets/student-exploration-v2.js'),'production must load exploration v2');
+assert.ok(!html.includes('assets/student-study-menu.js'),'retired study menu must not load in production');
 assert.ok(!layout.includes('innerHTML=`<span class="sv-rank-number">${p.name}'),'student names must not be placed in rank-number markup');
-console.log('student village theme, ranking, and unified expedition ownership contract selftest passed');
+console.log('student village theme, ranking, and exploration v2 ownership contract selftest passed');
