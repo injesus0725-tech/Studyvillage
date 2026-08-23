@@ -1,4 +1,4 @@
-/* Student tablet stability fixes: direct challenge launch, immediate records, and detailed ranking tabs. */
+/* Student tablet stability fixes: direct challenge launch, guide interaction, recoverable results, immediate records, and detailed ranking tabs. */
 (()=>{
   const game=document.querySelector('#game-screen');if(!game)return;
 
@@ -7,6 +7,14 @@
     const panel=document.querySelector('#record-panel');if(panel)panel.hidden=false;
   },true);
   window.addEventListener('keydown',event=>{if(event.key!=='Escape')return;const panel=document.querySelector('#record-panel');if(panel&&!panel.hidden)panel.hidden=true},true);
+
+  /* Guide teacher must react to a direct tablet tap/click as well as Space proximity interaction. */
+  document.addEventListener('click',event=>{
+    const guide=event.target.closest?.('#guide-npc');if(!guide)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    if(typeof window.openDialogue==='function'){window.openDialogue();return}
+    const talk=document.querySelector('#talk-button');if(talk)talk.click();
+  },true);
 
   /* Challenge hall must call the real quiz function directly. Fake Space caused the player to fall
      back to the village or talk to the guide teacher depending on camera/proximity timing. */
@@ -17,10 +25,21 @@
     const interior=document.querySelector('#building-interior');if(interior)interior.hidden=true;
     document.body.classList.remove('inside-building');
     if(typeof window.openQuiz==='function'){window.openQuiz();return}
-    /* top-level function declarations are normally exposed on window, but keep a safe fallback */
     const quizHall=document.querySelector('#quiz-hall'),player=document.querySelector('#player');
     if(quizHall&&player){const old=player.style.left;player.style.left=quizHall.style.left||player.style.left;setTimeout(()=>{window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));player.style.left=old},0)}
   },true);
+
+  /* A failed legacy challenge save must never trap the student until refresh. Add an explicit exit
+     while preserving the checkpoint so the result can be retried later. */
+  const quiz=document.querySelector('#quiz-panel'),quizOptions=document.querySelector('#quiz-options'),quizNext=document.querySelector('#quiz-next'),quizQuestion=document.querySelector('#quiz-question');
+  function addRecoveryExit(){
+    if(!quiz||quiz.hidden||!quizQuestion?.textContent?.includes('교실 서버 연결을 기다리고 있어요.'))return;
+    if(quiz.querySelector('[data-save-recovery-exit]'))return;
+    const exit=document.createElement('button');exit.type='button';exit.dataset.saveRecoveryExit='1';exit.className='quiz-next';exit.textContent='마을로 돌아가기 🏡';exit.style.marginLeft='8px';
+    exit.onclick=()=>{if(typeof window.closeQuiz==='function')window.closeQuiz();else quiz.hidden=true};
+    (quizNext?.parentElement||quiz).appendChild(exit);
+  }
+  if(quiz)new MutationObserver(addRecoveryExit).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 
   const ranking=document.querySelector('#student-ranking-panel'),rankingButton=document.querySelector('.sv-quick-button.ranking');
   if(!ranking||!rankingButton)return;
