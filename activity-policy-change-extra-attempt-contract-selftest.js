@@ -1,11 +1,12 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
-const txStart=src.indexOf('const tx=db.transaction(()=>{'),txEnd=src.indexOf('const result=tx();',txStart),tx=src.slice(txStart,txEnd);
-assert.ok(tx.includes('latestPolicyId=policyIdFor(activityId,latestPolicies)'),'latest policy id must be resolved in transaction');
-assert.ok(tx.includes('readExtraAttempts(key=>getSetting(db,key),name,latestPolicyId)'),'extra attempts must be read using latest policy id');
-assert.ok(tx.includes('consumeExtraAttempts(key=>getSetting(db,key),(key,value)=>setSetting(db,key,value),name,latestPolicyId,1'),'extra attempt consumption must use latest policy id');
-assert.ok(tx.includes('extraAttempts:latestDecision.usingExtra?latestExtra-1:latestExtra'),'response must reflect latest extra-attempt balance');
+const txStart=src.search(/(?:const\s+)?tx\s*=\s*db\.transaction\(\(\)=>\{/),txEnd=src.indexOf('const result=tx();',txStart),tx=src.slice(txStart,txEnd);
+assert.ok(txStart>=0&&txEnd>txStart,'activity save transaction must exist');
+assert.ok(/latestPolicyId\s*=\s*policyIdFor\(activityId,latestPolicies\)/.test(tx),'latest policy id must be resolved in transaction');
+assert.ok(/readExtraAttempts\(key=>getSetting\(db,key\),name,latestPolicyId\)/.test(tx),'extra attempts must be read using latest policy id');
+assert.ok(/consumeExtraAttempts\(key=>getSetting\(db,key\),\(key,value\)=>setSetting\(db,key,value\),name,latestPolicyId,1/.test(tx),'extra attempt consumption must use latest policy id');
+assert.ok(/extraAttempts\s*:\s*latestDecision\.usingExtra\?latestExtra-1:latestExtra/.test(tx),'response must reflect latest extra-attempt balance');
 assert.ok(tx.indexOf('readExtraAttempts')<tx.indexOf('latestDecision=evaluateWithExtra'),'latest extra attempts must be loaded before final decision');
 assert.ok(tx.indexOf('consumeExtraAttempts')<tx.indexOf('UPDATE players SET xp=xp+?'),'extra attempt consumption must succeed before XP is awarded');
 console.log('activity policy change extra attempt contract self-test passed');
