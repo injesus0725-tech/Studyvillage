@@ -84,7 +84,7 @@ function expeditionStarsFor(activityId,score){
   if(activityId==='exploration-mountain-riddle')return value===100?5:Math.min(4,Math.ceil(value/25));
   return 0;
 }
-function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
+function commitExpeditionReward(db,{name,activityId,score,submissionId,now,starDelta=0}){
   if(!EXPEDITION_REWARD_IDS.has(activityId)&&!STANDARD_REWARD_IDS.has(activityId))return{stars:0,balance:null};
   if(!/^[A-Za-z0-9._:-]{8,100}$/.test(submissionId||''))throw Object.assign(new Error('invalid-expedition-submission'),{code:'invalid-expedition-submission'});
   ensureSchema(db);
@@ -92,7 +92,7 @@ function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
   if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
   const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
   if(!validStarBalance(player.stars))throw Object.assign(new Error('corrupt-star-balance'),{code:'corrupt-star-balance'});
-  const stars=EXPEDITION_REWARD_IDS.has(activityId)?expeditionStarsFor(activityId,score):standardActivityStars(activityId,score),before=player.stars,after=before+stars;
+  const baseStars=EXPEDITION_REWARD_IDS.has(activityId)?expeditionStarsFor(activityId,score):standardActivityStars(activityId,score),npcDelta=Math.max(-5,Math.min(8,Math.trunc(Number(starDelta)||0))),before=player.stars,stars=npcDelta<0?-Math.min(before,Math.abs(npcDelta)):baseStars+npcDelta,after=before+stars;
   if(after>MAX_STARS)throw Object.assign(new Error('star-limit-exceeded'),{code:'star-limit-exceeded'});
   if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,kind,submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
   return{stars,balance:after,alreadyClaimed:false};

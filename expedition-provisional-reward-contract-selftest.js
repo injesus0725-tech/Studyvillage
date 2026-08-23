@@ -13,7 +13,7 @@ assert.ok(client.includes("result.stars?` · +${result.stars}별`:''"), '학생 
 assert.ok(client.includes('탐험 기록을 아직 저장하지 못했어요'), '저장 실패 시 별을 획득한 것처럼 안내하면 안 됩니다.');
 assert.ok(activity.includes('validExpeditionScore(activityId,score)'), '서버는 탐험별 가능한 완료 점수만 받아야 합니다.');
 assert.ok(activity.includes("activityId.startsWith('exploration-')&&!submissionId"), '탐험 완료에는 재시도 식별자가 필수여야 합니다.');
-assert.ok(activity.includes('commitExpeditionReward(db,{name,activityId,score,submissionId,now})'), '활동 기록과 별 확정을 같은 DB 트랜잭션 안에서 실행해야 합니다.');
+assert.ok(activity.includes('commitExpeditionReward(db,{name,activityId,score,submissionId,now,starDelta:explore.starDelta})'), '활동 기록과 NPC 별 효과 확정을 같은 DB 트랜잭션 안에서 실행해야 합니다.');
 assert.ok(stars.includes("kind=EXPEDITION_REWARD_IDS.has(activityId)?'expedition-completion':'learning-completion'"), '활동 종류에 맞는 원장 구분을 서버가 결정해야 합니다.');
 assert.ok(stars.includes('WHERE player_name=? AND kind=? AND reference_id=?'), '완료 식별자로 이미 확정된 보상을 검사해야 합니다.');
 assert.ok(stars.includes('stars,kind,submissionId'), '탐험·학습 별 장부에 완료 식별자를 기록해야 합니다.');

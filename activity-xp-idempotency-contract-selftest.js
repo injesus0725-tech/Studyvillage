@@ -8,7 +8,7 @@ for(const token of [
   'rememberSubmission(name,activityId,submissionId,result)'
 ])assert.ok(src.includes(token),`activity XP idempotency guard missing: ${token}`);
 assert.ok(/adjusted\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(latestPlayer\.xp,baseXp\):0/.test(src),'XP base must derive from the latest transactional decision and current XP growth scaling');
-assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?Math\.max\(0,Math\.round\(adjusted\*explore\.multiplier\)\+explore\.findBonusXp\):0/.test(src),'XP award must apply the verified NPC multiplier and discovery bonus after latest policy evaluation');
+assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?Math\.max\(0,Math\.round\(adjusted\*explore\.multiplier\)\+explore\.findBonusXp\+explore\.xpDelta\):0/.test(src),'XP award must apply the verified NPC multiplier, discovery bonus, and bounded NPC delta after latest policy evaluation');
 const routeStart=src.indexOf("app.post('/api/player/me/activity'");
 const cached=src.indexOf('if(cached)return res.json({...cached,deduplicated:true});',routeStart);
 const txMatch=/\b(?:const\s+)?tx\s*=\s*db\.transaction\(\(\)=>\{/.exec(src.slice(routeStart));

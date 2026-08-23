@@ -36,10 +36,13 @@
     if(!quiz||quiz.hidden||!quizQuestion?.textContent?.includes('교실 서버 연결을 기다리고 있어요.'))return;
     if(quiz.querySelector('[data-save-recovery-exit]'))return;
     const exit=document.createElement('button');exit.type='button';exit.dataset.saveRecoveryExit='1';exit.className='quiz-next';exit.textContent='마을로 돌아가기 🏡';exit.style.marginLeft='8px';
-    exit.onclick=()=>{if(typeof window.closeQuiz==='function')window.closeQuiz();else quiz.hidden=true};
+    exit.onclick=()=>{const close=document.querySelector('#quiz-close');if(close)close.click();else{quiz.hidden=true;document.body.classList.remove('inside-building')}};
     (quizNext?.parentElement||quiz).appendChild(exit);
   }
   if(quiz)new MutationObserver(addRecoveryExit).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+
+  /* Repair legacy cases where another overlay hid the quiz without releasing its movement lock. */
+  if(quiz)new MutationObserver(()=>{if(quiz.hidden)document.querySelector('#quiz-close')?.dispatchEvent(new Event('click'))}).observe(quiz,{attributes:true,attributeFilter:['hidden']});
 
   const ranking=document.querySelector('#student-ranking-panel'),rankingButton=document.querySelector('.sv-quick-button.ranking');
   if(!ranking||!rankingButton)return;

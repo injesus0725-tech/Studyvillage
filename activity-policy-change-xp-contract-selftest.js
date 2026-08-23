@@ -7,7 +7,7 @@ for(const pattern of [
   /latestAttemptRecord\s*=\s*policyRecord\(db,name,activityId,latestPolicy,latest\|\|\{\}\)/,
   /latestDecision\s*=\s*evaluateWithExtra\(latestPolicy,latestAttemptRecord,latestExtra\)/,
   /adjusted\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(latestPlayer\.xp,baseXp\):0/,
-  /nextGained\s*=\s*latestDecision\.awardXp\?Math\.max\(0,Math\.round\(adjusted\*explore\.multiplier\)\+explore\.findBonusXp\):0/,
+  /nextGained\s*=\s*latestDecision\.awardXp\?Math\.max\(0,Math\.round\(adjusted\*explore\.multiplier\)\+explore\.findBonusXp\+explore\.xpDelta\):0/,
   /if\(nextGained\)db\.prepare\('UPDATE players SET xp=xp\+\?,updated_at=\? WHERE name=\?'\)/,
   /else db\.prepare\('UPDATE players SET updated_at=\? WHERE name=\?'\)/,
   /gainedXp\s*:\s*nextGained/,

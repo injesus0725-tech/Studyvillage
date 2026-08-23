@@ -4,13 +4,19 @@
   const local=['localhost','127.0.0.1','::1'].includes(location.hostname);
   if(local&&login&&password&&loginButton){
     login.hidden=true;
-    let tries=0;
-    const enter=()=>{
+    let tries=0,running=false;
+    const enter=async()=>{
       if(sessionStorage.getItem('studyvillage-admin-token')){login.hidden=true;return}
-      if(++tries>6){login.hidden=false;if(message)message.textContent='자동 관리자 입장에 실패했습니다. 프로그램을 한 번 다시 실행해 주세요.';return}
-      password.value='teacher1234';loginButton.click();setTimeout(enter,350);
+      if(running)return;running=true;
+      try{
+        const response=await fetch('/api/admin/local-session',{method:'POST',cache:'no-store'}),data=await response.json().catch(()=>({}));
+        if(response.ok&&data.ok&&data.token){sessionStorage.setItem('studyvillage-admin-token',data.token);location.reload();return}
+      }catch{}finally{running=false}
+      if(++tries<=12)return setTimeout(enter,500);
+      login.hidden=false;password.hidden=true;loginButton.hidden=true;
+      if(message)message.textContent='교사용 화면 연결에 실패했습니다. 프로그램을 다시 실행해 주세요.';
     };
-    setTimeout(enter,180);
+    setTimeout(enter,80);
   }
 
   const app=document.querySelector('#admin-app');if(!app)return;
