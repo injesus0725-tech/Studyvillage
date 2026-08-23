@@ -2,9 +2,9 @@ const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
 
+assert.ok(src.includes("app.post('/api/player/me/activity'"),'activity save route missing');
+assert.ok(/latest\s*=\s*db\.prepare\('SELECT \* FROM activity_records WHERE player_name=\? AND activity_id=\?'\)\.get\(name,activityId\)/.test(src),'latest activity record must be re-read inside save flow');
 for(const token of [
-  "app.post('/api/player/me/activity'",
-  "const latest=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId)",
   'latestAttemptRecord=policyRecord(db,name,activityId,latestPolicy,latest||{})',
   'latestDecision=evaluateWithExtra(latestPolicy,latestAttemptRecord,latestExtra)',
   "db.prepare('UPDATE players SET xp=xp+?,updated_at=? WHERE name=?').run(nextGained,now,name)",
