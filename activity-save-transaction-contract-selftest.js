@@ -4,7 +4,6 @@ const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
 
 for(const token of [
   "app.post('/api/player/me/activity'",
-  'const tx=db.transaction(()=>{',
   "const latest=db.prepare('SELECT * FROM activity_records WHERE player_name=? AND activity_id=?').get(name,activityId)",
   'latestAttemptRecord=policyRecord(db,name,activityId,latestPolicy,latest||{})',
   'latestDecision=evaluateWithExtra(latestPolicy,latestAttemptRecord,latestExtra)',
@@ -14,7 +13,8 @@ for(const token of [
 ])assert.ok(src.includes(token),`transactional activity-save guard missing: ${token}`);
 
 const routeStart=src.indexOf("app.post('/api/player/me/activity'");
-const txStart=src.indexOf('const tx=db.transaction(()=>{',routeStart);
+const txMatch=/\b(?:const\s+)?tx\s*=\s*db\.transaction\(\(\)=>\{/.exec(src.slice(routeStart));
+const txStart=txMatch?routeStart+txMatch.index:-1;
 const txEnd=src.indexOf('const result=tx();',txStart);
 assert.ok(routeStart>=0&&txStart>=0&&txEnd>txStart,'activity save transaction boundaries missing');
 const txBody=src.slice(txStart,txEnd);
