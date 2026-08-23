@@ -1,10 +1,10 @@
 const fs=require('fs'),assert=require('assert');
 const server=fs.readFileSync('server/server.js','utf8');
-const client=fs.readFileSync('assets/admin-stability-bundle.js','utf8');
+const client=fs.readFileSync('admin-network-guard.js','utf8');
 assert.ok(server.includes("app.post('/api/admin/local-session'"),'교사용 PC 전용 자동 세션 경로가 필요합니다.');
 assert.ok(server.includes("code:'teacher-pc-only'"),'원격 학생 기기의 관리자 자동 입장을 차단해야 합니다.');
 assert.ok(server.includes("address==='127.0.0.1'||address==='::1'||address==='::ffff:127.0.0.1'"),'실제 루프백 주소만 교사용 PC로 인정해야 합니다.');
-assert.ok(client.includes("fetch('/api/admin/local-session'"),'교사용 화면은 비밀번호 입력 대신 로컬 세션을 요청해야 합니다.');
+assert.ok(client.includes("previousFetch('/api/admin/local-session'"),'교사용 화면은 다른 관리자 요청 래퍼와 충돌하지 않고 로컬 세션을 요청해야 합니다.');
 assert.ok(!client.includes("password.value='teacher1234'"),'기본 비밀번호 자동 입력 방식은 사용하지 않아야 합니다.');
 assert.ok(client.includes("sessionStorage.setItem('studyvillage-admin-token',data.token)"),'발급된 교사용 세션을 관리자 기능에서 사용해야 합니다.');
 console.log('admin local passwordless contract self-test passed');

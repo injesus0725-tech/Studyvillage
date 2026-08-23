@@ -8,7 +8,7 @@ assert.ok(gate.includes("const headers=window.StudyVillageAuth?.authHeaders?.()|
 assert.ok(gate.includes("timedFetch(`/api/player/me/activity-attempt-status/${encodeURIComponent(recordId)}`,{headers,cache:'no-store'})"),'attempt status request must include current student authentication');
 assert.ok(gate.includes('extraAttempts:status.extraAttempts'),'the gate must retain the server decision that includes teacher-granted extra attempts');
 assert.ok(auth.includes("const classroomOrigin=location.protocol==='http:'||location.protocol==='https:'"),'classroom browser origins must be identified explicitly');
-assert.ok(auth.includes("if(classroomOrigin)return{ok:false,code:'server-unavailable',mode:'classroom-server'}"),'a temporary classroom server outage must not create or enter a local-only account');
+assert.ok(auth.includes('if(classroomOrigin)return serverLogin(name,password)'),'classroom origins must always use the bounded classroom server login and never create a local-only account');
 assert.ok(auth.includes("mode:()=>classroomOrigin||serverAvailable?'classroom-server':'local'"),'classroom origins must remain classified as classroom-server even during an outage');
 assert.ok(expedition.includes("if(!authorization)"),'expedition entry must reject missing classroom authentication');
 assert.ok(hub.includes('attemptAllowed(exp)'),'the expedition hub must own the single attempt-limit preflight');
