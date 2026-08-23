@@ -10,7 +10,7 @@ export function activityScorePercent(activityId,score){
 export function activityXpReward(activityId,score){
   const rate=activityScorePercent(activityId,score);
   /* Small completion XP + strongly accuracy-weighted learning XP.
-     0%=12, 20%=30, 40%=63, 60%=109, 80%=166, 100%=232 before the early-level growth adjustment. */
+     0%=12, 20%=30, 40%=65, 60%=112, 80%=168, 100%=232 before the early-level growth adjustment. */
   return 12+Math.round(220*Math.pow(rate,1.55));
 }
 

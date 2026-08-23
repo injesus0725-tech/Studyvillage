@@ -23,7 +23,8 @@ assert.ok(/nextAttempts\s*=\s*\(latest\?\.attempts\|\|0\)\+1/.test(txBody),'firs
 assert.ok(/nextBest\s*=\s*Math\.max\(latest\?\.best_score\|\|0\s*,\s*score\)/.test(txBody),'first activity best score must derive from zero/latest record');
 assert.ok(/nextTotal\s*=\s*\(latest\?\.total_score\|\|0\)\+score/.test(txBody),'first activity total score must derive from zero/latest record');
 assert.ok(activity.includes('activityXpReward(activityId,score)'),'first activity XP basis must be calculated from the activity and score');
-assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(latestPlayer\.xp\s*,\s*baseXp\):0/.test(txBody),'first activity XP must follow the latest policy decision and current player growth adjustment');
+assert.ok(/adjusted\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(latestPlayer\.xp\s*,\s*baseXp\):0/.test(txBody),'first activity XP base must follow the latest policy decision and current player growth adjustment');
+assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?Math\.max\(0,Math\.round\(adjusted\*explore\.multiplier\)\+explore\.findBonusXp\):0/.test(txBody),'first activity XP must apply the verified NPC multiplier and discovery bonus');
 assert.ok(txBody.includes("UPDATE players SET xp=xp+?"),'first activity XP update must target the current student in the transaction');
 assert.ok(/record:\{activityId,attempts:nextAttempts,periodAttempts:\(Number\(latestAttemptRecord\.attempts\)\|\|0\)\+1,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now\}/.test(activity),'first activity response must return the saved aggregate and current-period record');
 assert.ok(txBody.includes('INSERT INTO activity_records'),'first activity must create its activity record atomically');
