@@ -1,5 +1,18 @@
-/* Teacher UX stabilization: direct student-growth navigation, visible extra-attempt controls, and reliable star jump. */
+/* Teacher UX stabilization: passwordless local entry, direct student-growth navigation, visible extra-attempt controls, and reliable star jump. */
 (()=>{
+  const login=document.querySelector('#admin-login'),password=document.querySelector('#admin-password'),loginButton=document.querySelector('#admin-login-button'),message=document.querySelector('#admin-login-message');
+  const local=['localhost','127.0.0.1','::1'].includes(location.hostname);
+  if(local&&login&&password&&loginButton){
+    login.hidden=true;
+    let tries=0;
+    const enter=()=>{
+      if(sessionStorage.getItem('studyvillage-admin-token')){login.hidden=true;return}
+      if(++tries>6){login.hidden=false;if(message)message.textContent='자동 관리자 입장에 실패했습니다. 프로그램을 한 번 다시 실행해 주세요.';return}
+      password.value='teacher1234';loginButton.click();setTimeout(enter,350);
+    };
+    setTimeout(enter,180);
+  }
+
   const app=document.querySelector('#admin-app');if(!app)return;
   const byTitle=text=>[...app.querySelectorAll('.panel')].find(p=>p.querySelector('h2')?.textContent.includes(text));
   function jump(target){if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('admin-jump-highlight');setTimeout(()=>target.classList.remove('admin-jump-highlight'),1200);return true}
