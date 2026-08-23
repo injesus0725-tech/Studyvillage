@@ -23,12 +23,10 @@ assert.ok(/nextAttempts\s*=\s*\(latest\?\.attempts\|\|0\)\+1/.test(txBody),'firs
 assert.ok(/nextBest\s*=\s*Math\.max\(latest\?\.best_score\|\|0\s*,\s*score\)/.test(txBody),'first activity best score must derive from zero/latest record');
 assert.ok(/nextTotal\s*=\s*\(latest\?\.total_score\|\|0\)\+score/.test(txBody),'first activity total score must derive from zero/latest record');
 assert.ok(activity.includes('activityXpReward(activityId,score)'),'first activity XP basis must be calculated from the activity and score');
-assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(db,name,baseXp\):0/.test(activity),'first activity XP must follow the latest policy decision and current growth adjustment');
+assert.ok(/nextGained\s*=\s*latestDecision\.awardXp\?growthAdjustedXp\(latestPlayer\.xp\s*,\s*baseXp\):0/.test(txBody),'first activity XP must follow the latest policy decision and current player growth adjustment');
 assert.ok(txBody.includes("UPDATE players SET xp=xp+?"),'first activity XP update must target the current student in the transaction');
 assert.ok(/record:\{activityId,attempts:nextAttempts,periodAttempts:\(Number\(latestAttemptRecord\.attempts\)\|\|0\)\+1,bestScore:nextBest,lastScore:score,totalScore:nextTotal,updatedAt:now\}/.test(activity),'first activity response must return the saved aggregate and current-period record');
-
 assert.ok(txBody.includes('INSERT INTO activity_records'),'first activity must create its activity record atomically');
-assert.ok(txBody.includes('UPDATE players SET xp=xp+?'),'first activity XP must be awarded in the same transaction');
 assert.ok(txBody.indexOf('INSERT INTO activity_records')<txBody.indexOf('UPDATE players SET xp=xp+?'),'activity record must be saved before XP mutation in the same transaction');
 assert.ok(!txBody.includes('star_ledger'),'first activity save must not accidentally reuse or mutate a previous star ledger');
 console.log('student first activity fresh account contract self-test passed');
