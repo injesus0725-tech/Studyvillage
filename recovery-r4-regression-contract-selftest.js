@@ -1,0 +1,22 @@
+const fs=require('fs'),assert=require('assert');
+const overlay=fs.readFileSync('assets/student-overlay-manager.js','utf8');
+const exploration=fs.readFileSync('assets/student-exploration-v2.js','utf8');
+const activity=fs.readFileSync('server/activity-attempt-student.js','utf8');
+const data=fs.readFileSync('data-service.js','utf8');
+const guard=fs.readFileSync('admin-network-guard.js','utf8');
+const admin=fs.readFileSync('admin.js','utf8');
+const editor=fs.readFileSync('admin-question-editor.js','utf8');
+
+assert.ok(!overlay.includes("textContent?.includes('탐험')"),'result buttons must never be treated as the top exploration menu by their label');
+assert.ok(overlay.includes("classList?.contains('explore')"),'only the explicit exploration menu class may activate the exploration overlay');
+assert.ok(exploration.includes("result.querySelector('button').onclick=back"),'a successful expedition result must wait for the explicit village button');
+assert.ok(exploration.includes("if(saving||resultLocked)return"),'the exit control must remain locked while saving and while results are visible');
+for(const token of ["function sound(kind='reveal')","setTimeout(()=>{revealing=false;next()},650)","id:'star-thief'","id:'runaway-bandit'","bonus:10","bonus:7","bonus:4",'eventStarDelta'])assert.ok(exploration.includes(token),`exploration reveal/reward contract missing: ${token}`);
+assert.ok(activity.includes('findBonusXp=Math.min(findCount*10,requestedXp)'),'discovery XP must accept the balanced 4/7/10 rewards while remaining server bounded');
+assert.ok(activity.includes('Math.max(-5,Math.min(5,Math.trunc(Number(body?.eventStarDelta)||0)))'),'villain star loss must be bounded on the server');
+assert.ok(data.includes("async function ready(){return !!window.StudyVillageAuth?.authHeaders?.().Authorization}"),'challenge saves must attempt the authenticated request instead of trusting a stale health-check cache');
+assert.ok(guard.includes("location.replace('/admin.html?local-session=1')"),'teacher auto-entry must reinitialize all admin modules with the issued token');
+assert.ok(admin.includes("if(!['record','password','delete'].includes(action))return"),'the base student action listener must not consume extension edit buttons');
+assert.ok(editor.includes("const promptField=before.word?'word':before.question?'question':'prompt'"),'question edits must update the source question field');
+assert.ok(editor.includes('after[promptField]=word'),'the corrected question prompt must be included in the saved override');
+console.log('recovery R4 regression contract self-test passed');
