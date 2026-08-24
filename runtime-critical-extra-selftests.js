@@ -1,6 +1,7 @@
 const {spawnSync}=require('child_process');
 const tests=[
   'classroom-cache-bust-contract-selftest.js',
+  'runtime-observer-loop-contract-selftest.js',
   'admin-local-passwordless-contract-selftest.js',
   'packaged-student-script-coverage-contract-selftest.js',
   'admin-runtime-error-viewer-contract-selftest.js',

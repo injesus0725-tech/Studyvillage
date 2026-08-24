@@ -41,9 +41,6 @@
   }
   if(quiz)new MutationObserver(addRecoveryExit).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 
-  /* Repair legacy cases where another overlay hid the quiz without releasing its movement lock. */
-  if(quiz)new MutationObserver(()=>{if(quiz.hidden)document.querySelector('#quiz-close')?.dispatchEvent(new Event('click'))}).observe(quiz,{attributes:true,attributeFilter:['hidden']});
-
   const ranking=document.querySelector('#student-ranking-panel'),rankingButton=document.querySelector('.sv-quick-button.ranking');
   if(!ranking||!rankingButton)return;
   const card=ranking.querySelector('.sv-hub-card'),list=ranking.querySelector('#student-ranking-list');if(!card||!list)return;
