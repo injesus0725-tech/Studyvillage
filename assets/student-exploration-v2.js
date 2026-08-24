@@ -16,18 +16,18 @@
     {id:'korean',icon:'📖',name:'국어 탐험',subject:'국어',ready:false},{id:'social',icon:'🏯',name:'사회 탐험',subject:'사회',ready:false}
   ];
   const NPCS=[
-    {id:'wizard',icon:'🧙',name:'별빛 마법사',trait:'XP 2배',multiplier:2,line:'내 별빛 문제를 맞히면 이번 탐험 XP를 두 배로 키워 주마!'},
-    {id:'robot',icon:'🤖',name:'기록 로봇',trait:'XP 1.5배',multiplier:1.5,line:'정확한 기록은 힘이 됩니다. 이번 탐험 XP를 1.5배로 증폭합니다.'},
-    {id:'dragon',icon:'🐲',name:'꼬마 용',trait:'용기 XP 1.8배',multiplier:1.8,line:'겁내지 말고 한 번에 골라 봐! 성공하면 용기 보너스가 크다!'},
-    {id:'owl',icon:'🦉',name:'지혜 부엉이',trait:'XP 1.25배',multiplier:1.25,line:'천천히 생각하는 것도 실력이란다. 지혜 보너스를 얹어 줄게.'},
+    {id:'wizard',icon:'🧙',name:'별빛 마법사',trait:'XP 1.35배',multiplier:1.35,line:'내 별빛 문제를 맞히면 이번 탐험 XP를 조금 더 키워 주마!'},
+    {id:'robot',icon:'🤖',name:'기록 로봇',trait:'XP 1.2배',multiplier:1.2,line:'정확한 기록은 힘이 됩니다. 이번 탐험 XP를 1.2배로 증폭합니다.'},
+    {id:'dragon',icon:'🐲',name:'꼬마 용',trait:'용기 XP 1.3배',multiplier:1.3,line:'겁내지 말고 한 번에 골라 봐! 성공하면 용기 보너스를 얹어 줄게!'},
+    {id:'owl',icon:'🦉',name:'지혜 부엉이',trait:'XP 1.15배',multiplier:1.15,line:'천천히 생각하는 것도 실력이란다. 지혜 보너스를 얹어 줄게.'},
     {id:'fox',icon:'🦊',name:'숲길 여우',trait:'별 +3개',multiplier:1,starDelta:3,line:'길을 잘 골랐네! 탐험을 마치면 별 3개를 더 줄게.'},
     {id:'ghost',icon:'👻',name:'장난 유령',trait:'별 -1개',multiplier:1,starDelta:-1,line:'흐흐, 내가 이기면 별 하나를 가져갈 거야. 별이 없으면 그냥 보내 주지!'},
-    {id:'goblin',icon:'👺',name:'심술 도깨비',trait:'완료 XP -10',multiplier:1,xpDelta:-10,line:'내 문제는 호락호락하지 않아! 탐험 XP에서 10을 빼겠어.'}
+    {id:'goblin',icon:'👺',name:'심술 도깨비',trait:'완료 XP -3',multiplier:1,xpDelta:-3,line:'내 문제는 호락호락하지 않아! 탐험 XP에서 3을 빼겠어.'}
   ];
   const REWARDS=[
-    {id:'chest',icon:'🎁',name:'보물상자',text:'반짝이는 보물 조각을 찾았어요!',bonus:10},
-    {id:'tree',icon:'🌳',name:'반짝 나무',text:'별빛 잎사귀를 발견했어요!',bonus:7},
-    {id:'flower',icon:'🌸',name:'숨은 꽃',text:'희귀한 꽃잎을 찾았어요!',bonus:4},
+    {id:'chest',icon:'🎁',name:'보물상자',text:'반짝이는 보물 조각을 찾았어요!',bonus:4},
+    {id:'tree',icon:'🌳',name:'반짝 나무',text:'별빛 잎사귀를 발견했어요!',bonus:3},
+    {id:'flower',icon:'🌸',name:'숨은 꽃',text:'희귀한 꽃잎을 찾았어요!',bonus:2},
     {id:'star-pouch',icon:'⭐',name:'별 주머니',text:'탐험 완료 때 받을 별 하나를 찾았어요!',bonus:0,stars:1}
   ];
   const TROUBLE=[

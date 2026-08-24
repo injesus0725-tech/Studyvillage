@@ -1,6 +1,6 @@
-/* Semester reward economy: 90 active days, about 4.5 completed activities per day, Lv.70 target.
-   Accuracy now matters much more than simply finishing an activity. */
-export const SEMESTER_REWARD_TARGET=Object.freeze({activeDays:90,averageActivitiesPerDay:4.5,targetLevel:70,targetXp:131100});
+/* Classroom reward economy: eight daily activities should produce an early level
+   roughly every two days, then slow naturally as the level spans grow. */
+export const SEMESTER_REWARD_TARGET=Object.freeze({activeDays:90,averageActivitiesPerDay:8,targetLevel:70,targetXp:131100,earlyLevelActivities:16});
 
 export function activityScorePercent(activityId,score){
   const maximum=activityId==='riddle'||activityId==='riddle-demo'?1000:100;
@@ -9,9 +9,10 @@ export function activityScorePercent(activityId,score){
 
 export function activityXpReward(activityId,score){
   const rate=activityScorePercent(activityId,score);
-  /* Small completion XP + strongly accuracy-weighted learning XP.
-     0%=12, 20%=30, 40%=65, 60%=112, 80%=168, 100%=232 before the early-level growth adjustment. */
-  return 12+Math.round(220*Math.pow(rate,1.55));
+  const exploration=String(activityId||'').startsWith('exploration-');
+  /* Regular activity: 2/3/5/7/9/11 XP at 0/20/40/60/80/100%.
+     Exploration is intentionally richer: 4/5/8/10/13/16 XP before its small event bonus. */
+  return exploration?4+Math.round(12*Math.pow(rate,1.32)):2+Math.round(9*Math.pow(rate,1.28));
 }
 
 export function standardActivityStars(activityId,score){
