@@ -7,5 +7,6 @@ assert.ok(server.includes("db.prepare('DELETE FROM settings WHERE key=?').run(ch
 assert.ok(client.includes("remote(playerName,activityId,{method:'PUT'")&&client.includes("remote(playerName,activityId,{method:'DELETE'})"),'local save and clear must mirror to the server');
 assert.ok(client.includes('remoteQueues=new Map()')&&client.includes("previous.catch(()=>{}).then"),'save and clear requests must remain ordered per student activity');
 assert.ok(client.includes("fetch('/api/player/me/checkpoints'")&&client.includes('String(value.updatedAt)>String(current.updatedAt)'),'login sync must merge only newer server checkpoints');
-assert.ok(game.includes('await Promise.race([window.StudyVillageCheckpoint?.sync?.(state.playerName),new Promise(resolve=>setTimeout(resolve,2500))])'),'checkpoint sync must be attempted before entry without trapping login forever when the classroom network is slow');
+assert.ok(game.includes('Promise.resolve(window.StudyVillageCheckpoint?.sync?.(state.playerName)).catch(()=>{})'),'checkpoint sync must run after authenticated entry without trapping the student login screen');
+assert.ok(game.indexOf("gameScreen.classList.add('active')")<game.indexOf('Promise.resolve(window.StudyVillageCheckpoint?.sync?.(state.playerName))'),'authenticated entry must become visible before background checkpoint sync');
 console.log('student server checkpoint contract self-test passed');
