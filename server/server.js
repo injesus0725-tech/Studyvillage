@@ -56,10 +56,10 @@ function pruneReplacedStudentSessions(now=Date.now()){for(const[token,expiresAt]
 function requireSession(req,res,next){const token=bearer(req),s=sessionFrom(sessions,token,STUDENT_SESSION_TTL_MS);if(!s){pruneReplacedStudentSessions();if(replacedStudentSessions.has(token))return res.status(401).json({ok:false,code:'session-replaced'});return res.status(401).json({ok:false,code:'not-authenticated'})}req.session=s;next()}
 function requireAdmin(req,res,next){if(!sessionFrom(adminSessions,bearer(req),ADMIN_SESSION_TTL_MS))return res.status(401).json({ok:false,code:'admin-not-authenticated'});next()}
 const createSession=name=>{const t=crypto.randomBytes(32).toString('hex'),now=Date.now();pruneSessions(sessions,STUDENT_SESSION_TTL_MS,now);sessions.set(t,{name,createdAt:now,lastSeenAt:now});return t},createAdminSession=()=>{const t=crypto.randomBytes(32).toString('hex'),now=Date.now();pruneSessions(adminSessions,ADMIN_SESSION_TTL_MS,now);adminSessions.set(t,{createdAt:now,lastSeenAt:now});return t};
-function isLocalTeacherRequest(req){
-  const address=String(req.socket?.remoteAddress||'').toLowerCase();
-  return address==='127.0.0.1'||address==='::1'||address==='::ffff:127.0.0.1';
-}
+function normalizeRemoteAddress(value){const address=String(value||'').trim().toLowerCase();return address.startsWith('::ffff:')?address.slice(7):address}
+function localTeacherAddresses(){const addresses=new Set(['127.0.0.1','::1']);try{for(const entries of Object.values(os.networkInterfaces()))for(const entry of entries||[])if(entry?.address)addresses.add(normalizeRemoteAddress(entry.address))}catch{}return addresses}
+const LOCAL_TEACHER_ADDRESSES=localTeacherAddresses();
+function isLocalTeacherRequest(req){return LOCAL_TEACHER_ADDRESSES.has(normalizeRemoteAddress(req.socket?.remoteAddress))}
 function classroomUrls(){const u=[];for(const[adapter,entries]of Object.entries(os.networkInterfaces()))for(const n of entries||[])if(n.family==='IPv4'&&!n.internal)u.push({adapter,address:n.address,url:`http://${n.address}:${PORT}`});return u}
 function prunePresence(now=Date.now()){for(const[name,seen]of presence.entries())if(now-seen>PRESENCE_TTL_MS)presence.delete(name)}
 function activePresenceNames(){const now=Date.now();prunePresence(now);return new Set([...presence.entries()].filter(([,seen])=>now-seen<=45000).map(([name])=>name))}
