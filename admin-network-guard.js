@@ -13,7 +13,7 @@
       const box=document.querySelector('#admin-login'),pw=document.querySelector('#admin-password'),button=document.querySelector('#admin-login-button'),message=document.querySelector('#admin-login-message');
       if(box){box.hidden=true;box.style.display='none'}
       let failure='NO-RESPONSE';try{const response=await previousFetch('/api/admin/local-session',{method:'POST',cache:'no-store'}),data=await response.json().catch(()=>({}));failure=`HTTP-${response.status}:${String(data.code||'UNKNOWN').slice(0,40)}`;if(response.ok&&data.ok&&data.token){sessionStorage.setItem('studyvillage-admin-token',data.token);if(box){box.hidden=true;box.style.display='none'}const app=document.querySelector('#admin-app');if(app)app.hidden=false;setTimeout(()=>document.querySelector('#refresh-button')?.click(),0);return}}catch(error){failure=String(error?.message||error||'FETCH-ERROR').slice(0,60)}finally{localEntryRunning=false}
-      if(box){box.hidden=false;box.style.display=''}if(pw)pw.hidden=true;if(button){button.hidden=false;button.textContent='교사용 화면 다시 연결';button.onclick=event=>{event.preventDefault();event.stopImmediatePropagation();scheduleLocalLogin()}}if(message)message.textContent=`교사용 자동입장 실패 [${failure}] · 위 버튼을 눌러 다시 연결해 주세요.`;
+      if(box){box.hidden=false;box.style.display=''}if(pw){pw.hidden=false;pw.disabled=false;pw.focus()}if(button){button.hidden=false;button.disabled=false;button.textContent='암호로 로그인';button.onclick=null}if(message)message.textContent=`자동입장 실패 [${failure}] · 관리자 암호를 직접 입력해 주세요.`;
     },80)
   }
   window.StudyVillageAdminNetworkGuard={timeoutMs:REQUEST_TIMEOUT_MS,handleExpiredSession};scheduleLocalLogin();
