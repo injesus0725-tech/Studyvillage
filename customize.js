@@ -1,8 +1,8 @@
 (()=>{
   const $=s=>document.querySelector(s),button=$('#customize-button'),panel=$('#customize-panel'),close=$('#customize-close'),save=$('#customize-save'),list=$('#inventory-list'),baseList=$('#base-character-list'),message=$('#customize-message'),game=$('#game-screen');
   if(!button||!panel||!save)return;
-  const slots=['hat','glasses','bag','pet'],slotNames={hat:'모자',glasses:'안경',bag:'가방',pet:'친구'},icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊'},REQUEST_TIMEOUT_MS=6000;
-  let playerData=null,shopData={ownedItems:[],equipment:{},items:[]},draft={hat:null,glasses:null,bag:null,pet:null},draftBase='student-default',loading=false;
+  const slots=['hair','hat','glasses','outfit','shoes','bag','hand','pet'],slotNames={hair:'머리',hat:'모자',glasses:'안경',outfit:'옷',shoes:'신발',bag:'가방',hand:'손 아이템',pet:'친구'},icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊','hair-short':'💇','hair-bob':'👩','hair-ponytail':'👱‍♀️','hair-blue':'🧑‍🎤','hat-wizard':'🧙','hat-pirate':'🏴‍☠️','hat-flower':'🌼','glasses-sun':'🕶️','glasses-heart':'💗','outfit-hoodie':'🧥','outfit-uniform':'👔','outfit-wizard':'🥻','outfit-armor':'🛡️','shoes-sneakers':'👟','shoes-boots':'🥾','shoes-wing':'🪽','bag-art':'🎨','bag-rocket':'🚀','hand-sword':'⚔️','hand-wand':'🪄','hand-book':'📖','hand-magnifier':'🔎','pet-dog':'🐶','pet-rabbit':'🐰','pet-dragon':'🐲','pet-slime':'🟢'},REQUEST_TIMEOUT_MS=6000;
+  let playerData=null,shopData={ownedItems:[],equipment:{},items:[]},draft={hair:null,hat:null,glasses:null,outfit:null,shoes:null,bag:null,hand:null,pet:null},draftBase='student-default',loading=false;
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   async function timedFetch(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
   const ownedSet=()=>new Set(Array.isArray(shopData?.ownedItems)?shopData.ownedItems:[]);
@@ -10,7 +10,7 @@
   const shopItem=id=>(shopData?.items||[]).find(item=>item.id===id)||null;
   function itemInfo(id){if(!id)return null;const built=builtInItem(id),shop=shopItem(id);return{id,slot:built?.slot||shop?.slot,icon:built?.icon||icons[id]||'🎁',name:built?.name||shop?.name||id,condition:built?.condition||'',builtUnlocked:built?.unlocked===true,owned:ownedSet().has(id)}}
   function usable(id){const item=itemInfo(id);return !!item&&(item.builtUnlocked||item.owned)}
-  function normalizeEquipment(raw={}){const out={hat:null,glasses:null,bag:null,pet:null};for(const slot of slots){const id=raw?.[slot];if(id&&itemInfo(id)?.slot===slot&&usable(id))out[slot]=id}return out}
+  function normalizeEquipment(raw={}){const out={hair:null,hat:null,glasses:null,outfit:null,shoes:null,bag:null,hand:null,pet:null};for(const slot of slots){const id=raw?.[slot];if(id&&itemInfo(id)?.slot===slot&&usable(id))out[slot]=id}return out}
   function renderAvatar(){const renderer=window.StudyVillageAvatar;renderer?.paintBase(document.querySelector('.player-icon'),draftBase);renderer?.paintBase(document.querySelector('.preview-base'),draftBase);for(const slot of slots){const info=itemInfo(draft[slot]);renderer?.paintItem(document.querySelector(`#player-${slot}`),info?.id||null,info?.icon||'');renderer?.paintItem(document.querySelector(`#preview-${slot}`),info?.id||null,info?.icon||'')}}
   function renderBases(){if(!baseList)return;baseList.innerHTML='';for(const c of playerData?.baseCharacters||[]){const b=document.createElement('button');b.type='button';b.className=`inventory-item ${draftBase===c.id?'selected':''}`;b.innerHTML=`<span>${c.icon}</span><strong>${c.name}</strong><small>기본 캐릭터</small>`;b.onclick=()=>{draftBase=c.id;renderBases();renderAvatar()};baseList.appendChild(b)}}
   function allItemsForSlot(slot){const map=new Map();for(const item of playerData?.inventory||[])if(item.slot===slot)map.set(item.id,itemInfo(item.id));for(const item of shopData?.items||[])if(item.slot===slot&&!['physical','effect'].includes(item.slot))map.set(item.id,itemInfo(item.id));return[...map.values()].filter(Boolean)}
@@ -18,12 +18,12 @@
   async function fetchPlayer(){const r=await timedFetch('/api/player/me',{headers:headers(),cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.player)throw new Error('player-load-failed');return d.player}
   async function fetchShop(){const r=await timedFetch('/api/shop',{headers:headers(),cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error('shop-load-failed');return d}
   async function load(){if(loading)return false;loading=true;try{const[next,shop]=await Promise.all([fetchPlayer(),fetchShop()]);playerData=next;shopData=shop;draftBase=(next.baseCharacters||[]).some(c=>c.id===next.baseCharacter)?next.baseCharacter:'student-default';draft=normalizeEquipment({...next.equipment,...shop.equipment});renderBases();renderInventory();renderAvatar();return true}catch{message.textContent='꾸미기 정보를 불러오지 못했어요.';return false}finally{loading=false}}
-  async function openPanel(){if(await load()){panel.hidden=false;message.textContent='모자·안경·가방·친구를 함께 골라도 한 번에 저장할 수 있어요.'}}
+  async function openPanel(){if(await load()){panel.hidden=false;message.textContent='머리·모자·안경·옷·신발·가방·손 아이템·친구를 함께 골라도 한 번에 저장할 수 있어요.'}}
   function closePanel(){if(save.disabled)return;panel.hidden=true}
   async function saveEquipment({closeAfter=false}={}){
     if(save.disabled)return false;save.disabled=true;message.textContent='저장 중...';
     try{
-      const owned=ownedSet(),legacy={hat:null,glasses:null,bag:null,pet:null},purchased={};
+      const owned=ownedSet(),legacy={hair:null,hat:null,glasses:null,outfit:null,shoes:null,bag:null,hand:null,pet:null},purchased={};
       for(const slot of slots){const id=draft[slot],info=itemInfo(id);if(!id)legacy[slot]=null;else if(info?.builtUnlocked)legacy[slot]=id;else legacy[slot]=null}
       const first=await timedFetch('/api/player/me/equipment',{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({baseCharacter:draftBase,equipment:legacy})}),firstData=await first.json().catch(()=>({}));if(!first.ok||!firstData.ok)throw new Error(firstData.code||'legacy-equipment-save-failed');
       for(const slot of slots){const id=draft[slot],info=itemInfo(id);if(id&&owned.has(id)&&!info?.builtUnlocked)purchased[slot]=id}

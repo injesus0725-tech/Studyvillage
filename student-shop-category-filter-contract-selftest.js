@@ -3,7 +3,7 @@ const assert=require('assert');
 const src=fs.readFileSync('student-shop.js','utf8');
 const css=fs.readFileSync('style.css','utf8');
 
-for(const [slot,label] of [['all','전체'],['hat','모자'],['glasses','안경'],['bag','가방'],['pet','친구']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
+for(const [slot,label] of [['all','전체'],['hair','머리'],['hat','모자'],['glasses','안경'],['outfit','옷'],['shoes','신발'],['bag','가방'],['hand','손'],['pet','친구']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
 assert.ok(src.includes("activeSlot==='all'||item.slot===activeSlot"),'선택한 종류만 표시해야 합니다.');
 assert.ok(src.includes("aria-pressed',String(candidate===button)"),'현재 필터를 접근성 상태로 표시해야 합니다.');
 assert.ok(src.includes('if(lastData)render(lastData)'),'필터 변경은 서버 재요청 없이 즉시 반영해야 합니다.');

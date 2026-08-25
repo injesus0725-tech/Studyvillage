@@ -1,1 +1,20 @@
 .player-icon.image-asset img{width:48px;height:48px;object-fit:contain;display:block}.avatar-layer.image-asset img{width:30px;height:30px;object-fit:contain;display:block}.avatar-pet.image-asset img{width:26px;height:26px}.preview-base.image-asset img{width:92px;height:92px;object-fit:contain;display:block}.preview-layer.image-asset img{width:46px;height:46px;object-fit:contain;display:block}.preview-pet.image-asset img{width:40px;height:40px}.image-asset img{pointer-events:none;user-select:none}#player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:studyvillage-walk-bob .34s ease-in-out infinite alternate}#player.facing-left .player-icon{transform:scaleX(-1)}#player.facing-right .player-icon{transform:scaleX(1)}#player.is-idle .player-icon,#player.is-idle .avatar-layer{animation:none}@keyframes studyvillage-walk-bob{from{translate:0 0}to{translate:0 -3px}}
+
+/* V1 normalized accessory anchors: the same relative order is used in village and preview. */
+#player .avatar-hair{left:50%;top:-5px;transform:translateX(-50%);z-index:1;font-size:25px}
+#player .avatar-outfit{left:50%;top:23px;transform:translateX(-50%);z-index:3;font-size:25px}
+#player .avatar-shoes{left:50%;top:43px;transform:translateX(-50%);z-index:3;font-size:21px}
+#player .avatar-hand{left:-18px;top:22px;z-index:5;font-size:27px}
+#player .avatar-hat{left:50%;top:-17px;transform:translateX(-50%);z-index:6}
+#player .avatar-glasses{left:50%;top:13px;transform:translateX(-50%);z-index:7}
+#player .avatar-bag{right:-18px;top:22px;z-index:2}
+#player .avatar-pet{right:-31px;bottom:-11px;z-index:7}
+.avatar-preview .preview-hair{left:50%;top:9px;transform:translateX(-50%);z-index:1;font-size:39px}
+.avatar-preview .preview-outfit{left:50%;top:65px;transform:translateX(-50%);z-index:3;font-size:42px}
+.avatar-preview .preview-shoes{left:50%;top:101px;transform:translateX(-50%);z-index:3;font-size:34px}
+.avatar-preview .preview-hand{left:-2px;top:62px;z-index:6;font-size:45px}
+.avatar-preview .preview-hat{left:50%;top:-10px;transform:translateX(-50%);z-index:7}
+.avatar-preview .preview-glasses{left:50%;top:42px;transform:translateX(-50%);z-index:8}
+.avatar-preview .preview-bag{right:-8px;top:61px;z-index:2}
+.avatar-preview .preview-pet{right:-19px;bottom:-5px;z-index:8}
+.sv-rank-hair{left:50%;top:3px;transform:translateX(-50%);z-index:1;font-size:20px}.sv-rank-outfit{left:50%;top:30px;transform:translateX(-50%);z-index:3;font-size:21px}.sv-rank-shoes{left:50%;top:45px;transform:translateX(-50%);z-index:3;font-size:17px}.sv-rank-hand{left:-2px;top:29px;z-index:6;font-size:22px}

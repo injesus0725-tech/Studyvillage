@@ -3,7 +3,7 @@ const assert=require('assert');
 const src=fs.readFileSync('admin-shop.js','utf8');
 const css=fs.readFileSync('admin.css','utf8');
 
-for(const [slot,label] of [['all','전체'],['hat','모자'],['glasses','안경'],['bag','가방'],['pet','친구'],['effect','효과'],['physical','실물']])assert.ok(src.includes(`data-admin-shop-slot="${slot}"`),`${label} 관리자 상점 필터가 필요합니다.`);
+for(const [slot,label] of [['all','전체'],['hair','머리'],['hat','모자'],['glasses','안경'],['outfit','옷'],['shoes','신발'],['bag','가방'],['hand','손'],['pet','친구'],['effect','효과'],['physical','실물']])assert.ok(src.includes(`data-admin-shop-slot="${slot}"`),`${label} 관리자 상점 필터가 필요합니다.`);
 assert.ok(src.includes("row.dataset.shopSlot=String(item.slot||'')"),'각 카드에 서버의 안전한 종류 값을 연결해야 합니다.');
 assert.ok(src.includes("card.hidden=activeSlot!=='all'&&card.dataset.shopSlot!==activeSlot"),'선택 종류가 아닌 기존 카드만 숨겨야 합니다.');
 assert.ok(src.includes("candidate.setAttribute('aria-pressed',String(candidate===button))"),'현재 필터를 접근성 상태로 표시해야 합니다.');

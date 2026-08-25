@@ -20,7 +20,12 @@ window.StudyVillageAvatar = (() => {
     'field-satchel': { emoji:'🧰', src:null, alt:'탐험 도구 가방' },
     'book-pack': { emoji:'📚', src:null, alt:'책마루 가방' },
     'pet-owl': { emoji:'🦉', src:null, alt:'부엉이 친구' },
-    'pet-fox': { emoji:'🦊', src:null, alt:'여우 친구' }
+    'pet-fox': { emoji:'🦊', src:null, alt:'여우 친구' },
+    'hair-short': {emoji:'💇',src:null,alt:'씩씩한 짧은 머리'},'hair-bob':{emoji:'👩',src:null,alt:'단정한 단발머리'},'hair-ponytail':{emoji:'👱‍♀️',src:null,alt:'활동적인 포니테일'},'hair-blue':{emoji:'🧑‍🎤',src:null,alt:'별빛 파란 머리'},
+    'hat-wizard':{emoji:'🧙',src:null,alt:'마법사 모자'},'hat-pirate':{emoji:'🏴‍☠️',src:null,alt:'해적 모자'},'hat-flower':{emoji:'🌼',src:null,alt:'꽃 장식 모자'},'glasses-sun':{emoji:'🕶️',src:null,alt:'멋쟁이 선글라스'},'glasses-heart':{emoji:'💗',src:null,alt:'하트 안경'},
+    'outfit-hoodie':{emoji:'🧥',src:null,alt:'편안한 후드'},'outfit-uniform':{emoji:'👔',src:null,alt:'학습마을 교복'},'outfit-wizard':{emoji:'🥻',src:null,alt:'별빛 마법사 옷'},'outfit-armor':{emoji:'🛡️',src:null,alt:'마을 수호자 갑옷'},
+    'shoes-sneakers':{emoji:'👟',src:null,alt:'달리기 운동화'},'shoes-boots':{emoji:'🥾',src:null,alt:'탐험 장화'},'shoes-wing':{emoji:'🪽',src:null,alt:'바람 날개 신발'},'bag-art':{emoji:'🎨',src:null,alt:'미술 도구 가방'},'bag-rocket':{emoji:'🚀',src:null,alt:'로켓 가방'},
+    'hand-sword':{emoji:'⚔️',src:null,alt:'용사의 검'},'hand-wand':{emoji:'🪄',src:null,alt:'별빛 지팡이'},'hand-book':{emoji:'📖',src:null,alt:'지혜의 책'},'hand-magnifier':{emoji:'🔎',src:null,alt:'탐정 돋보기'},'pet-dog':{emoji:'🐶',src:null,alt:'강아지 친구'},'pet-rabbit':{emoji:'🐰',src:null,alt:'토끼 친구'},'pet-dragon':{emoji:'🐲',src:null,alt:'꼬마 용 친구'},'pet-slime':{emoji:'🟢',src:null,alt:'말랑 슬라임 친구'}
   };
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}
