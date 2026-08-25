@@ -18,7 +18,7 @@ assert.ok(layout.includes("if(event.key!=='Escape'||ranking.hidden)return"),'ran
 assert.ok(!layout.includes('activity-attempt-status/'),'village layout must not perform expedition attempt checks');
 assert.ok(!layout.includes('sv-expedition-panel'),'legacy expedition panel must be retired from village layout');
 assert.ok(!layout.includes("makeButton('explore'"),'village layout must not create a second exploration entry button');
-assert.ok(expedition.includes("explore.id='exploration-cave'")&&expedition.includes("explore.innerHTML='🕳️<span>탐험 동굴</span>'"),'exploration v2 must own the village cave entrance');
+assert.ok(expedition.includes("explore.id='exploration-cave'")&&expedition.includes('cave-rocks')&&expedition.includes('탐험 동굴'),'exploration v2 must own the village cave entrance');
 assert.ok(expedition.includes("hub.id='student-explore-panel'"),'exploration v2 must own the expedition catalog and hub');
 assert.ok(html.includes('assets/student-exploration-v2.js'),'production must load exploration v2');
 assert.ok(!html.includes('assets/student-study-menu.js'),'retired study menu must not load in production');

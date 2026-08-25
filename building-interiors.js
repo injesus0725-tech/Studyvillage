@@ -16,7 +16,7 @@
   const hint=document.createElement('div');hint.id='building-interaction-hint';hint.className='interaction-hint';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');game.appendChild(hint);
   let current=null,open=false,lastCheck=0,bypassUntil=0;
   const buildings=[
-    {id:'school',selector:'.school',icon:'🏫',title:'배움터',text:'수업 활동과 학습 미션이 열리는 공간입니다.',action:'math'},
+    {id:'school',selector:'.school',icon:'🏫',title:'교과 배움터',text:'국어·수학·사회·과학 활동과 학습 미션이 열리는 공간입니다.',action:'math'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
     {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'수수께끼와 여러 학습 퀴즈에 도전하는 공간입니다.',action:'quiz'},
     {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize'}

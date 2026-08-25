@@ -19,6 +19,6 @@
   // The write-action repair bundle was implemented but was not included by the
   // old admin page.  Load it from the always-present guard so teacher controls
   // cannot silently fall back to inert buttons.
-  document.querySelector('#change-admin-password')?.remove();for(const src of ['/assets/admin-runtime-fixes.js?v=20260825r9','/assets/admin-direct-controls.js?v=20260825r9']){const script=document.createElement('script');script.src=src;script.async=false;document.head.appendChild(script)}
+  const passwordChange=document.querySelector('#change-admin-password');if(passwordChange){passwordChange.hidden=true;passwordChange.style.display='none'}for(const src of ['/assets/admin-runtime-fixes.js?v=20260825r9','/assets/admin-direct-controls.js?v=20260825r9']){const script=document.createElement('script');script.src=src;script.async=false;document.head.appendChild(script)}
   window.StudyVillageAdminNetworkGuard={timeoutMs:REQUEST_TIMEOUT_MS,handleExpiredSession};scheduleLocalLogin();
 })();
