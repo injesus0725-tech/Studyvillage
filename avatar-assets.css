@@ -1,20 +1,10 @@
-.player-icon.image-asset img{width:48px;height:48px;object-fit:contain;display:block}.avatar-layer.image-asset img{width:30px;height:30px;object-fit:contain;display:block}.avatar-pet.image-asset img{width:26px;height:26px}.preview-base.image-asset img{width:92px;height:92px;object-fit:contain;display:block}.preview-layer.image-asset img{width:46px;height:46px;object-fit:contain;display:block}.preview-pet.image-asset img{width:40px;height:40px}.image-asset img{pointer-events:none;user-select:none}#player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:studyvillage-walk-bob .34s ease-in-out infinite alternate}#player.facing-left .player-icon{transform:scaleX(-1)}#player.facing-right .player-icon{transform:scaleX(1)}#player.is-idle .player-icon,#player.is-idle .avatar-layer{animation:none}@keyframes studyvillage-walk-bob{from{translate:0 0}to{translate:0 -3px}}
-
-/* V1 normalized accessory anchors: the same relative order is used in village and preview. */
-#player .avatar-hair{left:50%;top:-5px;transform:translateX(-50%);z-index:1;font-size:25px}
-#player .avatar-outfit{left:50%;top:23px;transform:translateX(-50%);z-index:3;font-size:25px}
-#player .avatar-shoes{left:50%;top:43px;transform:translateX(-50%);z-index:3;font-size:21px}
-#player .avatar-hand{left:-18px;top:22px;z-index:5;font-size:27px}
-#player .avatar-hat{left:50%;top:-17px;transform:translateX(-50%);z-index:6}
-#player .avatar-glasses{left:50%;top:13px;transform:translateX(-50%);z-index:7}
-#player .avatar-bag{right:-18px;top:22px;z-index:2}
-#player .avatar-pet{right:-31px;bottom:-11px;z-index:7}
-.avatar-preview .preview-hair{left:50%;top:9px;transform:translateX(-50%);z-index:1;font-size:39px}
-.avatar-preview .preview-outfit{left:50%;top:65px;transform:translateX(-50%);z-index:3;font-size:42px}
-.avatar-preview .preview-shoes{left:50%;top:101px;transform:translateX(-50%);z-index:3;font-size:34px}
-.avatar-preview .preview-hand{left:-2px;top:62px;z-index:6;font-size:45px}
-.avatar-preview .preview-hat{left:50%;top:-10px;transform:translateX(-50%);z-index:7}
-.avatar-preview .preview-glasses{left:50%;top:42px;transform:translateX(-50%);z-index:8}
-.avatar-preview .preview-bag{right:-8px;top:61px;z-index:2}
-.avatar-preview .preview-pet{right:-19px;bottom:-5px;z-index:8}
-.sv-rank-hair{left:50%;top:3px;transform:translateX(-50%);z-index:1;font-size:20px}.sv-rank-outfit{left:50%;top:30px;transform:translateX(-50%);z-index:3;font-size:21px}.sv-rank-shoes{left:50%;top:45px;transform:translateX(-50%);z-index:3;font-size:17px}.sv-rank-hand{left:-2px;top:29px;z-index:6;font-size:22px}
+/* One fixed full-body canvas for every modular mini-avatar layer. */
+#player{width:72px!important;height:108px!important;min-height:108px!important;background:#ffffff55!important}
+#player .player-icon,#player .avatar-layer{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;display:block!important;line-height:0!important}
+#player .player-icon{z-index:2}.avatar-bag{z-index:1!important}.avatar-hair{z-index:3!important}.avatar-outfit,.avatar-bottom,.avatar-shoes{z-index:4!important}.avatar-hat,.avatar-glasses,.avatar-hand,.avatar-pet{z-index:6!important}
+.avatar-preview{width:144px!important;height:216px!important;border-radius:24px!important}.avatar-preview .preview-base,.avatar-preview .preview-layer{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;display:block!important;line-height:0!important}
+.preview-base{z-index:2}.preview-bag{z-index:1!important}.preview-hair{z-index:3!important}.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}.preview-hat,.preview-glasses,.preview-hand,.preview-pet{z-index:6!important}
+.svg-asset svg,.image-asset img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none}
+#player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:studyvillage-walk-bob .34s steps(2,end) infinite alternate}#player.facing-left .player-icon,#player.facing-left .avatar-layer{transform:scaleX(-1)!important}#player.facing-right .player-icon,#player.facing-right .avatar-layer{transform:scaleX(1)!important}#player.is-idle .player-icon,#player.is-idle .avatar-layer{animation:none}@keyframes studyvillage-walk-bob{from{translate:0 0}to{translate:0 -3px}}
+.sv-rank-avatar{width:72px!important;height:92px!important;border-radius:18px!important}.sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;line-height:0!important}.sv-rank-base{z-index:2}.sv-rank-bag{z-index:1!important}.sv-rank-hair{z-index:3!important}.sv-rank-outfit,.sv-rank-bottom,.sv-rank-shoes{z-index:4!important}.sv-rank-hat,.sv-rank-glasses,.sv-rank-hand,.sv-rank-pet{z-index:6!important}
+.base-choice-preview,.item-part-preview{display:block!important;width:48px!important;height:72px!important;line-height:0!important}.base-choice-preview svg,.item-part-preview svg{display:block;width:100%;height:100%}.player-label{top:104px!important}

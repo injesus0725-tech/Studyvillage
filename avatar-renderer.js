@@ -1,48 +1,31 @@
-/* v0.8 full-body avatar renderer */
-window.StudyVillageAvatar = (() => {
-  const BASES = {
-    'student-default': { emoji:'🧍', src:null, alt:'기본 학생 캐릭터' },
-    'student-boy': { emoji:'🧍‍♂️', src:null, alt:'소년 탐험가' },
-    'student-girl': { emoji:'🧍‍♀️', src:null, alt:'소녀 탐험가' },
-    'student-hero': { emoji:'🧑‍🚀', src:null, alt:'우주 탐험가' }
+/* StudyVillage modular mini-avatar renderer. Every base and wearable shares one 96x144 canvas. */
+window.StudyVillageAvatar=(()=>{
+  const frame=body=>`<svg viewBox="0 0 96 144" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="crispEdges">${body}</svg>`;
+  const baseSvg=(skin,shirt)=>frame(`<g stroke="#3b2a2a" stroke-width="2" stroke-linejoin="round"><path fill="${skin}" d="M25 30Q25 10 48 10t23 20v20q0 19-23 19T25 50z"/><path fill="${skin}" d="M22 37h5v17h-5q-6-8 0-17zm52 0h-5v17h5q6-8 0-17z"/><path fill="#2f2626" d="M34 39h5v7h-5zm23 0h5v7h-5z"/><path fill="#d96c70" d="M43 55q5 5 10 0-2 8-10 0z"/><path fill="${skin}" d="M42 66h12v8H42zM20 76h11v29H20zm45 0h11v29H65z"/><path fill="${shirt}" d="M29 70h38v38H29z"/><path fill="#f3f6fb" d="M33 103h14v25H33zm16 0h14v25H49z"/><path fill="#454b55" d="M29 124h19v12H28q-4-5 1-12zm19 0h19q5 7 1 12H48z"/></g>`);
+  const hair=(kind,color)=>{const shapes={short:`<path d="M23 38Q19 7 48 5t26 35l-8-9-4 9-8-13-7 12-8-12-8 12z"/>`,bob:`<path d="M22 41Q19 6 48 5t27 36v22H63V35l-8-9-8 11-9-11-7 10v27H20z"/>`,pony:`<path d="M24 39Q20 7 48 5t25 34l-8-8-5 8-12-14-10 13-8-8-4 9z"/><path d="M70 20q19 6 8 30l-9-5q10-10 1-25z"/>`,wave:`<path d="M20 43Q18 5 48 4t29 39l-9-7-5 10-8-14-8 12-10-12-7 13z"/>`};return frame(`<g fill="${color}" stroke="#3a261f" stroke-width="2">${shapes[kind]||shapes.short}</g>`)};
+  const hat=(kind,color)=>{const shapes={cap:`<path d="M25 25Q28 8 56 10q15 2 16 17H25z"/><path d="M50 25h31q-3 8-23 7z"/>`,crown:`<path d="M27 27l3-18 12 10 7-14 8 14 12-10 1 18z"/>`,wizard:`<path d="M29 26L51 0l16 27z"/><path d="M19 27h58v8H19z"/>`,pirate:`<path d="M26 18q22-17 44 0v12H26z"/><path d="M20 29h57v7H20z"/>`,flower:`<circle cx="66" cy="19" r="9"/><circle cx="58" cy="19" r="7"/><circle cx="63" cy="12" r="7"/>`};return frame(`<g fill="${color}" stroke="#37262b" stroke-width="2" stroke-linejoin="round">${shapes[kind]||shapes.cap}</g>`)};
+  const glasses=(kind,color)=>frame(`<g fill="${kind==='heart'?color:'#dceeff'}" stroke="${color}" stroke-width="3"><path d="M27 39h18v14H28q-5-7-1-14zm24 0h18q4 7-1 14H51z"/><path d="M45 43h6"/></g>`);
+  const top=(kind,color)=>{const shapes={hoodie:`<path d="M27 70h42v38H27z"/><path d="M35 70q13 13 26 0" fill="none"/><path d="M45 82v17m6-17v17" fill="none"/>`,uniform:`<path d="M27 70h42v38H27z"/><path fill="#fff" d="M39 70l9 14 9-14z"/><path d="M48 83v25" fill="none"/>`,robe:`<path d="M27 69h42l8 43H19z"/><path d="M37 70l11 14 11-14" fill="none"/>`,armor:`<path d="M25 72l11-8h24l11 8-5 38H30z"/><path d="M37 69l11 11 11-11M48 80v28" fill="none"/>`};return frame(`<g fill="${color}" stroke="#2f3040" stroke-width="2" stroke-linejoin="round">${shapes[kind]||shapes.hoodie}</g>`)};
+  const bottom=(kind,color)=>{const shapes={pants:`<path d="M30 101h36l-3 28H50l-2-18-2 18H33z"/>`,shorts:`<path d="M30 101h36l-2 17H51l-3-8-3 8H32z"/>`,skirt:`<path d="M32 99h32l8 24H24z"/>`};return frame(`<g fill="${color}" stroke="#29313b" stroke-width="2">${shapes[kind]||shapes.pants}</g>`)};
+  const shoes=(color,wing=false)=>frame(`<g fill="${color}" stroke="#252a30" stroke-width="2"><path d="M27 122h21v14H25q-4-7 2-14zm21 0h21q6 7 2 14H48z"/>${wing?'<path fill="#dff7ff" d="M24 122l-13-9 8 16zm48 0l13-9-8 16z"/>':''}</g>`);
+  const bag=(kind,color)=>frame(`<g fill="${color}" stroke="#3c2c25" stroke-width="2"><path d="M65 72h22v36H65z"/><path d="M69 72q7-12 14 0" fill="none"/>${kind==='rocket'?'<path fill="#dcefff" d="M70 106l-5 15 10-7 7 7-1-15z"/>':''}</g>`);
+  const hand=(kind,color)=>{const shapes={sword:`<path fill="#dcecff" d="M18 94L2 68l5-5 20 25z"/><path d="M12 91l12-8 5 6-12 8z"/>`,wand:`<path d="M18 96L7 69l6-3 12 27z"/><path fill="#ffd642" d="M9 58l4 7 8 1-6 6 2 8-8-4-7 4 1-8-6-6 8-1z"/>`,book:`<path d="M3 82q10-5 20 2v21q-10-7-20-2z"/><path d="M23 84q10-7 20-2v21q-10-5-20 2z"/>`,magnifier:`<circle cx="12" cy="79" r="9" fill="none"/><path d="M18 86l12 16" fill="none"/>`};return frame(`<g fill="${color}" stroke="#3a2b2b" stroke-width="3" stroke-linejoin="round">${shapes[kind]||shapes.sword}</g>`)};
+  const pet=(kind,color)=>frame(`<g fill="${color}" stroke="#3b2b28" stroke-width="2"><path d="M69 111l4-13 8 9 8-9 5 14v22H69z"/><circle cx="77" cy="117" r="2" fill="#292323"/><circle cx="87" cy="117" r="2" fill="#292323"/><path d="M80 124q3 3 6 0" fill="none"/>${kind==='slime'?'<path d="M68 130q13 10 26 0"/>':''}</g>`);
+  const BASES={'student-default':{svg:baseSvg('#ffd2ad','#f3eee5'),alt:'기본 학생'},'student-boy':{svg:baseSvg('#ffd2ad','#6aa5e7'),alt:'소년 탐험가'},'student-girl':{svg:baseSvg('#f2bd98','#e884a5'),alt:'소녀 탐험가'}};
+  const ASSETS={
+    'hair-short':{svg:hair('short','#5a3528')},'hair-bob':{svg:hair('bob','#392922')},'hair-ponytail':{svg:hair('pony','#8a4b28')},'hair-blue':{svg:hair('wave','#315b9f')},
+    'cap-blue':{svg:hat('cap','#3c79c9')},'crown-gold':{svg:hat('crown','#ffd33d')},'leaf-cap':{svg:hat('cap','#5ba65b')},'scholar-cap':{svg:hat('cap','#272b51')},'hat-wizard':{svg:hat('wizard','#553b8c')},'hat-pirate':{svg:hat('pirate','#32323c')},'hat-flower':{svg:hat('flower','#f08bad')},
+    'glasses-round':{svg:glasses('round','#3b3b42')},'explorer-goggles':{svg:glasses('round','#4a633c')},'star-monocle':{svg:glasses('round','#c99b26')},'glasses-sun':{svg:glasses('round','#252631')},'glasses-heart':{svg:glasses('heart','#e75d86')},
+    'outfit-hoodie':{svg:top('hoodie','#3977c8')},'outfit-uniform':{svg:top('uniform','#315ca5')},'outfit-wizard':{svg:top('robe','#6d4aa0')},'outfit-armor':{svg:top('armor','#8d9baa')},
+    'bottom-jeans':{svg:bottom('pants','#3b72a4')},'bottom-shorts':{svg:bottom('shorts','#4a515c')},'bottom-skirt':{svg:bottom('skirt','#c65f82')},
+    'shoes-sneakers':{svg:shoes('#e94b4b')},'shoes-boots':{svg:shoes('#704831')},'shoes-wing':{svg:shoes('#64aee8',true)},
+    'backpack':{svg:bag('bag','#a96b3c')},'field-satchel':{svg:bag('bag','#8b633c')},'book-pack':{svg:bag('bag','#3d6d9f')},'bag-art':{svg:bag('bag','#df7653')},'bag-rocket':{svg:bag('rocket','#a8b7c8')},
+    'hand-sword':{svg:hand('sword','#557aa6')},'hand-wand':{svg:hand('wand','#df6ea8')},'hand-book':{svg:hand('book','#4c78b5')},'hand-magnifier':{svg:hand('magnifier','#536573')},
+    'pet-chick':{svg:pet('pet','#f4d544')},'pet-cat':{svg:pet('pet','#e59a43')},'pet-owl':{svg:pet('pet','#9a6d45')},'pet-fox':{svg:pet('pet','#e47739')},'pet-dog':{svg:pet('pet','#b87946')},'pet-rabbit':{svg:pet('pet','#eee5df')},'pet-dragon':{svg:pet('pet','#62a867')},'pet-slime':{svg:pet('slime','#63c67a')}
   };
-  const ASSETS = {
-    'cap-blue': { emoji:'🧢', src:null, alt:'파란 모자' },
-    'crown-gold': { emoji:'👑', src:null, alt:'황금 왕관' },
-    'glasses-round': { emoji:'👓', src:null, alt:'동그란 안경' },
-    'backpack': { emoji:'🎒', src:null, alt:'모험 가방' },
-    'pet-chick': { emoji:'🐣', src:null, alt:'병아리 친구' },
-    'pet-cat': { emoji:'🐱', src:null, alt:'고양이 친구' },
-    'leaf-cap': { emoji:'🍃', src:null, alt:'새싹 탐험모' },
-    'scholar-cap': { emoji:'🎓', src:null, alt:'별빛 학사모' },
-    'explorer-goggles': { emoji:'🥽', src:null, alt:'숲빛 고글' },
-    'star-monocle': { emoji:'🔭', src:null, alt:'별 관측경' },
-    'field-satchel': { emoji:'🧰', src:null, alt:'탐험 도구 가방' },
-    'book-pack': { emoji:'📚', src:null, alt:'책마루 가방' },
-    'pet-owl': { emoji:'🦉', src:null, alt:'부엉이 친구' },
-    'pet-fox': { emoji:'🦊', src:null, alt:'여우 친구' },
-    'hair-short': {emoji:'💇',src:null,alt:'씩씩한 짧은 머리'},'hair-bob':{emoji:'👩',src:null,alt:'단정한 단발머리'},'hair-ponytail':{emoji:'👱‍♀️',src:null,alt:'활동적인 포니테일'},'hair-blue':{emoji:'🧑‍🎤',src:null,alt:'별빛 파란 머리'},
-    'hat-wizard':{emoji:'🧙',src:null,alt:'마법사 모자'},'hat-pirate':{emoji:'🏴‍☠️',src:null,alt:'해적 모자'},'hat-flower':{emoji:'🌼',src:null,alt:'꽃 장식 모자'},'glasses-sun':{emoji:'🕶️',src:null,alt:'멋쟁이 선글라스'},'glasses-heart':{emoji:'💗',src:null,alt:'하트 안경'},
-    'outfit-hoodie':{emoji:'🧥',src:null,alt:'편안한 후드'},'outfit-uniform':{emoji:'👔',src:null,alt:'학습마을 교복'},'outfit-wizard':{emoji:'🥻',src:null,alt:'별빛 마법사 옷'},'outfit-armor':{emoji:'🛡️',src:null,alt:'마을 수호자 갑옷'},
-    'shoes-sneakers':{emoji:'👟',src:null,alt:'달리기 운동화'},'shoes-boots':{emoji:'🥾',src:null,alt:'탐험 장화'},'shoes-wing':{emoji:'🪽',src:null,alt:'바람 날개 신발'},'bag-art':{emoji:'🎨',src:null,alt:'미술 도구 가방'},'bag-rocket':{emoji:'🚀',src:null,alt:'로켓 가방'},
-    'hand-sword':{emoji:'⚔️',src:null,alt:'용사의 검'},'hand-wand':{emoji:'🪄',src:null,alt:'별빛 지팡이'},'hand-book':{emoji:'📖',src:null,alt:'지혜의 책'},'hand-magnifier':{emoji:'🔎',src:null,alt:'탐정 돋보기'},'pet-dog':{emoji:'🐶',src:null,alt:'강아지 친구'},'pet-rabbit':{emoji:'🐰',src:null,alt:'토끼 친구'},'pet-dragon':{emoji:'🐲',src:null,alt:'꼬마 용 친구'},'pet-slime':{emoji:'🟢',src:null,alt:'말랑 슬라임 친구'}
-  };
-  function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
-  function base(id='student-default'){return BASES[id]||BASES['student-default']}
-  function asset(id,fallback=''){if(!id)return{emoji:'',src:null,alt:''};return ASSETS[id]||{emoji:fallback,src:null,alt:id}}
-  function paintBase(element,id='student-default'){paint(element,base(id));if(element)element.dataset.avatarBase=id}
-  function paintItem(element,id,fallback=''){paint(element,asset(id,fallback));if(element)element.dataset.avatarItem=id||''}
-  function setMotion(container,{moving=false,direction='down'}={}){
-    if(!container)return;
-    const dir=['up','down','left','right'].includes(direction)?direction:'down';
-    container.dataset.motion=moving?'walk':'idle';
-    container.dataset.direction=dir;
-    container.classList.toggle('is-walking',!!moving);
-    container.classList.toggle('is-idle',!moving);
-    container.classList.toggle('facing-left',dir==='left');
-    container.classList.toggle('facing-right',dir==='right');
-    container.classList.toggle('facing-up',dir==='up');
-    container.classList.toggle('facing-down',dir==='down');
-  }
-  return { BASES, ASSETS, base, asset, paint, paintBase, paintItem, setMotion };
+  function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
+  function base(id='student-default'){return BASES[id]||BASES['student-default']}function asset(id,fallback=''){if(!id)return{emoji:'',src:null,svg:'',alt:''};return ASSETS[id]||{emoji:fallback,src:null,svg:'',alt:id}}
+  function paintBase(element,id='student-default'){paint(element,base(id));if(element)element.dataset.avatarBase=BASES[id]?id:'student-default'}function paintItem(element,id,fallback=''){paint(element,asset(id,fallback));if(element)element.dataset.avatarItem=id||''}
+  function setMotion(container,{moving=false,direction='down'}={}){if(!container)return;const dir=['up','down','left','right'].includes(direction)?direction:'down';container.dataset.motion=moving?'walk':'idle';container.dataset.direction=dir;container.classList.toggle('is-walking',!!moving);container.classList.toggle('is-idle',!moving);container.classList.toggle('facing-left',dir==='left');container.classList.toggle('facing-right',dir==='right');container.classList.toggle('facing-up',dir==='up');container.classList.toggle('facing-down',dir==='down')}
+  return{BASES,ASSETS,base,asset,paint,paintBase,paintItem,setMotion};
 })();
