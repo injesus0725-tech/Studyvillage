@@ -6,7 +6,7 @@ const adminEdits=fs.readFileSync('admin-student-edit.js','utf8');
 const delivery=fs.readFileSync('assets/admin-delivery-notifications.js','utf8');
 const onboarding=fs.readFileSync('onboarding.js','utf8');
 const avatar=fs.readFileSync('avatar-renderer.js','utf8');
-const css=fs.readFileSync('activity-records.css','utf8');
+const css=fs.readFileSync('avatar-assets.css','utf8');
 const customize=fs.readFileSync('customize.js','utf8');
 const explorer=fs.readFileSync('assets/student-study-menu.js','utf8');
 
@@ -27,8 +27,9 @@ assert.ok(customize.includes("save.addEventListener('click',()=>saveEquipment({c
 assert.ok(customize.includes("if(closeAfter){panel.hidden=true;button.focus?.()}return true"),'customize panel must close only after a successful save');
 assert.ok(customize.includes('renderAvatar()'),'saved equipment must be rendered without a page refresh');
 
-for(const emoji of ['🧍','🧍‍♂️','🧍‍♀️'])assert.ok(avatar.includes(emoji),`full-body base ${emoji} missing`);
-assert.ok(css.includes('Full-body avatar accessory alignment'),'full-body accessory alignment styles must be packaged');
+for(const base of ['student-default','student-boy','student-girl'])assert.ok(avatar.includes(`'${base}'`),`modular mini-me base ${base} missing`);
+assert.ok(avatar.includes('viewBox="0 0 96 144"'),'all avatar parts must use the fixed anatomical canvas');
+assert.ok(css.includes('One fixed full-body canvas'),'fixed full-body accessory alignment styles must be packaged');
 assert.ok(css.includes('.avatar-bag')&&css.includes('.avatar-glasses')&&css.includes('.avatar-hat'),'wearable slots must have body-relative positioning');
 
 for(const name of ['랜덤 덧셈 동굴','곱셈 던전','수수께끼 숲','국어 1단원 동굴','수학 도형 신전','사회 1단원 성'])assert.ok(explorer.includes(name),`expedition hub missing ${name}`);
