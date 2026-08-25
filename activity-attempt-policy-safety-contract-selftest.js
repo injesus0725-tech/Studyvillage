@@ -13,7 +13,7 @@ for(const token of [
   "'math-arithmetic':Object.freeze({mode:'limited',limit:3",
   "'exploration-forest-riddle':Object.freeze({mode:'limited',limit:3",
   "'exploration-mountain-riddle':Object.freeze({mode:'limited',limit:3",
-  'return{...saved,...DAILY_CORE_POLICIES}',
+  'return{...DAILY_CORE_POLICIES,...saved}',
   "app.put('/api/admin/activity-attempt-policies',requireAdmin",
   'if(!checked.ok)return res.status(400)',
   'setSetting(STORE_KEY,JSON.stringify(checked.policies))'
