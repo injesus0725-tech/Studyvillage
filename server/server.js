@@ -17,7 +17,7 @@ import { customTitleKey, customTitleView, normalizeCustomTitle, readCustomTitle,
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
 const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;fs.mkdirSync(dataDir,{recursive:true});
 const dbPath=path.join(dataDir,'studyvillage.db'),db=new Database(dbPath),app=express(),PORT=Number(process.env.PORT)||3000;
-const BUILD_ID='20260825-r8-dialog-focus';
+const BUILD_ID='20260825-r9-content-plan';
 const sessions=new Map(),adminSessions=new Map(),presence=new Map(),replacedStudentSessions=new Map();
 const liveEvents=[];let liveEventSeq=0;
 const STUDENT_SESSION_TTL_MS=12*60*60*1000,ADMIN_SESSION_TTL_MS=12*60*60*1000,PRESENCE_TTL_MS=5*60*1000,REPLACED_SESSION_TTL_MS=5*60*1000;

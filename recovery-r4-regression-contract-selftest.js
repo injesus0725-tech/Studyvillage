@@ -11,7 +11,7 @@ assert.ok(!overlay.includes("textContent?.includes('탐험')"),'result buttons m
 assert.ok(overlay.includes("classList?.contains('explore')"),'only the explicit exploration menu class may activate the exploration overlay');
 assert.ok(exploration.includes("result.querySelector('button').onclick=back"),'a successful expedition result must wait for the explicit village button');
 assert.ok(exploration.includes("if(saving||resultLocked)return"),'the exit control must remain locked while saving and while results are visible');
-for(const token of ["function sound(kind='reveal')","setTimeout(()=>{revealing=false;next()},1050)","id:'star-thief'","id:'runaway-bandit'","bonus:4","bonus:3","bonus:2",'eventStarDelta','scene.querySelector(\'.sv2-next\').onclick=nextStage'])assert.ok(exploration.includes(token),`exploration reveal/reward contract missing: ${token}`);
+for(const token of ["function sound(kind='reveal')","setTimeout(()=>{revealing=false;next()},1500)","id:'star-thief'","id:'runaway-bandit'","bonus:4","bonus:3","bonus:2",'eventStarDelta','scene.querySelector(\'.sv2-next\').onclick=nextStage'])assert.ok(exploration.includes(token),`exploration reveal/reward contract missing: ${token}`);
 assert.ok(activity.includes('findBonusXp=Math.min(8,requestedXp)'),'discovery XP must remain a small, server-bounded exploration bonus');
 assert.ok(activity.includes('ghostWrong=body?.ghostWrong===true')&&activity.includes('goblinWrong=body?.goblinWrong===true'),'NPC penalties must depend on an incorrect answer reported for that NPC');
 assert.ok(activity.includes("xpDelta=goblinWrong?-10:0"),'goblin XP loss must apply only after a wrong answer');

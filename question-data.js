@@ -5,6 +5,7 @@
       activityId:'vocabulary',
       subject:'국어',
       topic:'어휘',
+      bookmaru:true,
       questions:[
         {category:'어휘',word:'다정하다',options:['정이 많고 친절하다','매우 빠르다','소리가 크다','마음이 급하다'],answer:0},
         {category:'어휘',word:'망설이다',options:['바로 행동하다','결정하지 못하고 주저하다','기뻐서 웃다','조용히 기다리다'],answer:1},
@@ -17,6 +18,7 @@
       activityId:'exploration-riddle',
       subject:'창의적 사고',
       topic:'수수께끼 탐험',
+      bookmaru:false,
       questions:[
         {id:'r01',difficulty:'easy',question:'먹을수록 커지고 물을 마시면 죽는 것은?',options:['불','구름','나무','그림자'],answer:0,explanation:'불은 연료를 먹으며 커지고 물을 만나면 꺼져요.'},
         {id:'r02',difficulty:'easy',question:'항상 내 앞에 있지만 볼 수 없는 것은?',options:['뒤통수','미래','거울','발자국'],answer:1,explanation:'미래는 늘 앞에 있지만 아직 볼 수 없어요.'},
