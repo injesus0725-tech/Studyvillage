@@ -107,6 +107,7 @@ const tests=[
   'student-admin-action-boundary-contract-selftest.js',
   'student-accessory-benchmark-contract-selftest.js',
   'student-v1-wardrobe-expansion-contract-selftest.js',
+  'student-full-wardrobe-reload-contract-selftest.js',
   'student-2d-exploration-map-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-interaction-hint-isolation-contract-selftest.js',
