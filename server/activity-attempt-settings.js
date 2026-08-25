@@ -22,7 +22,10 @@ export function readActivityAttemptPolicies(getSetting){
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
     const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).map(([id,policy])=>[id,withDailyReset(policy)])):{};
-    return{...saved,...DAILY_CORE_POLICIES};
+    // Defaults fill only missing activities.  The old order overwrote every
+    // teacher-saved value on the next read, making the screen appear to save
+    // but immediately return to 1/3.
+    return{...DAILY_CORE_POLICIES,...saved};
   }catch{return{...DAILY_CORE_POLICIES}}
 }
 
