@@ -19,6 +19,6 @@
   // The write-action repair bundle was implemented but was not included by the
   // old admin page.  Load it from the always-present guard so teacher controls
   // cannot silently fall back to inert buttons.
-  const runtime=document.createElement('script');runtime.src='/assets/admin-runtime-fixes.js?v=20260825r6';runtime.async=false;document.head.appendChild(runtime);
+  const runtime=document.createElement('script');runtime.src='/assets/admin-runtime-fixes.js?v=20260825r7';runtime.async=false;document.head.appendChild(runtime);
   window.StudyVillageAdminNetworkGuard={timeoutMs:REQUEST_TIMEOUT_MS,handleExpiredSession};scheduleLocalLogin();
 })();
