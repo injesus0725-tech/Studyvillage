@@ -16,11 +16,12 @@
   const hint=document.createElement('div');hint.id='building-interaction-hint';hint.className='interaction-hint';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');game.appendChild(hint);
   let current=null,open=false,lastCheck=0,bypassUntil=0;
   const buildings=[
-    {id:'school',selector:'.school',icon:'🏫',title:'교과 배움터',text:'국어·수학·사회·과학 활동과 학습 미션이 열리는 공간입니다.',action:'math'},
+    {id:'school',selector:'.school',icon:'🏫',title:'교과 배움터',text:'국어·수학·사회·과학·예체능을 과목과 단원별로 학습하는 공간입니다.',action:'curriculum'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
-    {id:'quiz',selector:'#quiz-hall',icon:'❓',title:'도전관',text:'수수께끼와 여러 학습 퀴즈에 도전하는 공간입니다.',action:'quiz'},
+    {id:'quiz',selector:'#quiz-hall',icon:'➕',title:'수학 놀이터',text:'매번 달라지는 수학 문제를 풀며 계산 감각을 기르는 공간입니다.',action:'math'},
     {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize'}
   ];
+  const mathHall=document.querySelector('#quiz-hall');if(mathHall){mathHall.childNodes[0].nodeValue='➕';const label=mathHall.querySelector('span');if(label)label.textContent='수학 놀이터'}
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
   const exit=overlay.querySelector('#interior-exit'),icon=overlay.querySelector('#interior-icon'),title=overlay.querySelector('#interior-title'),text=overlay.querySelector('#interior-text'),actions=overlay.querySelector('#interior-action-wrap');
   const touchMode=()=>matchMedia?.('(pointer:coarse)').matches===true||innerWidth<=700;
@@ -42,14 +43,14 @@
     setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true})),40)
   }
   function enter(b){if(!b)return;open=true;current=b;overlay.style.removeProperty('pointer-events');overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';
-    if(b.action==='math')addActionButton('➕ 랜덤 계산 연습 시작',()=>runScoredAction(async()=>{await import('./assets/student-math-review.js');window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))}),true);
+    if(b.action==='curriculum')addActionButton('📚 과목·단원 선택하기',()=>runScoredAction(async()=>{await import('./assets/student-curriculum-learning.js');window.dispatchEvent(new CustomEvent('studyvillage:open-curriculum-learning'))}),true);
+    else if(b.action==='math')addActionButton('➕ 랜덤 수학 문제 시작',()=>runScoredAction(async()=>{await import('./assets/student-math-review.js');window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))}),true);
     else if(b.action==='library')addActionButton('📖 낱말 뜻 맞추기 시작',()=>runScoredAction(()=>window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'))),true);
-    else if(b.action==='quiz')addActionButton('🎯 수수께끼 도전 시작',()=>runScoredAction(startRiddleFromHall),true);
     else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click())});
     document.body.classList.add('inside-building')
   }
   function interact(e){if(open||performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
-  function foregroundPanelOpen(){return[...document.querySelectorAll('#student-explore-panel,#study-expedition-stage,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,.welcome-guide')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
+  function foregroundPanelOpen(){return[...document.querySelectorAll('#student-explore-panel,#study-expedition-stage,#curriculum-learning,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,.welcome-guide')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){if(foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
   talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);window.addEventListener('studyvillage:return-to-village',()=>{bypassUntil=0;leave()});
   guideNpc?.addEventListener('click',e=>{if(open||foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();bypassUntil=performance.now()+500;window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}))},true);

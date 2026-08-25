@@ -9,6 +9,15 @@ const DAILY_CORE_POLICIES=Object.freeze({
   'riddle-demo':Object.freeze({mode:'limited',limit:1,xpMode:'first-completion',period:'daily'}),
   'library-vocabulary':Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'}),
   'math-arithmetic':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'curriculum-korean':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
+  'curriculum-math':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
+  'curriculum-social':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
+  'curriculum-science':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
+  'curriculum-arts':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
+  'exploration-korean':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
+  'exploration-social':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
+  'exploration-science':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
+  'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
   'exploration-forest-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
   'exploration-mountain-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'})
 });

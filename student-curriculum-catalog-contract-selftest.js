@@ -1,0 +1,10 @@
+const assert=require('assert'),fs=require('fs');
+const data=fs.readFileSync('question-data.js','utf8'),ui=fs.readFileSync('assets/student-curriculum-learning.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),reward=fs.readFileSync('server/reward-economy.js','utf8'),stars=fs.readFileSync('server/star-ledger.js','utf8');
+for(const id of ['curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts'])assert.ok(data.includes(`activityId:'${id}'`),`missing curriculum set ${id}`);
+for(const token of ['SUBJECTS','과목과 단원을 선택해요','spaces','/api/player/me/activity','studyvillage:open-curriculum-learning'])assert.ok(ui.includes(token),`curriculum UI missing ${token}`);
+assert.ok(building.includes("action:'curriculum'")&&building.includes("title:'수학 놀이터'"),'village learning buildings must use the new structure');
+for(const name of ['국어의 숲','사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
+assert.ok(explore.includes("picked[picked.length-1]=shuffle(riddles)[0]"),'random forest must add at most one fun riddle');
+assert.ok(reward.includes("id.startsWith('curriculum-')"),'curriculum activities must share regular XP/star balance');
+assert.ok(stars.includes("'curriculum-korean'")&&stars.includes("'exploration-random'"),'curriculum and catalog exploration stars must be server-confirmed');
+console.log('student curriculum catalog contract self-test passed');

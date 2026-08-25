@@ -15,6 +15,25 @@
         {category:'어휘',word:'격려하다',options:['잘못을 꾸짖다','힘내도록 용기와 힘을 북돋우다','모르는 척하다','혼자 해결하다'],answer:1}
       ]
     },
+    curriculumKorean:{activityId:'curriculum-korean',subject:'국어',topic:'문장과 낱말',grade:3,semester:1,unit:'1단원 재미가 톡톡톡',difficulty:'normal',spaces:['curriculum','exploration'],enabled:true,questions:[
+      {question:'시에서 같은 말이나 비슷한 말이 되풀이되면 어떤 느낌을 줄까요?',options:['리듬감이 생긴다','내용이 모두 사라진다','글자가 작아진다','제목이 없어진다'],answer:0,explanation:'말을 되풀이하면 운율과 리듬감을 느낄 수 있어요.'},
+      {question:'흉내 내는 말을 사용하면 좋은 점은 무엇인가요?',options:['모습이나 소리를 생생하게 나타낸다','문장을 무조건 짧게 만든다','글쓴이를 숨긴다','시간 순서를 없앤다'],answer:0,explanation:'의성어와 의태어는 소리나 모습을 생생하게 표현해요.'},
+      {question:'‘졸졸’이 가장 잘 어울리는 것은 무엇인가요?',options:['시냇물이 흐르는 소리','천둥이 치는 소리','문이 세게 닫히는 소리','사자가 우는 소리'],answer:0,explanation:'졸졸은 적은 양의 물이 부드럽게 흐르는 소리를 나타내요.'},
+      {question:'글을 읽고 중심 생각을 찾을 때 먼저 살필 것은 무엇인가요?',options:['반복되거나 중요하게 다룬 내용','글자 색깔만','종이의 크기','문장의 개수만'],answer:0,explanation:'반복되거나 중요하게 설명한 내용을 살피면 중심 생각을 찾기 쉬워요.'},
+      {question:'친구의 발표를 들을 때 알맞은 태도는 무엇인가요?',options:['끝까지 듣고 궁금한 점을 묻는다','중간에 큰 소리로 끼어든다','다른 일을 한다','발표를 보지 않는다'],answer:0,explanation:'발표를 존중하며 끝까지 듣고 알맞게 질문해요.'}
+    ]},
+    curriculumMath:{activityId:'curriculum-math',subject:'수학',topic:'덧셈과 뺄셈',grade:3,semester:1,unit:'1단원 덧셈과 뺄셈',difficulty:'normal',spaces:['curriculum','exploration'],enabled:true,questions:[
+      {question:'324 + 215의 값은?',options:['539','529','549','439'],answer:0,explanation:'백, 십, 일의 자리끼리 더하면 539예요.'},{question:'672 - 241의 값은?',options:['431','421','441','531'],answer:0,explanation:'각 자리에서 차례로 빼면 431이에요.'},{question:'덧셈에서 두 수의 순서를 바꾸어 더하면 합은 어떻게 될까요?',options:['같다','항상 1 커진다','항상 1 작아진다','0이 된다'],answer:0,explanation:'덧셈은 더하는 순서를 바꾸어도 합이 같아요.'},{question:'500에서 275를 빼면?',options:['225','235','325','215'],answer:0,explanation:'500-275=225예요.'},{question:'248 + 152를 어림하면 약 얼마인가요?',options:['400','300','500','200'],answer:0,explanation:'248은 약 250, 152는 약 150이므로 약 400이에요.'}
+    ]},
+    curriculumSocial:{activityId:'curriculum-social',subject:'사회',topic:'우리 고장의 모습',grade:3,semester:1,unit:'1단원 우리 고장의 모습',difficulty:'normal',spaces:['curriculum','exploration'],enabled:true,questions:[
+      {question:'고장의 여러 장소를 위에서 내려다본 것처럼 나타낸 것은?',options:['지도','일기','동화','편지'],answer:0,explanation:'지도는 장소의 위치와 모습을 위에서 본 것처럼 나타내요.'},{question:'지도에서 방위를 나타낼 때 주로 위쪽은 어느 방향인가요?',options:['북쪽','남쪽','동쪽','서쪽'],answer:0,explanation:'일반적인 지도는 위쪽을 북쪽으로 나타내요.'},{question:'고장의 모습을 조사하는 방법으로 알맞은 것은?',options:['직접 관찰하고 사진을 찍는다','상상한 내용만 쓴다','아무에게도 묻지 않는다','한 장소만 보고 모두 같다고 한다'],answer:0,explanation:'직접 관찰하거나 사진, 면담 등 여러 방법으로 조사해요.'},{question:'장소에 대한 생각과 느낌이 사람마다 다른 까닭은?',options:['경험과 이용 목적이 다르기 때문','모든 사람이 같은 경험을 해서','장소 이름이 없어서','지도에 색이 없어서'],answer:0,explanation:'사람마다 장소에서 겪은 일과 이용하는 목적이 달라요.'},{question:'지도에서 건물이나 시설을 간단한 그림으로 나타낸 것은?',options:['기호','제목','축척','사진첩'],answer:0,explanation:'지도 기호는 장소나 시설을 간단하고 알아보기 쉽게 나타내요.'}
+    ]},
+    curriculumScience:{activityId:'curriculum-science',subject:'과학',topic:'물질의 성질',grade:3,semester:1,unit:'1단원 물질의 성질',difficulty:'normal',spaces:['curriculum','exploration'],enabled:true,questions:[
+      {question:'물체를 만드는 재료를 무엇이라고 하나요?',options:['물질','온도','무게','빛'],answer:0,explanation:'나무, 금속, 플라스틱처럼 물체를 만드는 재료를 물질이라고 해요.'},{question:'금속으로 만든 물체의 공통적인 성질로 알맞은 것은?',options:['단단하고 광택이 나는 것이 많다','모두 물에 뜬다','손으로 쉽게 찢어진다','모두 투명하다'],answer:0,explanation:'금속은 대체로 단단하고 표면에 광택이 있어요.'},{question:'유리컵 대신 플라스틱 컵을 쓰면 좋은 상황은?',options:['깨질 위험을 줄이고 싶을 때','불에 직접 가열할 때','칼날을 만들 때','자석에 붙이고 싶을 때'],answer:0,explanation:'플라스틱은 유리보다 잘 깨지지 않아 안전하게 쓸 수 있어요.'},{question:'물질의 성질을 비교하는 방법으로 알맞은 것은?',options:['만져 보고 구부려 보고 관찰한다','이름만 보고 정한다','색 하나만 본다','친구의 답을 그대로 쓴다'],answer:0,explanation:'여러 방법으로 직접 관찰하고 시험해 성질을 비교해요.'},{question:'고무가 타이어 재료로 알맞은 까닭은?',options:['탄성이 있고 잘 미끄러지지 않아서','물에 녹아서','쉽게 깨져서','빛을 완전히 통과시켜서'],answer:0,explanation:'고무는 탄성이 있고 마찰이 커서 타이어에 알맞아요.'}
+    ]},
+    curriculumArts:{activityId:'curriculum-arts',subject:'예체능',topic:'표현과 감상',grade:3,semester:1,unit:'표현과 감상 기초',difficulty:'normal',spaces:['curriculum','exploration'],enabled:true,questions:[
+      {question:'노래의 빠르기를 나타내는 말은?',options:['빠르기말','가사','음이름','제목'],answer:0,explanation:'빠르기말은 곡을 어느 정도 빠르게 연주할지 알려 줘요.'},{question:'미술 작품을 감상할 때 알맞은 태도는?',options:['느낌과 근거를 함께 말한다','정답 하나만 있다고 생각한다','작품을 함부로 만진다','친구의 느낌을 틀렸다고 한다'],answer:0,explanation:'작품에서 본 것을 근거로 자신의 느낌을 자유롭게 나눌 수 있어요.'},{question:'운동 전 준비 운동을 하는 가장 중요한 까닭은?',options:['몸을 풀어 다칠 위험을 줄이려고','더 빨리 지치려고','물을 마시지 않으려고','규칙을 없애려고'],answer:0,explanation:'준비 운동은 근육과 관절을 풀어 부상을 예방해요.'},{question:'여럿이 함께 경기할 때 지켜야 할 태도는?',options:['규칙을 지키고 서로 배려한다','이기기 위해 반칙한다','친구를 탓한다','혼자만 공을 가진다'],answer:0,explanation:'규칙과 배려를 지키면 모두가 안전하고 즐겁게 참여할 수 있어요.'},{question:'색을 섞거나 선을 다르게 사용해 나타낼 수 있는 것은?',options:['느낌과 생각','정답 번호만','소리의 크기만','시간표만'],answer:0,explanation:'색과 선의 특징을 활용해 느낌과 생각을 표현할 수 있어요.'}
+    ]},
     explorationRiddles:{
       activityId:'exploration-riddle',
       subject:'창의적 사고',
