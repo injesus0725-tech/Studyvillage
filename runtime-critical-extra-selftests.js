@@ -1,6 +1,7 @@
 const {spawnSync}=require('child_process');
 const tests=[
   'recovery-r4-regression-contract-selftest.js',
+  'student-sound-effects-contract-selftest.js',
   'classroom-cache-bust-contract-selftest.js',
   'runtime-observer-loop-contract-selftest.js',
   'admin-local-passwordless-contract-selftest.js',
