@@ -5,6 +5,7 @@
       activityId:'vocabulary',
       subject:'국어',
       topic:'어휘',
+      grade:3,semester:1,unit:'어휘 익히기',difficulty:'normal',spaces:['bookmaru','curriculum','exploration'],enabled:true,
       bookmaru:true,
       questions:[
         {category:'어휘',word:'다정하다',options:['정이 많고 친절하다','매우 빠르다','소리가 크다','마음이 급하다'],answer:0},
@@ -18,6 +19,7 @@
       activityId:'exploration-riddle',
       subject:'창의적 사고',
       topic:'수수께끼 탐험',
+      grade:3,semester:1,unit:'재미 수수께끼',difficulty:'mixed',spaces:['exploration'],enabled:true,
       bookmaru:false,
       questions:[
         {id:'r01',difficulty:'easy',question:'먹을수록 커지고 물을 마시면 죽는 것은?',options:['불','구름','나무','그림자'],answer:0,explanation:'불은 연료를 먹으며 커지고 물을 만나면 꺼져요.'},
@@ -53,5 +55,6 @@
       ]
     }
   };
+  for(const set of Object.values(sets))set.questions=set.questions.map((question,index)=>({id:question.id||`${set.activityId}-${String(index+1).padStart(3,'0')}`,subject:question.subject||set.subject,grade:Number(question.grade||set.grade)||3,semester:Number(question.semester||set.semester)||1,unit:question.unit||set.unit,subunit:question.subunit||set.topic,difficulty:question.difficulty||set.difficulty||'normal',spaces:Array.isArray(question.spaces)?question.spaces:[...(set.spaces||[])],enabled:question.enabled!==false,...question}));
   window.StudyVillageQuestionSets=sets;
 })();

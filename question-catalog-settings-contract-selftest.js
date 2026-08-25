@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/question-catalog-settings.js','utf8');
+const review=fs.readFileSync('server/question-review.js','utf8');
+const loader=fs.readFileSync('assets/student-question-overrides.js','utf8');
+const admin=fs.readFileSync('assets/admin-question-catalog.js','utf8');
+const math=fs.readFileSync('server/math-practice.js','utf8');
+for(const token of ["app.get('/api/question-catalog/settings'","app.post('/api/admin/question-catalog/settings'",'question-catalog:settings-v1'])assert.ok(server.includes(token),`catalog server missing ${token}`);
+assert.ok(review.includes('installQuestionCatalogSettingRoutes'),'catalog routes must be installed');
+for(const token of ['/api/question-catalog/settings','unit:','question:','.filter(question=>'])assert.ok(loader.includes(token),`student activation filter missing ${token}`);
+for(const token of ['단원·문제 적용 관리','data-scope="unit"','data-scope="question"'])assert.ok(admin.includes(token),`teacher catalog UI missing ${token}`);
+for(const token of ['studentAnswer','explanation:explain(problem)'])assert.ok(math.includes(token),`math result review missing ${token}`);
+console.log('question catalog settings contract selftest: ok');

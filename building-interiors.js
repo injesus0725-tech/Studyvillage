@@ -42,7 +42,7 @@
     setTimeout(()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true})),40)
   }
   function enter(b){if(!b)return;open=true;current=b;overlay.style.removeProperty('pointer-events');overlay.hidden=false;overlay.dataset.building=b.id;icon.textContent=b.icon;title.textContent=b.title;text.textContent=b.text;actions.innerHTML='';
-    if(b.action==='math')addActionButton('➕ 랜덤 계산 연습 시작',()=>runScoredAction(()=>window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))),true);
+    if(b.action==='math')addActionButton('➕ 랜덤 계산 연습 시작',()=>runScoredAction(async()=>{await import('./assets/student-math-review.js');window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))}),true);
     else if(b.action==='library')addActionButton('📖 낱말 뜻 맞추기 시작',()=>runScoredAction(()=>window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'))),true);
     else if(b.action==='quiz')addActionButton('🎯 수수께끼 도전 시작',()=>runScoredAction(startRiddleFromHall),true);
     else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click())});

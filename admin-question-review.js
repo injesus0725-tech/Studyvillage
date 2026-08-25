@@ -1,4 +1,5 @@
 /* v1.9 teacher question review panel. Question source stays read-only; review alerts can jump to teacher editor. */
+import('./assets/admin-question-catalog.js').catch(()=>{});
 (()=>{
   const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const headers=json=>{const token=sessionStorage.getItem('studyvillage-admin-token')||'';return token?{Authorization:`Bearer ${token}`,...(json?{'Content-Type':'application/json'}:{})}:{...(json?{'Content-Type':'application/json'}:{})}};
