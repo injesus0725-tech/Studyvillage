@@ -27,7 +27,7 @@
   function distance(el){const a=player.getBoundingClientRect(),b=el.getBoundingClientRect();return Math.hypot(a.left+a.width/2-(b.left+b.width/2),a.top+a.height/2-(b.top+b.height/2))}
   function nearest(){let best=null;for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;const d=distance(el);if(d<190&&(!best||d<best.d))best={...b,el,d}}return best}
   function addActionButton(label,onClick,requiresServer=false){const btn=document.createElement('button');btn.className='interior-primary';btn.type='button';btn.textContent=label;if(requiresServer)btn.dataset.requiresServer='true';btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();onClick()});actions.appendChild(btn)}
-  async function runScoredAction(action){const connection=window.StudyVillageConnection;if(connection?.requireOnline&&!(await connection.requireOnline()))return;action()}
+  async function runScoredAction(action){const connection=window.StudyVillageConnection;if(connection?.requireOnline&&!(await connection.requireOnline()))return;leave();bypassUntil=performance.now()+800;requestAnimationFrame(action)}
   function hideHint(){hint.classList.remove('visible');document.body.classList.remove('near-building-interaction')}
   function leave(){open=false;overlay.hidden=true;current=null;hideHint();document.body.classList.remove('inside-building')}
   function startRiddleFromHall(){
@@ -51,7 +51,7 @@
   function interact(e){if(open||performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
   function foregroundPanelOpen(){return[...document.querySelectorAll('#student-explore-panel,#study-expedition-stage,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,.welcome-guide')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){if(foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
-  talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);
+  talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);window.addEventListener('studyvillage:return-to-village',()=>{bypassUntil=0;leave()});
   guideNpc?.addEventListener('click',e=>{if(open||foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();bypassUntil=performance.now()+500;window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}))},true);
   for(const b of buildings){const el=document.querySelector(b.selector);if(!el)continue;el.style.cursor='pointer';el.addEventListener('click',e=>{if(!touchMode()||open)return;e.preventDefault();e.stopImmediatePropagation();if(confirm(`${b.title}에 들어갈까요?`))enter({...b,el,d:0})},true)}
   function tick(now){if(now-lastCheck>=160){lastCheck=now;const active=game.classList.contains('active')&&!document.hidden;if(active&&!open){const b=nearest();if(b){document.body.classList.add('near-building-interaction');hint.textContent=touchMode()?`${b.title}을(를) 직접 터치해 들어가기`:`Space 키로 ${b.title} 입장하기`;hint.classList.add('visible')}else hideHint()}else hideHint()}requestAnimationFrame(tick)}requestAnimationFrame(tick);

@@ -80,8 +80,8 @@ function recoverFromMirror(db,name){
 const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary']);
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
-  if(activityId==='exploration-forest-riddle')return Math.min(3,Math.ceil(value/40));
-  if(activityId==='exploration-mountain-riddle')return value===100?5:Math.min(4,Math.ceil(value/25));
+  if(activityId==='exploration-forest-riddle')return value>0?Math.min(2,Math.ceil(value/50)):0;
+  if(activityId==='exploration-mountain-riddle')return value>0?Math.min(2,Math.ceil(value/50)):0;
   return 0;
 }
 function commitExpeditionReward(db,{name,activityId,score,submissionId,now,starDelta=0}){

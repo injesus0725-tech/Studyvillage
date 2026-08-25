@@ -13,6 +13,10 @@ assert.ok(exploration.includes("result.querySelector('button').onclick=back"),'a
 assert.ok(exploration.includes("if(saving||resultLocked)return"),'the exit control must remain locked while saving and while results are visible');
 for(const token of ["function sound(kind='reveal')","setTimeout(()=>{revealing=false;next()},1050)","id:'star-thief'","id:'runaway-bandit'","bonus:4","bonus:3","bonus:2",'eventStarDelta','scene.querySelector(\'.sv2-next\').onclick=nextStage'])assert.ok(exploration.includes(token),`exploration reveal/reward contract missing: ${token}`);
 assert.ok(activity.includes('findBonusXp=Math.min(8,requestedXp)'),'discovery XP must remain a small, server-bounded exploration bonus');
+assert.ok(activity.includes('ghostWrong=body?.ghostWrong===true')&&activity.includes('goblinWrong=body?.goblinWrong===true'),'NPC penalties must depend on an incorrect answer reported for that NPC');
+assert.ok(activity.includes("xpDelta=goblinWrong?-10:0"),'goblin XP loss must apply only after a wrong answer');
+assert.ok(activity.includes("Math.min(angel?3:1"),'ordinary exploration star extras must stay small while the rare angel may reach five with base stars');
+assert.ok(exploration.includes("trait:'오답 시 별 -1개'")&&exploration.includes("trait:'오답 시 XP -10'"),'student NPC text must describe penalties as wrong-answer effects');
 assert.ok(activity.includes('Math.max(-5,Math.min(5,Math.trunc(Number(body?.eventStarDelta)||0)))'),'villain star loss must be bounded on the server');
 assert.ok(data.includes("async function ready(){return !!window.StudyVillageAuth?.authHeaders?.().Authorization}"),'challenge saves must attempt the authenticated request instead of trusting a stale health-check cache');
 assert.ok(guard.includes("location.replace('/admin.html?local-session=1')"),'teacher auto-entry must reinitialize all admin modules with the issued token');
