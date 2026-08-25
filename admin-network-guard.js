@@ -16,5 +16,9 @@
       if(box){box.hidden=false;box.style.display=''}if(pw){pw.hidden=false;pw.disabled=false;pw.focus()}if(button){button.hidden=false;button.disabled=false;button.textContent='암호로 로그인';button.onclick=null}if(message)message.textContent=`자동입장 실패 [${failure}] · 관리자 암호를 직접 입력해 주세요.`;
     },80)
   }
+  // The write-action repair bundle was implemented but was not included by the
+  // old admin page.  Load it from the always-present guard so teacher controls
+  // cannot silently fall back to inert buttons.
+  const runtime=document.createElement('script');runtime.src='/assets/admin-runtime-fixes.js?v=20260825r6';runtime.async=false;document.head.appendChild(runtime);
   window.StudyVillageAdminNetworkGuard={timeoutMs:REQUEST_TIMEOUT_MS,handleExpiredSession};scheduleLocalLogin();
 })();
