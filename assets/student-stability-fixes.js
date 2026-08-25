@@ -32,6 +32,7 @@
   /* A failed legacy challenge save must never trap the student until refresh. Add an explicit exit
      while preserving the checkpoint so the result can be retried later. */
   const quiz=document.querySelector('#quiz-panel'),quizOptions=document.querySelector('#quiz-options'),quizNext=document.querySelector('#quiz-next'),quizQuestion=document.querySelector('#quiz-question');
+  const data=window.StudyVillageData;if(data?.savePlayerConfirmed&&!data.legacyQuizRetryInstalled){const original=data.savePlayerConfirmed.bind(data);data.savePlayerConfirmed=async record=>{for(let attempt=0;attempt<3;attempt++){const confirmed=await original(record);if(confirmed)return confirmed;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)))}return null};data.legacyQuizRetryInstalled=true}
   function addRecoveryExit(){
     if(!quiz||quiz.hidden||!quizQuestion?.textContent?.includes('교실 서버 연결을 기다리고 있어요.'))return;
     if(quiz.querySelector('[data-save-recovery-exit]'))return;
@@ -40,6 +41,8 @@
     (quizNext?.parentElement||quiz).appendChild(exit);
   }
   if(quiz)new MutationObserver(addRecoveryExit).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+  const quizProgress=document.querySelector('#quiz-progress');function makeCompletedQuizReturnSafe(){if(!quiz||quiz.hidden||quizProgress?.textContent!=='완료'||!quizNext||quizNext.hidden)return;quizNext.textContent='결과 확인 완료 · 마을로 돌아가기 🏡';quizNext.onclick=()=>document.querySelector('#quiz-close')?.click()}
+  if(quiz)new MutationObserver(makeCompletedQuizReturnSafe).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 
   const ranking=document.querySelector('#student-ranking-panel'),rankingButton=document.querySelector('.sv-quick-button.ranking');
   if(!ranking||!rankingButton)return;

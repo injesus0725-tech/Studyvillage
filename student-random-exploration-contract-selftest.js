@@ -13,7 +13,7 @@ assert.strictEqual((questions.match(/difficulty:'easy'/g)||[]).length,15,'forest
 assert.strictEqual((questions.match(/difficulty:'challenge'/g)||[]).length,15,'mountain needs 15 challenge candidates');
 assert.match(hub,/name:'수수께끼 숲'[\s\S]*difficulty:'easy'[\s\S]*count:5/,'forest must select five easy riddles');
 assert.match(hub,/name:'도전의 산'[\s\S]*difficulty:'challenge'[\s\S]*count:7/,'mountain must select seven challenge riddles');
-assert.match(hub,/filter\(q=>q\.difficulty===exp\.difficulty\)/,'v2 expeditions must use separate difficulty pools');
+assert.match(hub,/filter\(q=>q\.difficulty===exp\.difficulty&&[\s\S]*eligible\?\.\(q,'exploration'\)/,'v2 expeditions must use separate difficulty pools and exploration availability');
 assert.match(hub,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/,'questions must use Fisher-Yates shuffle');
 assert.match(hub,/shuffle\(q\.options\)/,'answer choices must be shuffled');
 assert.match(hub,/answer:options\.indexOf\(correct\)/,'answer index must follow shuffled choices');

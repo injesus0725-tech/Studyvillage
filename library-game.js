@@ -6,7 +6,7 @@
   const cloneQuestion=q=>({...q,options:Array.isArray(q.options)?[...q.options]:[],acceptedAnswers:Array.isArray(q.acceptedAnswers)?[...q.acceptedAnswers]:[]});
   const shuffle=values=>{const out=[...values];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
   const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(set=>set?.bookmaru===true&&Array.isArray(set?.questions)&&set.questions.length);
-  const baseBank=()=>allSets().flatMap(set=>set.questions.map((q,i)=>({...cloneQuestion(q),_sourceActivityId:set.activityId,_sourceNumber:i+1,_subject:set.subject||'',_topic:set.topic||''})));
+  const baseBank=()=>allSets().flatMap(set=>set.questions.map((q,i)=>({...cloneQuestion(q),_sourceActivityId:set.activityId,_sourceNumber:i+1,_subject:set.subject||'',_topic:set.topic||''})).filter(q=>window.StudyVillageQuestionCatalog?.eligible?.(q,'bookmaru')??true));
   function randomizeQuestion(raw){const item=cloneQuestion(raw);if(item.type==='input'||!item.options.length)return item;const correct=item.options[Number(item.answer)],options=shuffle(item.options);return{...item,options,answer:options.indexOf(correct)}}
   const buildRound=bank=>shuffle(bank).slice(0,Math.min(ROUND_SIZE,bank.length)).map(randomizeQuestion);
   let questionBank=baseBank(),questions=buildRound(questionBank),index=0,score=0,correctCount=0,answered=false,saving=false,opening=false,submissionId='',advanceTimer=null;

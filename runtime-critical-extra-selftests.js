@@ -72,6 +72,7 @@ const tests=[
   'question-content-selftest.js',
   'question-catalog-settings-contract-selftest.js',
   'student-curriculum-catalog-contract-selftest.js',
+  'legacy-quiz-completion-recovery-contract-selftest.js',
   'bookmaru-random-bank-contract-selftest.js',
   'question-input-type-contract-selftest.js',
   'admin-question-input-editor-contract-selftest.js',

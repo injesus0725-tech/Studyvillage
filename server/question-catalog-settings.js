@@ -8,7 +8,7 @@ export function installQuestionCatalogSettingRoutes(app,{requireAdmin,getSetting
   app.get('/api/admin/question-catalog/settings',requireAdmin,(_req,res)=>res.json({ok:true,settings:read(getSetting)}));
   app.post('/api/admin/question-catalog/settings',requireAdmin,(req,res)=>{
     const scope=clean(req.body?.scope,20),key=clean(req.body?.key,160),enabled=req.body?.enabled===true;
-    if(!['question','unit'].includes(scope)||!key)return res.status(400).json({ok:false,code:'invalid-question-setting'});
+    if(!['question','unit','space-unit','space-subject'].includes(scope)||!key)return res.status(400).json({ok:false,code:'invalid-question-setting'});
     const settings=read(getSetting),settingKey=`${scope}:${key}`;
     settings[settingKey]={scope,key,enabled,updatedAt:new Date().toISOString()};write(setSetting,settings);
     res.json({ok:true,setting:settings[settingKey]});
