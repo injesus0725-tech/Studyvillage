@@ -24,5 +24,8 @@ assert.ok(!fs.readFileSync('admin-network-guard.js','utf8').includes('admin-dire
 for(const file of ['admin.js','admin-student-edit.js','admin-question-editor.js','admin-question-review.js','admin-stars.js','admin-score-alerts.js','admin-errors.js']){
   assert.ok(!/\bprompt\s*\(/.test(fs.readFileSync(file,'utf8')),`${file}은 Electron에서 지원되지 않는 prompt()를 사용하면 안 됩니다.`);
 }
+const dialog=fs.readFileSync('admin-dialog.js','utf8'),studentEdit=fs.readFileSync('admin-student-edit.js','utf8'),stars=fs.readFileSync('admin-stars.js','utf8');
+assert.ok(dialog.includes("for(const delay of [0,60,180,400])")&&dialog.includes("window.addEventListener('focus',focusInput)"),'Windows EXE 입력창은 열릴 때와 창 복귀 때 키보드 초점을 복구해야 합니다.');
+assert.ok(studentEdit.includes("{type:'number',multiline:false,min:0,max}")&&stars.includes("{type:'number',multiline:false,min:1}"),'아이템 번호와 별 개수는 한 줄 숫자 입력칸을 사용해야 합니다.');
 
 console.log('admin script loading contract self-test passed');
