@@ -25,3 +25,4 @@ assert.ok(exploration.includes("space-subject:exploration|${e.subject}"),'explor
 for(const token of ['studentAnswer','explanation:explain(problem)'])assert.ok(mathServer.includes(token),`math server result review missing ${token}`);
 for(const token of ['data-review','showReview','틀린 문제 다시 보기','내 답:','정답:','풀이:','graded.review'])assert.ok(mathStudent.includes(token),`math student result review missing ${token}`);
 console.log('question catalog settings contract selftest: ok');
+require('./question-guide-pack-contract-selftest.js');
