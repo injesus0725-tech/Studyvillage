@@ -1,0 +1,10 @@
+const fs=require('fs');const assert=require('assert');
+const loader=fs.readFileSync('assets/student-question-overrides.js','utf8'),challenge=fs.readFileSync('assets/student-challenge-hall.js','utf8'),curriculum=fs.readFileSync('assets/student-curriculum-learning.js','utf8'),guides=fs.readFileSync('question-guide-packs.js','utf8');
+assert.ok(loader.includes("import('./student-challenge-hall.js')"),'student question loader must install the shared challenge hall');
+assert.ok(loader.includes('subject:q?.subject||set?.subject')&&loader.includes('unit:q?.unit||set?.unit'),'unit checks must receive inherited set metadata before filtering');
+assert.ok(loader.includes("space==='challenge'&&q.spaces.includes('curriculum')"),'challenge hall must reuse curriculum-suitable general questions');
+assert.ok(challenge.includes("subjects:['국어']")&&challenge.includes("subjects:['수학']"),'challenge hall must keep Korean and math pools');
+assert.ok(challenge.includes("subjects:['사회','과학','음악','예체능']"),'challenge hall must mix social science music and arts');
+assert.ok(curriculum.includes("label:'사회·과학·예체능 통합'")&&curriculum.includes("subjects:['사회','과학','음악','예체능']"),'curriculum must expose the same integrated student pool');
+assert.ok(guides.includes("'음악','예체능'"),'lesson-plan guide packs must accept music theory as a managed subject');
+console.log('shared student question pool contract self-test passed');
