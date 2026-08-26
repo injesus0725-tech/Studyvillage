@@ -10,7 +10,7 @@ for(const slot of ['hair','outfit','bottom','shoes','hat','glasses','bag','hand'
 for(const id of ['bottom-jeans','bottom-shorts','bottom-skirt'])assert.ok(renderer.includes(`'${id}'`),`missing anatomical lower-body asset ${id}`);
 assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'avatar parts must fill the same anchored box');
 assert.ok(!css.includes('visibility:hidden!important'),'hats must not make the character bald; their opaque SVG must naturally cover only the hair beneath them');
-assert.ok(renderer.includes("hat('wizard','#352956')")&&renderer.includes('Q36 16 43 4'),'wizard hat must use a curved RPG silhouette instead of a flat comedy triangle');
+assert.ok(renderer.includes("hat-wizard-rpg-v4.png")&&!renderer.includes("'hat-wizard':{svg"),'wizard hat must use the approved premium raster asset instead of the comedy SVG triangle');
 assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('StudyVillageAvatar.paintItem(part,item.id)'),'shop cards must show the exact applied SVG item');
 assert.ok(shop.includes("item.slot==='hat'")&&shop.includes("paintHair(hair,null,'student-boy')"),'hat shop previews must include the canonical default hair beneath the brim');
 assert.ok(renderer.includes('paintAvatarBase')&&renderer.includes('paintHair'),'production raster bodies and hair must remain independently composable');

@@ -43,10 +43,10 @@ window.StudyVillageAvatar=(()=>{
   const ASSETS={
     'face-round':{svg:face('round')},'face-soft':{svg:face('soft')},'face-brave':{svg:face('brave')},
     'expression-smile':{svg:expression('smile')},'expression-calm':{svg:expression('calm')},'expression-sparkle':{svg:expression('sparkle')},
-    'hair-short':{src:`${RPG}hair-short-rpg-v3.png`,alt:'갈색 레이어드 숏컷'},'hair-bob':{src:`${RPG}hair-bob-rpg-v3.png`,alt:'갈색 단발머리'},'hair-ponytail':{svg:hair('pony','#8a4b28')},'hair-blue':{svg:hair('wave','#315b9f')},
-    'cap-blue':{svg:hat('cap','#274b73')},'crown-gold':{svg:hat('crown','#caa13d')},'leaf-cap':{svg:hat('leaf','#416b4c')},'scholar-cap':{src:`${RPG}hat-academy-v2.png`,alt:'별빛 아카데미 모자'},'hat-wizard':{svg:hat('wizard','#352956')},'hat-pirate':{svg:hat('pirate','#272633')},'hat-flower':{svg:hat('flower','#8d426d')},
+    'hair-short':{src:`${RPG}hair-short-rpg-v3.png`,alt:'갈색 레이어드 숏컷'},'hair-bob':{src:`${RPG}hair-bob-rpg-v3.png`,alt:'갈색 단발머리'},'hair-ponytail':{src:`${RPG}hair-ponytail-rpg-v4.png`,alt:'밤색 하이 포니테일'},'hair-blue':{src:`${RPG}hair-blue-rpg-v4.png`,alt:'별빛 남색 레이어드 숏컷'},
+    'cap-blue':{svg:hat('cap','#274b73')},'crown-gold':{svg:hat('crown','#caa13d')},'leaf-cap':{svg:hat('leaf','#416b4c')},'scholar-cap':{src:`${RPG}hat-academy-v2.png`,alt:'별빛 아카데미 모자'},'hat-wizard':{src:`${RPG}hat-wizard-rpg-v4.png`,alt:'별자리 마법사 모자'},'hat-pirate':{src:`${RPG}hat-pirate-rpg-v4.png`,alt:'별나침반 해적 선장 모자'},'hat-flower':{svg:hat('flower','#8d426d')},
     'glasses-round':{svg:glasses('round','#51454d')},'explorer-goggles':{svg:glasses('goggles','#50634b')},'star-monocle':{svg:glasses('monocle','#a88737')},'glasses-sun':{svg:glasses('sun','#292936')},'glasses-heart':{svg:glasses('heart','#944166')},
-    'outfit-hoodie':{svg:top('hoodie','#31536f')},'outfit-uniform':{src:`${RPG}outfit-academy-v2.png`,alt:'별빛 아카데미 재킷'},'outfit-wizard':{svg:top('robe','#4b386f')},'outfit-armor':{svg:top('armor','#71839a')},
+    'outfit-hoodie':{svg:top('hoodie','#31536f')},'outfit-uniform':{src:`${RPG}outfit-academy-v2.png`,alt:'별빛 아카데미 재킷'},'outfit-wizard':{svg:top('robe','#4b386f')},'outfit-armor':{src:`${RPG}outfit-armor-rpg-v4.png`,alt:'별빛 왕실 수호대 갑옷'},
     'bottom-jeans':{svg:bottom('pants','#3b72a4')},'bottom-shorts':{svg:bottom('shorts','#4a515c')},'bottom-skirt':{svg:bottom('skirt','#c65f82')},
     'shoes-sneakers':{svg:shoes('sneakers','#e94b4b')},'shoes-boots':{svg:shoes('boots','#704831')},'shoes-wing':{svg:shoes('wing','#64aee8')},
     'backpack':{svg:bag('backpack','#a96b3c')},'field-satchel':{svg:bag('satchel','#8b633c')},'book-pack':{svg:bag('books','#3d6d9f')},'bag-art':{svg:bag('art','#df7653')},'bag-rocket':{svg:bag('rocket','#a8b7c8')},
