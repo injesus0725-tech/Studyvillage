@@ -5,7 +5,6 @@
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   const visible=selector=>[...document.querySelectorAll(selector)].some(el=>el&&!el.hidden&&el.getClientRects().length>0);
   const explorationOpen=()=>document.body.classList.contains('study-expedition-active')||visible('#student-explore-panel,#study-expedition-stage');
-  const otherActivityOpen=()=>visible('#building-interior,#curriculum-learning,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,#student-ranking-panel');
 
   function block(event){event.preventDefault?.();event.stopImmediatePropagation?.()}
   function clearInterior(){
@@ -42,7 +41,8 @@
     if(expedition){
       if(expedition.disabled)return;
       if(expedition.dataset.expeditionStarting==='true')return block(event);
-      if(!headers().Authorization){
+      const authorization=headers().Authorization;
+      if(!authorization){
         block(event);
         alert('현재는 교실 서버 계정으로 로그인된 상태가 아니에요. 마을에서 나간 뒤 다시 로그인해 주세요.');
         return;
