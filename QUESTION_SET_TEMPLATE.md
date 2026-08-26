@@ -1,15 +1,20 @@
 # StudyVillage 문제 세트 표준 템플릿
 
-지도안·지도서에서 문제를 대량 추가할 때는 **게임 코드를 고치지 않고 `question-data.js`의 데이터만 늘리는 것**을 기본 원칙으로 한다.
+지도안·지도서에서 문제를 대량 추가할 때는 **게임 코드를 고치지 않고 `question-guide-packs.js`의 데이터만 늘리는 것**을 기본 원칙으로 한다. 기존 기본 문제는 `question-data.js`에 그대로 두고, 새 지도안/지도서 문제 팩은 전용 파일에 누적한다.
+
+## 지도안/지도서 문제 팩
+
+실제 지도안·지도서를 첨부받아 만드는 신규 문제는 `question-guide-packs.js`의 `GUIDE_PACKS` 배열에 추가한다. 게임 시작 시 기본 문제은행 뒤에 자동 병합되고, 그 다음 관리자 과목·단원 필터와 교사 문제 수정값이 적용된다.
 
 ```js
-sampleSet: {
+{
   activityId: 'korean-3-2-unit-1',
   subject: '국어',
   topic: '중심 생각 찾기',
   grade: 3,
   semester: 2,
   unit: '1단원 작품을 보고 느낌을 나누어요',
+  subunit: '1~2차시',
   difficulty: 'normal',
   spaces: ['curriculum','exploration'],
   enabled: true,
@@ -86,7 +91,9 @@ sampleSet: {
 4. 모든 오답에는 학생이 왜 틀렸는지 확인할 수 있도록 `explanation`을 넣는 것을 기본으로 한다.
 5. 같은 문제를 문장만 조금 바꿔 중복 생산하지 않는다. 개념 확인, 적용, 비교, 자료 해석 등 유형을 섞는다.
 6. 문제를 추가할 때 기존 활동 저장·보상·탐험 코드는 수정하지 않는다.
-7. 신규 세트는 `question-metadata-selftest.js`, 문제 감사 검사, 과목·단원 출제 계약 검사를 통과해야 한다.
+7. 신규 세트는 `question-guide-pack-contract-selftest.js`, `question-metadata-selftest.js`, 문제 감사 검사, 과목·단원 출제 계약 검사를 통과해야 한다.
+8. **고유 ID는 한 번 배포한 뒤 바꾸지 않는다.** 문제 순서를 바꾸거나 문제를 중간에 추가해도 기존 문제 ID는 그대로 유지한다.
+9. 지도안 근거가 불분명한 상식 문제는 교과 문제로 섞지 않고 책마루/창의적 사고용으로 분리한다.
 
 ## 관리자 출제 동작
 
@@ -102,4 +109,4 @@ sampleSet: {
 - 문제: `subject-grade-semester-uN-###` 형태. 예: `science-3-2-u2-014`
 - 어휘: 끝에 `-vocab-###` 사용 가능.
 
-이 규칙을 유지하면 지도안/지도서를 새로 넣을 때 **문제 데이터 추가만으로 배움터·탐험·책마루 출제 범위를 확장**할 수 있다.
+이 규칙을 유지하면 지도안/지도서를 새로 넣을 때 **`question-guide-packs.js`에 문제 데이터만 추가해서 배움터·탐험·책마루 출제 범위를 확장**할 수 있다.
