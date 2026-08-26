@@ -16,3 +16,31 @@
 'pet-baby-wolf':{svg:s('<ellipse fill="#7d8793" cx="81" cy="122" rx="14" ry="11"/><path fill="#7d8793" d="M70 113l2-12 8 8zm22 0-2-12-8 8z"/><ellipse fill="#c9ced3" cx="81" cy="124" rx="7" ry="5"/><circle fill="#2f3338" cx="76" cy="118" r="2"/><circle fill="#2f3338" cx="86" cy="118" r="2"/>')},
 'pet-moon':{svg:s('<path fill="#e1d37a" d="M90 106q-15 3-15 18t15 17q-22 3-23-17 1-20 23-18z"/><path fill="#fff2b4" d="M83 114l2 4 5 1-4 3 1 5-4-2-4 2 1-5-4-3 5-1z"/>')}
 });})();
+
+/* Compatibility hardening for the two-phase equipment save used by customize.js. */
+(()=>{
+  const slots=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'];
+  const originalFetch=window.fetch.bind(window);let armUntil=0;
+  window.fetch=async function(input,init={}){
+    const url=typeof input==='string'?input:input?.url||'',method=String(init?.method||(typeof input!=='string'&&input?.method)||'GET').toUpperCase();
+    let nextInit=init;
+    if(method==='PUT'&&/(^|\/)api\/shop\/equipment(?:\?|$)/.test(url)&&Date.now()<armUntil){
+      try{const parsed=JSON.parse(init?.body||'{}'),equipment=parsed?.equipment&&typeof parsed.equipment==='object'?parsed.equipment:{};nextInit={...init,body:JSON.stringify({...parsed,equipment:{...Object.fromEntries(slots.map(slot=>[slot,null])),...equipment}})}}catch{}
+    }
+    const response=await originalFetch(input,nextInit);
+    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok)armUntil=Date.now()+5000;
+    if(method==='PUT'&&/(^|\/)api\/shop\/equipment(?:\?|$)/.test(url))armUntil=0;
+    return response;
+  };
+})();
+
+/* Keep an 87-item shop practical on tablet-sized screens. */
+(()=>{
+  function enhance(){
+    const filters=document.querySelector('#student-shop-filters'),list=document.querySelector('#student-shop-items');if(!filters||!list)return false;
+    if(!filters.querySelector('[data-shop-slot="face"]')){const all=filters.querySelector('[data-shop-slot="all"]');for(const [slot,label] of [['face','얼굴'],['expression','표정']]){const b=document.createElement('button');b.type='button';b.dataset.shopSlot=slot;b.setAttribute('aria-pressed','false');b.textContent=label;all?.after(b)}}
+    if(!document.querySelector('#sv-avatar-shop-ux-style')){const style=document.createElement('style');style.id='sv-avatar-shop-ux-style';style.textContent='#student-shop-items{max-height:min(44vh,420px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}.student-shop-filters{display:flex;flex-wrap:wrap;gap:6px;max-height:94px;overflow-y:auto;overscroll-behavior:contain}.student-shop .inventory-item{min-height:92px}.student-shop-head{position:sticky;top:0;z-index:2;background:inherit}';document.head.appendChild(style)}
+    return true;
+  }
+  if(!enhance()){const observer=new MutationObserver(()=>{if(enhance())observer.disconnect()});observer.observe(document.body,{subtree:true,childList:true})}
+})();
