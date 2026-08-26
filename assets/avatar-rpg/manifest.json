@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "status": "production-foundation",
+  "canvas": { "width": 512, "height": 512 },
+  "pose": "front-neutral-fixed",
+  "bases": {
+    "student-boy": "base-boy-v2.png",
+    "student-girl": "base-girl-v2.png"
+  },
+  "reference": "approved-rpg-style-reference.png",
+  "slots": ["face", "expression", "hair", "hat", "glasses", "outfit", "bottom", "shoes", "bag", "hand", "pet"],
+  "rules": {
+    "sameCanvasForEveryLayer": true,
+    "samePoseForBothBases": true,
+    "transparentBackground": true,
+    "storePreviewUsesEquippedAsset": true,
+    "noLegacySvgMixing": true
+  }
+}
