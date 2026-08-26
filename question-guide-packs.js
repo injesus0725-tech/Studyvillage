@@ -6,7 +6,7 @@
     // Real lesson-plan / teacher-guide packs are added after source files are supplied.
   ];
 
-  const allowedSubjects=new Set(['국어','수학','사회','과학','예체능','창의적 사고']);
+  const allowedSubjects=new Set(['국어','수학','사회','과학','음악','예체능','창의적 사고']);
   const allowedSpaces=new Set(['curriculum','exploration','bookmaru']);
   const clean=value=>String(value??'').trim();
   const cloneQuestion=q=>({...q,options:Array.isArray(q?.options)?[...q.options]:[],acceptedAnswers:Array.isArray(q?.acceptedAnswers)?[...q.acceptedAnswers]:[]});
