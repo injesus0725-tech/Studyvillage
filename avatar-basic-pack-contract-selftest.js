@@ -37,5 +37,9 @@ assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3')&&html.inc
 assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'secondary views must synchronize full equipment');
 assert.ok(css.includes('.preview-hair{z-index:3!important}')&&css.includes('.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}'),'hair must stay behind clothing');
 assert.ok(css.includes('.avatar-expression{z-index:5!important}')&&css.includes('.preview-expression{z-index:5!important}'),'expression layer must remain visible');
+assert.ok(clientV5.includes("Object.fromEntries(slots.map(slot=>[slot,null]))"),'two-phase save must explicitly clear stale purchased slots');
+assert.ok(clientV5.includes("data-shop-slot=\"face\"")||clientV5.includes("['face','얼굴']"),'large shop must expose face filtering');
+assert.ok(clientV5.includes("['expression','표정']"),'large shop must expose expression filtering');
+assert.ok(clientV5.includes('#student-shop-items{max-height:min(44vh,420px);overflow-y:auto'),'87-item shop list must remain bounded and scrollable');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`))&&!v4Ids.some(id=>clientV3.includes(`${id}.png`))&&!v5Ids.some(id=>clientV5.includes(`${id}.png`)),'lightweight packs must remain SVG-only');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with stable save + shop UX safeguards`);
