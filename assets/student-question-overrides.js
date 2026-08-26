@@ -1,9 +1,10 @@
-/* v1.12 shared student question override loader. Applies teacher-reviewed edits and teacher activation settings without destructively shrinking the bundled question bank. */
+/* v1.13 shared student question override loader. Applies teacher-reviewed edits and teacher activation settings without destructively shrinking the bundled question bank. */
 import('./student-question-catalog-live-refresh.js').catch(()=>{});
 import('./student-riddle-completion-guard.js').catch(()=>{});
 (()=>{
   const TIMEOUT_MS=5000;
   const originals=new Map();
+  const guidePacksReady=import('../question-guide-packs.js').catch(error=>{console.warn('[StudyVillage] guide question packs unavailable',error?.message||error);return null});
   const clone=q=>({...q,options:Array.isArray(q?.options)?[...q.options]:[],acceptedAnswers:Array.isArray(q?.acceptedAnswers)?[...q.acceptedAnswers]:[]});
   const valid=q=>{const prompt=q?.word||q?.question||q?.prompt;if(typeof prompt!=='string'||!prompt.trim())return false;if(q.type==='input')return Array.isArray(q.acceptedAnswers)&&q.acceptedAnswers.length>0&&q.acceptedAnswers.length<=8&&q.acceptedAnswers.every(v=>typeof v==='string'&&v.trim());return Array.isArray(q.options)&&q.options.length>=2&&q.options.every(v=>typeof v==='string'&&v.trim())&&Number.isInteger(Number(q.answer))&&Number(q.answer)>=0&&Number(q.answer)<q.options.length};
   async function fetchJson(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);try{const response=await fetch(url,{cache:'no-store',signal:controller.signal}),data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw new Error(data.code||'question-data-load-failed');return data}finally{clearTimeout(timer)}}
@@ -17,6 +18,7 @@ import('./student-riddle-completion-guard.js').catch(()=>{});
     return (originals.get(id)||[]).map(clone);
   }
   async function apply(){
+    await guidePacksReady;
     const sets=Object.values(window.StudyVillageQuestionSets||{}).filter(set=>set?.activityId&&Array.isArray(set.questions));
     if(!sets.length)return{ok:true,applied:0,disabled:0};
     try{
