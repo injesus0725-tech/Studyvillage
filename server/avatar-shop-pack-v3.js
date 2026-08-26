@@ -1,4 +1,6 @@
-export const avatarShopPackV3=Object.freeze({
+import { avatarShopPackV4 } from './avatar-shop-pack-v4.js';
+
+const packV3={
   'hair-mohawk':{name:'모히칸 머리',slot:'hair',price:18},
   'hair-braid':{name:'긴 땋은 머리',slot:'hair',price:20},
   'hat-cat-ears':{name:'고양이 귀 머리띠',slot:'hat',price:16},
@@ -14,4 +16,6 @@ export const avatarShopPackV3=Object.freeze({
   'pet-penguin':{name:'펭귄 친구',slot:'pet',price:36},
   'pet-bee':{name:'꿀벌 친구',slot:'pet',price:32},
   'pet-turtle':{name:'거북이 친구',slot:'pet',price:34}
-});
+};
+
+export const avatarShopPackV3=Object.freeze({...packV3,...avatarShopPackV4});
