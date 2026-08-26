@@ -17,7 +17,7 @@ assert.ok(loader.includes('originals.set(id,(set.questions||[]).map(clone))'),'t
 for(const token of ['studyvillage:open-library-game','studyvillage:open-curriculum-learning','#exploration-cave','api.refresh()','catalogRefreshBypass'])assert.ok(live.includes(token),`live catalog refresh missing ${token}`);
 for(const token of ['과목·단원 출제 관리','오늘 사용할 과목 열기·닫기','data-subject-filter','data-catalog-search','_questionKey','출제 공간','data-scope="space-subject"','data-scope="space-unit"','data-scope="unit"','data-scope="question"'])assert.ok(admin.includes(token),`teacher catalog UI missing ${token}`);
 assert.doesNotMatch(admin,/enabled\('question',q\.id\)/,'teacher question toggles must not share an undefined id');
-assert.ok(library.includes("eligible?.(q,'bookmaru')"),'Bookmaru must apply teacher space/unit activation before random selection');
+for(const token of ["eligible?.(q,'bookmaru')","(set.spaces||[]).includes('bookmaru')","(q.spaces||set.spaces||[]).includes('bookmaru')","StudyVillageStudentQuestionOverrides?.refresh?.()","선생님이 지금 책마루에 열어 둔 단원 문제가 없어요"] )assert.ok(library.includes(token),`Bookmaru metadata routing missing ${token}`);
 assert.ok(curriculum.includes("eligible?.(q,'curriculum')"),'curriculum learning must apply teacher space/unit activation');
 assert.ok(exploration.includes("eligible?.(q,'exploration')"),'exploration must apply teacher space/unit activation');
 assert.ok(exploration.includes("space-subject:exploration|${e.subject}"),'exploration subject cards must respect today subject switches');
