@@ -1,6 +1,7 @@
 /* v1.13 shared student question override loader. Applies teacher-reviewed edits and teacher activation settings without destructively shrinking the bundled question bank. */
 import('./student-question-catalog-live-refresh.js').catch(()=>{});
 import('./student-riddle-completion-guard.js').catch(()=>{});
+import('./student-activity-save-recovery.js').catch(()=>{});
 (()=>{
   const TIMEOUT_MS=5000;
   const originals=new Map();
