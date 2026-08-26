@@ -9,7 +9,9 @@ for(const slot of ['hair','outfit','bottom','shoes','hat','glasses','bag','hand'
 }
 for(const id of ['bottom-jeans','bottom-shorts','bottom-skirt'])assert.ok(renderer.includes(`'${id}'`),`missing anatomical lower-body asset ${id}`);
 assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'avatar parts must fill the same anchored box');
-assert.ok(css.includes(':has(#player-hat[data-avatar-item]')&&css.includes('visibility:hidden!important'),'a worn hat must fully cover the hair layer');
+assert.ok(!css.includes('visibility:hidden!important'),'hats must not make the character bald; their opaque SVG must naturally cover only the hair beneath them');
+assert.ok(renderer.includes("hat('wizard','#352956')")&&renderer.includes('Q36 16 43 4'),'wizard hat must use a curved RPG silhouette instead of a flat comedy triangle');
 assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('StudyVillageAvatar.paintItem(part,item.id)'),'shop cards must show the exact applied SVG item');
+assert.ok(shop.includes("item.slot==='hat'")&&shop.includes("paintItem(hair,'hair-short')"),'hat shop previews must include hair beneath the brim');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
 console.log('student modular mini-me visual contract self-test passed');
