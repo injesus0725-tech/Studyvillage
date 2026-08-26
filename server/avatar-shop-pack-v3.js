@@ -1,4 +1,5 @@
 import { avatarShopPackV4 } from './avatar-shop-pack-v4.js';
+import { avatarShopPackV5 } from './avatar-shop-pack-v5.js';
 
 const packV3={
   'hair-mohawk':{name:'모히칸 머리',slot:'hair',price:18},
@@ -18,4 +19,4 @@ const packV3={
   'pet-turtle':{name:'거북이 친구',slot:'pet',price:34}
 };
 
-export const avatarShopPackV3=Object.freeze({...packV3,...avatarShopPackV4});
+export const avatarShopPackV3=Object.freeze({...packV3,...avatarShopPackV4,...avatarShopPackV5});
