@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "status": "production-foundation",
   "canvas": { "width": 512, "height": 512 },
   "pose": "front-neutral-fixed",
@@ -37,7 +37,8 @@
     "hatFlower": "hat-flower-rpg-v5.png",
     "outfitHoodie": "outfit-hoodie-rpg-v5.png",
     "outfitWizard": "outfit-wizard-rpg-v5.png",
-    "proofs": ["proof-girl-ponytail-v4.png", "proof-boy-wizard-v4.png", "proof-girl-pirate-v4.png", "proof-boy-armor-v4.png", "proof-boy-crown-v5.png", "proof-girl-flower-v5.png", "proof-boy-hoodie-v5.png", "proof-girl-wizard-outfit-v5.png"]
+    "bottomAdventurer": "bottom-adventurer-rpg-v6.png",
+    "proofs": ["proof-girl-ponytail-v4.png", "proof-boy-wizard-v4.png", "proof-girl-pirate-v4.png", "proof-boy-armor-v4.png", "proof-boy-crown-v5.png", "proof-girl-flower-v5.png", "proof-boy-hoodie-v5.png", "proof-girl-wizard-outfit-v5.png", "proof-boy-adventurer-bottom-v6.png", "proof-girl-adventurer-bottom-v6.png"]
   },
   "slots": ["face", "expression", "hair", "hat", "glasses", "outfit", "bottom", "shoes", "bag", "hand", "pet"],
   "rules": {
