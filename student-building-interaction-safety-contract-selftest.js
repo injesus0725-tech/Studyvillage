@@ -29,5 +29,6 @@ assert.ok(library.includes("if(opening||!panel.hidden||explorationOpen())return"
 assert.ok(curriculum.includes("activity-attempt-status/${encodeURIComponent(set.activityId)}"),'교과 배움터는 선택한 과목 활동 ID의 참여 횟수를 시작 전에 확인해야 합니다.');
 assert.ok(curriculum.includes("if(!status.allowed)")&&curriculum.includes('오늘 참여 횟수를 모두 사용했어요'),'교과 배움터는 소진된 참여 횟수를 문제 시작 전에 차단해야 합니다.');
 assert.ok(curriculum.includes('if(starting||saving||explorationOpen())return'),'교과 배움터는 중복 시작·저장 중 시작·탐험 중 시작을 차단해야 합니다.');
+assert.ok(curriculum.includes('submissionId=submissionId||uid()')&&curriculum.includes('body:JSON.stringify({activityId:activity.activityId,score,submissionId})'),'교과 배움터 결과 재저장은 같은 제출 ID를 재사용해 중복 기록을 막아야 합니다.');
 for(const selector of ['#library-game','.math-practice-panel','#curriculum-learning','#student-explore-panel','#study-expedition-stage'])assert.ok(overlays.includes(selector),`overlay manager missing ${selector}`);
 console.log('student building/exploration interaction safety contract self-test passed');
