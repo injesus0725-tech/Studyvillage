@@ -35,11 +35,14 @@ assert.ok(clientV3.includes("extra.src='assets/avatar-basic-pack-v5.js?v=2026082
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking equipment restoration required');
 assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3')&&html.includes('assets/avatar-secondary-sync-v2.js?v=20260826v2'),'student runtime avatar loaders required');
 assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'secondary views must synchronize full equipment');
-assert.ok(css.includes('.preview-hair{z-index:3!important}')&&css.includes('.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}'),'hair must stay behind clothing');
+assert.ok(secondary.includes('.sv-profile-face,.sv-exp2-face,.sv-profile-hair,.sv-exp2-hair{z-index:3}')&&secondary.includes('.sv-profile-outfit,.sv-exp2-outfit,.sv-profile-bottom,.sv-exp2-bottom,.sv-profile-shoes,.sv-exp2-shoes{z-index:4}'),'profile and expedition hair must stay behind clothing');
+assert.ok(css.includes('.preview-hair{z-index:3!important}')&&css.includes('.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}'),'hair must stay behind clothing in preview');
 assert.ok(css.includes('.avatar-expression{z-index:5!important}')&&css.includes('.preview-expression{z-index:5!important}'),'expression layer must remain visible');
-assert.ok(clientV5.includes("Object.fromEntries(slots.map(slot=>[slot,null]))"),'two-phase save must explicitly clear stale purchased slots');
+assert.ok(clientV5.includes("emptyEquipment=()=>Object.fromEntries(slots.map(slot=>[slot,null]))"),'two-phase save must construct an explicit empty purchased-equipment state');
+assert.ok(clientV5.includes("originalFetch('/api/shop/equipment'")&&clientV5.includes("method==='POST'")&&clientV5.includes('response.ok'),'successful legacy/base save must clear stale purchased equipment before selected purchased items are restored');
+assert.ok(!clientV5.includes('armUntil'),'stale-equipment clearing must not depend on customize.js issuing a second shop PUT');
 assert.ok(clientV5.includes("data-shop-slot=\"face\"")||clientV5.includes("['face','얼굴']"),'large shop must expose face filtering');
 assert.ok(clientV5.includes("['expression','표정']"),'large shop must expose expression filtering');
 assert.ok(clientV5.includes('#student-shop-items{max-height:min(44vh,420px);overflow-y:auto'),'87-item shop list must remain bounded and scrollable');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`))&&!v4Ids.some(id=>clientV3.includes(`${id}.png`))&&!v5Ids.some(id=>clientV5.includes(`${id}.png`)),'lightweight packs must remain SVG-only');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with stable save + shop UX safeguards`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with end-to-end save + secondary-view safeguards`);
