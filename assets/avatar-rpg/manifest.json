@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "status": "production-foundation",
   "canvas": { "width": 512, "height": 512 },
   "pose": "front-neutral-fixed",
@@ -12,7 +12,19 @@
     "hat": "hat-academy-v2.png",
     "outfit": "outfit-academy-v2.png",
     "boyPreview": "proof-boy-academy.png",
-    "girlPreview": "proof-girl-academy.png"
+    "girlPreview": "proof-girl-academy.png",
+    "boyHairPreview": "proof-boy-default-hair.png",
+    "girlHairPreview": "proof-girl-default-hair.png",
+    "boyHairSwapPreview": "proof-boy-bob-hair.png",
+    "girlHairSwapPreview": "proof-girl-short-hair.png"
+  },
+  "internalBases": {
+    "student-boy": "base-boy-hairless-v3.png",
+    "student-girl": "base-girl-hairless-v3.png"
+  },
+  "defaultHair": {
+    "student-boy": "hair-short-rpg-v3.png",
+    "student-girl": "hair-bob-rpg-v3.png"
   },
   "slots": ["face", "expression", "hair", "hat", "glasses", "outfit", "bottom", "shoes", "bag", "hand", "pet"],
   "rules": {
@@ -21,6 +33,9 @@
     "transparentBackground": true,
     "storePreviewUsesEquippedAsset": true,
     "noLegacySvgMixing": true
-    ,"oneAssetFitsBothBases": true
+    ,"oneAssetFitsBothBases": true,
+    "hairIsIndependentLayer": true,
+    "defaultHairAlwaysAutoEquipped": true,
+    "hairlessBaseNeverShownAlone": true
   }
 }
