@@ -36,7 +36,11 @@ assert.ok(shop.includes("const RANKING_SLOTS=['face','expression','hair','hat','
 assert.ok(shop.includes("if((ITEM_SLOTS[id]||BUILTIN_STYLE_SLOTS[id])===slot)out[slot]=id"),'ranking must restore both purchased and built-in face/expression styles');
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking equipment restoration required');
 assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3')&&html.includes('assets/avatar-secondary-sync-v2.js?v=20260826v2'),'student runtime avatar loaders required');
-assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'secondary views must synchronize full equipment');
+assert.ok(secondary.includes("const slots=['face','expression','hair','outfit','bottom','shoes','hat','glasses','bag','hand','pet']"),'secondary views must synchronize the exact complete modular slot set');
+assert.ok(secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'secondary views must synchronize profile and expedition');
+assert.ok(secondary.includes("querySelector(':scope > .sv-profile-base')")&&secondary.includes("querySelector(':scope > .sv-exp2-base')")&&secondary.includes('slots.every'),'secondary view ownership must verify every expected layer');
+assert.ok(secondary.includes('childList:true')&&secondary.includes('ensureOwned()'),'legacy redraws must be detected and repaired without removing compatibility code');
+assert.ok(secondary.includes('repairQueued')&&secondary.includes('requestAnimationFrame'),'legacy redraw repair must be coalesced to avoid mutation-observer loops');
 assert.ok(secondary.includes('.sv-profile-face,.sv-exp2-face,.sv-profile-hair,.sv-exp2-hair{z-index:3}')&&secondary.includes('.sv-profile-outfit,.sv-exp2-outfit,.sv-profile-bottom,.sv-exp2-bottom,.sv-profile-shoes,.sv-exp2-shoes{z-index:4}'),'profile and expedition hair must stay behind clothing');
 assert.ok(css.includes('.preview-hair{z-index:3!important}')&&css.includes('.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}'),'hair must stay behind clothing in preview');
 assert.ok(css.includes('.avatar-expression{z-index:5!important}')&&css.includes('.preview-expression{z-index:5!important}'),'expression layer must remain visible');
@@ -47,4 +51,4 @@ assert.ok(clientV5.includes("data-shop-slot=\"face\"")||clientV5.includes("['fac
 assert.ok(clientV5.includes("['expression','표정']"),'large shop must expose expression filtering');
 assert.ok(clientV5.includes('#student-shop-items{max-height:min(44vh,420px);overflow-y:auto'),'87-item shop list must remain bounded and scrollable');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`))&&!v4Ids.some(id=>clientV3.includes(`${id}.png`))&&!v5Ids.some(id=>clientV5.includes(`${id}.png`)),'lightweight packs must remain SVG-only');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with end-to-end save + ranking + secondary-view safeguards`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with end-to-end save + ranking + secondary-view ownership safeguards`);
