@@ -28,7 +28,29 @@
     'hand-notebook':{svg:svg('<rect fill="#5680aa" x="5" y="82" width="28" height="25" rx="2"/><rect fill="#f2ead8" x="9" y="86" width="20" height="17"/><path fill="none" d="M13 91h12m-12 5h12m-12 5h8"/>')},
     'pet-hamster':{svg:svg('<circle fill="#d9a96f" cx="81" cy="120" r="14"/><circle fill="#c18c58" cx="71" cy="110" r="6"/><circle fill="#c18c58" cx="91" cy="110" r="6"/><ellipse fill="#f4dfc8" cx="81" cy="124" rx="8" ry="7"/><circle fill="#342d2b" cx="76" cy="117" r="2"/><circle fill="#342d2b" cx="86" cy="117" r="2"/><circle fill="#a85e5e" cx="81" cy="122" r="2"/>')}
   };
-  if(renderer?.ASSETS)Object.assign(renderer.ASSETS,basics);
+  const basicsV2={
+    'face-oval':{svg:frame('<g stroke="#684b43" stroke-width="1.45"><path fill="#ffd2ad" d="M27 31q2-19 21-19t21 19v18q-2 22-21 24-19-2-21-24z"/></g>')},
+    'face-square':{svg:frame('<g stroke="#684b43" stroke-width="1.45"><path fill="#f2c49e" d="M28 29q3-17 20-17t20 17v25q-4 15-20 15T28 54z"/></g>')},
+    'face-warm':{svg:frame('<g stroke="#684b43" stroke-width="1.45"><path fill="#d99f75" d="M27 32q2-20 21-20t21 20v19q0 18-21 19-21-1-21-19z"/></g>')},
+    'expression-wink':{svg:frame('<g stroke="#493935" stroke-width="1.7" stroke-linecap="round"><path fill="none" d="M32 44q5-5 10 0"/><ellipse fill="#493935" stroke="none" cx="59" cy="44" rx="2.4" ry="3.7"/><path fill="none" d="M42 56q6 6 12 0"/><ellipse fill="#f1a0a0" stroke="none" cx="31" cy="52" rx="4" ry="2"/><ellipse fill="#f1a0a0" stroke="none" cx="65" cy="52" rx="4" ry="2"/></g>')},
+    'expression-happy':{svg:frame('<g stroke="#493935" stroke-width="1.7" stroke-linecap="round"><path fill="none" d="M32 43q5-6 10 0m12 0q5-6 10 0"/><path fill="#d96b6b" d="M41 55q7 10 14 0-1 9-7 9t-7-9z"/><ellipse fill="#f1a0a0" stroke="none" cx="31" cy="52" rx="4" ry="2"/><ellipse fill="#f1a0a0" stroke="none" cx="65" cy="52" rx="4" ry="2"/></g>')},
+    'expression-focus':{svg:frame('<g stroke="#493935" stroke-width="1.7" stroke-linecap="round"><path d="M31 40l11 2m12 0 11-2"/><ellipse fill="#493935" stroke="none" cx="37" cy="45" rx="2.2" ry="3.2"/><ellipse fill="#493935" stroke="none" cx="59" cy="45" rx="2.2" ry="3.2"/><path fill="none" d="M43 58h10"/></g>')},
+    'expression-surprise':{svg:frame('<g stroke="#493935" stroke-width="1.7"><circle fill="#493935" stroke="none" cx="37" cy="44" r="3"/><circle fill="#493935" stroke="none" cx="59" cy="44" r="3"/><circle fill="#d87878" cx="48" cy="58" r="4"/><ellipse fill="#f1a0a0" stroke="none" cx="31" cy="52" rx="4" ry="2"/><ellipse fill="#f1a0a0" stroke="none" cx="65" cy="52" rx="4" ry="2"/></g>')},
+    'hair-buzz':{svg:svg('<path fill="#3a302c" d="M27 36Q26 14 48 12t21 24l-5-4-5 3-6-4-6 4-7-4-6 5z"/>')},
+    'hair-long':{svg:svg('<path fill="#5a3e35" d="M22 43Q20 10 48 8t27 35v40l-11 6V38l-7-9-9 10-9-10-7 10v50l-11-6z"/>')},
+    'hair-silver':{svg:svg('<path fill="#a9b0bd" d="M24 40Q21 12 48 9q26 1 24 31l-8-10-7 8-9-11-10 11-8-9z"/><path fill="#d7dbe2" d="M31 18q14-8 31-1-14 1-27 9z"/>')},
+    'hat-bucket-yellow':{svg:svg('<path fill="#d9b94e" d="M27 25q4-13 21-13t21 13l7 10H20z"/><path fill="#b9963d" d="M24 28h48l5 7H19z"/>')},
+    'hat-ribbon':{svg:svg('<path fill="#d66d8d" d="M49 15q9-10 18-4-2 10-13 11 11 2 12 12-10 4-17-8z"/><circle fill="#f0c66b" cx="49" cy="23" r="4"/>')},
+    'outfit-tee-white':{svg:svg('<path fill="#f5f2e9" d="M30 72l8-5h20l8 5 8 8-7 8-3-7 1 28H31l1-28-3 7-7-8z"/><path fill="#557aa1" d="M42 84h12v4H42z"/>')},
+    'outfit-jacket-black':{svg:svg('<path fill="#34363c" d="M28 72l10-6h20l10 6-3 37H31z"/><path fill="#ebe3d3" d="M45 68h6v41h-6z"/><path fill="#c6a452" d="M34 94h8m12 0h8"/>')},
+    'bottom-cargo-khaki':{svg:svg('<path fill="#70735a" d="M29 102h38l-2 29H51l-3-19-3 19H31z"/><path fill="#565c46" d="M30 108h13v9H30zm23 0h13v9H53z"/><path fill="#c8ad62" d="M46 103h5v4h-5z"/>')},
+    'shoes-hightop-blue':{svg:svg('<path fill="#456c97" d="M29 117h17v18H24q-5-5 5-12zm21 0h17v6q10 7 5 12H50z"/><path fill="#f3efe7" d="M25 132h21v4H23zm25 0h22v4H50z"/>')},
+    'bag-crossbody':{svg:svg('<path fill="none" stroke="#6d4b34" stroke-width="3" d="M39 68q27 15 43 43"/><rect fill="#8b5c3d" x="69" y="91" width="22" height="21" rx="3"/><path fill="#d2aa58" d="M73 96h14v4H73z"/>')},
+    'hand-ball':{svg:svg('<circle fill="#e17b46" cx="18" cy="90" r="11"/><path fill="none" d="M7 90h22M18 79q-6 11 0 22m0-22q6 11 0 22"/>')},
+    'pet-panda':{svg:svg('<circle fill="#f2eee7" cx="81" cy="119" r="14"/><circle fill="#333238" cx="72" cy="108" r="6"/><circle fill="#333238" cx="90" cy="108" r="6"/><ellipse fill="#333238" cx="76" cy="117" rx="4" ry="5"/><ellipse fill="#333238" cx="86" cy="117" rx="4" ry="5"/><circle fill="#fff" stroke="none" cx="77" cy="116" r="1"/><circle fill="#fff" stroke="none" cx="85" cy="116" r="1"/><ellipse fill="#333238" cx="81" cy="124" rx="3" ry="2"/>')},
+    'pet-cloud':{svg:svg('<path fill="#eef5fa" d="M66 125q-2-10 8-12 1-11 12-8 9 1 9 10 8 3 5 11-2 8-16 8H73q-8-1-7-9z"/><circle fill="#4c5660" stroke="none" cx="78" cy="122" r="2"/><circle fill="#4c5660" stroke="none" cx="90" cy="122" r="2"/><path fill="none" d="M80 128q4 3 8 0"/>')}
+  };
+  if(renderer?.ASSETS)Object.assign(renderer.ASSETS,basics,basicsV2);
 
   const slots=['hair','outfit','bottom','shoes','hat','glasses','bag','hand','pet'];
   function refreshProfile(){const icon=document.querySelector('.profile-avatar'),base=document.querySelector('.player-icon')?.dataset?.avatarBase||'student-default';renderer?.paintBase(icon,base)}
