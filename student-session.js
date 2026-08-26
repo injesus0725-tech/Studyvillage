@@ -43,6 +43,7 @@
     const customizeSave=document.querySelector('#customize-panel:not([hidden]) #customize-save:disabled');if(customizeSave&&document.querySelector('#customize-message')?.textContent.includes('저장'))return true;
     const mathSubmit=document.querySelector('.math-practice-panel:not([hidden]) [data-submit]:disabled');if(mathSubmit&&mathSubmit.closest('.math-practice-card')?.textContent.includes('서버가'))return true;
     const library=document.querySelector('#library-game:not([hidden])');if(library?.querySelector('#library-progress')?.textContent==='완료'&&library.querySelector('#library-next')?.hidden)return true;
+    const quiz=document.querySelector('#quiz-panel:not([hidden])');if(quiz?.querySelector('#quiz-progress')?.textContent==='완료'&&quiz.querySelector('#quiz-next')?.hidden)return true;
     const expedition=document.querySelector('.sv-expedition-panel:not([hidden]) .sv-expedition-result');if(expedition&&!expedition.querySelector('button'))return true;
     const discovery=document.querySelector('.sv-discovery-panel:not([hidden]) .primary:disabled');if(discovery&&discovery.closest('.sv-discovery-card')?.textContent.includes('저장'))return true;
     return false;
@@ -73,17 +74,20 @@
   });
 
   document.addEventListener('click',event=>{
-    const closeActivity=event.target.closest('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
+    const closeActivity=event.target.closest('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close,#quiz-panel:not([hidden]) #quiz-close');
     if(!closeActivity)return;
-    const panel=closeActivity.closest('.math-practice-panel,#library-game');
-    const completed=panel?.querySelector('.math-prompt,.library-word')?.textContent?.includes('완료');
-    if(completed||confirm('풀던 활동을 닫고 마을로 돌아갈까요?\n\n제출해 저장된 문제까지는 이어하기 기록에 남습니다. 현재 문제에 입력만 하고 아직 제출하지 않은 답은 저장되지 않습니다.'))return;
+    if(writeInProgress()){event.preventDefault();event.stopImmediatePropagation();guardWrite();return}
+    const panel=closeActivity.closest('.math-practice-panel,#library-game,#quiz-panel');
+    const isQuiz=panel?.id==='quiz-panel';
+    const completed=isQuiz?panel?.querySelector('#quiz-progress')?.textContent==='완료':panel?.querySelector('.math-prompt,.library-word')?.textContent?.includes('완료');
+    const message=isQuiz?'수수께끼 도전을 닫고 마을로 돌아갈까요?\n\n아직 완료하지 않은 도전은 다음에 처음부터 다시 시작합니다.':'풀던 활동을 닫고 마을로 돌아갈까요?\n\n제출해 저장된 문제까지는 이어하기 기록에 남습니다. 현재 문제에 입력만 하고 아직 제출하지 않은 답은 저장되지 않습니다.';
+    if(completed||confirm(message))return;
     event.preventDefault();event.stopImmediatePropagation();
   },true);
 
   window.addEventListener('keydown',event=>{
     if(event.key!=='Escape')return;
-    const closeActivity=document.querySelector('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
+    const closeActivity=document.querySelector('#quiz-panel:not([hidden]) #quiz-close,.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close');
     if(!closeActivity)return;
     event.preventDefault();event.stopImmediatePropagation();closeActivity.click();
   },true);
