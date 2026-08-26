@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "status": "production-foundation",
   "canvas": { "width": 512, "height": 512 },
   "pose": "front-neutral-fixed",
@@ -41,7 +41,11 @@
     "shoesAdventurerBoots": "shoes-adventurer-boots-rpg-v7.png",
     "handStarSword": "hand-star-sword-rpg-v7.png",
     "bagStarRocket": "bag-star-rocket-rpg-v7.png",
-    "proofs": ["proof-girl-ponytail-v4.png", "proof-boy-wizard-v4.png", "proof-girl-pirate-v4.png", "proof-boy-armor-v4.png", "proof-boy-crown-v5.png", "proof-girl-flower-v5.png", "proof-boy-hoodie-v5.png", "proof-girl-wizard-outfit-v5.png", "proof-boy-adventurer-bottom-v6.png", "proof-girl-adventurer-bottom-v6.png", "proof-boy-adventurer-gear-v7.png", "proof-girl-adventurer-gear-v7.png"]
+    "glassesHeartStar": "glasses-heart-star-rpg-v8.png",
+    "shoesWing": "shoes-wing-rpg-v8.png",
+    "handStarlightWand": "hand-starlight-wand-rpg-v8.png",
+    "petStarDragon": "pet-star-dragon-rpg-v8.png",
+    "proofs": ["proof-girl-ponytail-v4.png", "proof-boy-wizard-v4.png", "proof-girl-pirate-v4.png", "proof-boy-armor-v4.png", "proof-boy-crown-v5.png", "proof-girl-flower-v5.png", "proof-boy-hoodie-v5.png", "proof-girl-wizard-outfit-v5.png", "proof-boy-adventurer-bottom-v6.png", "proof-girl-adventurer-bottom-v6.png", "proof-boy-adventurer-gear-v7.png", "proof-girl-adventurer-gear-v7.png", "proof-boy-magic-gear-v8.png", "proof-girl-magic-gear-v8-final.png"]
   },
   "slots": ["face", "expression", "hair", "hat", "glasses", "outfit", "bottom", "shoes", "bag", "hand", "pet"],
   "rules": {
