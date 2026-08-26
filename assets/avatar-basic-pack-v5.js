@@ -17,19 +17,23 @@
 'pet-moon':{svg:s('<path fill="#e1d37a" d="M90 106q-15 3-15 18t15 17q-22 3-23-17 1-20 23-18z"/><path fill="#fff2b4" d="M83 114l2 4 5 1-4 3 1 5-4-2-4 2 1-5-4-3 5-1z"/>')}
 });})();
 
-/* Compatibility hardening for the two-phase equipment save used by customize.js. */
+/* Compatibility hardening for the two-phase equipment save used by customize.js.
+   After the legacy/base save succeeds, clear every purchased slot first. customize.js then
+   writes back only the purchased items still selected. This also handles the all-unequipped case. */
 (()=>{
   const slots=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'];
-  const originalFetch=window.fetch.bind(window);let armUntil=0;
+  const emptyEquipment=()=>Object.fromEntries(slots.map(slot=>[slot,null]));
+  const originalFetch=window.fetch.bind(window);
   window.fetch=async function(input,init={}){
     const url=typeof input==='string'?input:input?.url||'',method=String(init?.method||(typeof input!=='string'&&input?.method)||'GET').toUpperCase();
-    let nextInit=init;
-    if(method==='PUT'&&/(^|\/)api\/shop\/equipment(?:\?|$)/.test(url)&&Date.now()<armUntil){
-      try{const parsed=JSON.parse(init?.body||'{}'),equipment=parsed?.equipment&&typeof parsed.equipment==='object'?parsed.equipment:{};nextInit={...init,body:JSON.stringify({...parsed,equipment:{...Object.fromEntries(slots.map(slot=>[slot,null])),...equipment}})}}catch{}
+    const response=await originalFetch(input,init);
+    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok){
+      try{
+        const headers=new Headers(init?.headers||{});if(!headers.has('Content-Type'))headers.set('Content-Type','application/json');
+        const cleared=await originalFetch('/api/shop/equipment',{method:'PUT',headers,body:JSON.stringify({equipment:emptyEquipment()})});
+        if(!cleared.ok)console.warn('[StudyVillage avatar] stale purchased equipment clear failed',cleared.status);
+      }catch(err){console.warn('[StudyVillage avatar] stale purchased equipment clear failed',err)}
     }
-    const response=await originalFetch(input,nextInit);
-    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok)armUntil=Date.now()+5000;
-    if(method==='PUT'&&/(^|\/)api\/shop\/equipment(?:\?|$)/.test(url))armUntil=0;
     return response;
   };
 })();
@@ -38,7 +42,7 @@
 (()=>{
   function enhance(){
     const filters=document.querySelector('#student-shop-filters'),list=document.querySelector('#student-shop-items');if(!filters||!list)return false;
-    if(!filters.querySelector('[data-shop-slot="face"]')){const all=filters.querySelector('[data-shop-slot="all"]');for(const [slot,label] of [['face','얼굴'],['expression','표정']]){const b=document.createElement('button');b.type='button';b.dataset.shopSlot=slot;b.setAttribute('aria-pressed','false');b.textContent=label;all?.after(b)}}
+    if(!filters.querySelector('[data-shop-slot="face"]')){const all=filters.querySelector('[data-shop-slot="all"]');let anchor=all;for(const [slot,label] of [['face','얼굴'],['expression','표정']]){const b=document.createElement('button');b.type='button';b.dataset.shopSlot=slot;b.setAttribute('aria-pressed','false');b.textContent=label;anchor?.after(b);anchor=b}}
     if(!document.querySelector('#sv-avatar-shop-ux-style')){const style=document.createElement('style');style.id='sv-avatar-shop-ux-style';style.textContent='#student-shop-items{max-height:min(44vh,420px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}.student-shop-filters{display:flex;flex-wrap:wrap;gap:6px;max-height:94px;overflow-y:auto;overscroll-behavior:contain}.student-shop .inventory-item{min-height:92px}.student-shop-head{position:sticky;top:0;z-index:2;background:inherit}';document.head.appendChild(style)}
     return true;
   }
