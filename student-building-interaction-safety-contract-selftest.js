@@ -31,4 +31,8 @@ assert.ok(curriculum.includes("if(!status.allowed)")&&curriculum.includes('오�
 assert.ok(curriculum.includes('if(starting||saving||explorationOpen())return'),'교과 배움터는 중복 시작·저장 중 시작·탐험 중 시작을 차단해야 합니다.');
 assert.ok(curriculum.includes('submissionId=submissionId||uid()')&&curriculum.includes('body:JSON.stringify({activityId:activity.activityId,score,submissionId})'),'교과 배움터 결과 재저장은 같은 제출 ID를 재사용해 중복 기록을 막아야 합니다.');
 for(const selector of ['#library-game','.math-practice-panel','#curriculum-learning','#student-explore-panel','#study-expedition-stage'])assert.ok(overlays.includes(selector),`overlay manager missing ${selector}`);
+assert.ok(overlays.includes("el.querySelector('#library-close')?.click()"),'오버레이 전환 시 책마루를 강제로 숨기지 말고 자체 종료 처리를 사용해야 합니다.');
+assert.ok(overlays.includes("el.querySelector('.quiz-close')?.click()"),'오버레이 전환 시 수학 활동도 자체 종료 처리를 사용해야 합니다.');
+assert.ok(overlays.includes("window.StudyVillageCurriculumLearning?.close?.()"),'오버레이 전환 시 교과 배움터 자체 종료 처리를 사용해야 합니다.');
+assert.ok(overlays.includes("el.querySelector('#interior-exit')?.click()"),'오버레이 전환 시 건물 내부 상태도 정상 퇴장 처리를 사용해야 합니다.');
 console.log('student building/exploration interaction safety contract self-test passed');
