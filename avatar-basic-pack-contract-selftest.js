@@ -5,6 +5,7 @@ const client=fs.readFileSync('assets/avatar-fullbody-fix.js','utf8');
 const clientV3=fs.readFileSync('assets/avatar-basic-pack-v3.js','utf8');
 const secondary=fs.readFileSync('assets/avatar-secondary-sync-v2.js','utf8');
 const catalogV3=fs.readFileSync('server/avatar-shop-pack-v3.js','utf8');
+const css=fs.readFileSync('avatar-assets.css','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
 const basics={
@@ -52,8 +53,11 @@ assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3'),'student 
 assert.ok(html.includes('assets/avatar-secondary-sync-v2.js?v=20260826v2'),'student runtime must load unified secondary avatar sync');
 assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'profile and expedition must synchronize face, expression and equipment');
 assert.ok(secondary.includes('.sv-profile-expression')&&secondary.includes('.sv-exp2-expression'),'secondary views must layer expressions explicitly');
+assert.ok(css.includes('.preview-hair{z-index:3!important}')&&css.includes('.preview-outfit,.preview-bottom,.preview-shoes{z-index:4!important}'),'preview hair must stay behind clothing');
+assert.ok(css.includes('.avatar-expression{z-index:5!important}')&&css.includes('.preview-expression{z-index:5!important}'),'expressions must remain visible above body/clothing');
+assert.ok(css.includes('.sv-rank-face,.sv-rank-hair{z-index:3!important}')&&css.includes('.sv-rank-outfit,.sv-rank-bottom,.sv-rank-shoes{z-index:4!important}'),'ranking layer order must match main avatar');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`)),'basic packs must not introduce per-item PNG artwork');
 assert.ok(shop.includes("'pet-hamster':30")&&shop.includes("'pet-panda':36"),'basic pets should remain attainable');
 assert.ok(shop.includes("'outfit-tee-red':18")&&shop.includes("'outfit-tee-white':18")&&shop.includes("'shoes-slipon-yellow':16"),'basic clothing should stay inexpensive');
 assert.ok(shop.includes("'expression-wink':8")&&shop.includes("'face-oval':10"),'face and expression customization should stay low-cost');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length} active lightweight shop items with synchronized secondary views`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length} active lightweight shop items with synchronized layer ordering`);
