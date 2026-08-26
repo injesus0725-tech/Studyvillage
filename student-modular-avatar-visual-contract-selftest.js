@@ -12,6 +12,7 @@ assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'ava
 assert.ok(!css.includes('visibility:hidden!important'),'hats must not make the character bald; their opaque SVG must naturally cover only the hair beneath them');
 assert.ok(renderer.includes("hat('wizard','#352956')")&&renderer.includes('Q36 16 43 4'),'wizard hat must use a curved RPG silhouette instead of a flat comedy triangle');
 assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('StudyVillageAvatar.paintItem(part,item.id)'),'shop cards must show the exact applied SVG item');
-assert.ok(shop.includes("item.slot==='hat'")&&shop.includes("paintItem(hair,'hair-short')"),'hat shop previews must include hair beneath the brim');
+assert.ok(shop.includes("item.slot==='hat'")&&shop.includes("paintHair(hair,null,'student-boy')"),'hat shop previews must include the canonical default hair beneath the brim');
+assert.ok(renderer.includes('paintAvatarBase')&&renderer.includes('paintHair'),'production raster bodies and hair must remain independently composable');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
 console.log('student modular mini-me visual contract self-test passed');

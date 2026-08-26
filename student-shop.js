@@ -15,8 +15,9 @@
     if(['physical','effect'].includes(item.slot)||!window.StudyVillageAvatar?.ASSETS?.[item.id])return;
     const host=button.querySelector('span');if(!host)return;host.className='shop-wearable-preview';host.replaceChildren();
     const base=document.createElement('i'),part=document.createElement('i');base.className='shop-preview-base';part.className=`shop-preview-part shop-preview-${item.slot}`;host.append(base);
-    if(item.slot==='hat'){const hair=document.createElement('i');hair.className='shop-preview-hair';host.append(hair);window.StudyVillageAvatar.paintItem(hair,'hair-short')}
-    host.append(part);window.StudyVillageAvatar.paintBase(base,'student-default');window.StudyVillageAvatar.paintItem(part,item.id);
+    if(item.slot==='hair')window.StudyVillageAvatar.paintAvatarBase(base,'student-boy');else window.StudyVillageAvatar.paintBase(base,'student-boy');
+    if(item.slot==='hat'){const hair=document.createElement('i');hair.className='shop-preview-hair';host.append(hair);window.StudyVillageAvatar.paintHair(hair,null,'student-boy')}
+    host.append(part);window.StudyVillageAvatar.paintItem(part,item.id);
   }
   function render(data={}){
     const fresh=data!==lastData;lastData=data;if(fresh)scheduleTransition(data);const owned=new Set(Array.isArray(data.ownedItems)?data.ownedItems:[]);balance.textContent=`${Math.max(0,Number(data.balance)||0)}별`;list.innerHTML='';
