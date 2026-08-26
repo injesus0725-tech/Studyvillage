@@ -3,6 +3,7 @@ const fs=require('fs');
 const shop=fs.readFileSync('server/item-shop.js','utf8');
 const client=fs.readFileSync('assets/avatar-fullbody-fix.js','utf8');
 const clientV3=fs.readFileSync('assets/avatar-basic-pack-v3.js','utf8');
+const secondary=fs.readFileSync('assets/avatar-secondary-sync-v2.js','utf8');
 const catalogV3=fs.readFileSync('server/avatar-shop-pack-v3.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
 
@@ -48,8 +49,11 @@ assert.ok(shop.includes("import { avatarShopPackV3 } from './avatar-shop-pack-v3
 assert.ok(shop.includes('Object.entries(avatarShopPackV3).map(([id,item])=>[id,item.price])'),'v3 prices must merge into live shop');
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking response must restore current shop equipment from DB');
 assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3'),'student runtime must load active v3 visuals');
+assert.ok(html.includes('assets/avatar-secondary-sync-v2.js?v=20260826v2'),'student runtime must load unified secondary avatar sync');
+assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'profile and expedition must synchronize face, expression and equipment');
+assert.ok(secondary.includes('.sv-profile-expression')&&secondary.includes('.sv-exp2-expression'),'secondary views must layer expressions explicitly');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`)),'basic packs must not introduce per-item PNG artwork');
 assert.ok(shop.includes("'pet-hamster':30")&&shop.includes("'pet-panda':36"),'basic pets should remain attainable');
 assert.ok(shop.includes("'outfit-tee-red':18")&&shop.includes("'outfit-tee-white':18")&&shop.includes("'shoes-slipon-yellow':16"),'basic clothing should stay inexpensive');
 assert.ok(shop.includes("'expression-wink':8")&&shop.includes("'face-oval':10"),'face and expression customization should stay low-cost');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length} active lightweight shop items`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length} active lightweight shop items with synchronized secondary views`);
