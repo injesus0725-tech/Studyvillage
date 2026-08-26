@@ -10,6 +10,9 @@ assert.ok(server.includes('row.authorizedScore=score'),'only a server-scored ses
 assert.ok(activity.includes('validateActivityCompletion({name,activityId,score,submissionId})'),'shared activity saving must verify protected completion tokens');
 assert.ok(activity.includes('finalizeActivityCompletion({name,activityId,score,submissionId})'),'successful activity saving must consume the completion authorization');
 assert.ok(server.includes('!row.finalized'),'a finalized math session cannot authorize a second activity save');
+for(const token of ["CATALOG_KEY='question-catalog:settings-v1'","mathUnitKey=unit=>`unit:수학|3|1|${unit}`",'unitEnabled(row.unit,settings)','generatorsFor(mode,settings)',"code:'no-math-playground-unit-enabled'"])assert.ok(server.includes(token),`math playground teacher-unit link missing ${token}`);
+assert.ok(!server.includes('그래프'),'visual-only graph units must not accidentally gain a text random generator');
+assert.ok(client.includes("error.code==='no-math-playground-unit-enabled'"),'student must get a clear message when checked units have no auto-generatable math type');
 assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
@@ -19,4 +22,4 @@ assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브
 assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
 assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');
 assert.ok(/<script src="math-practice\.js(?:\?v=[^"]+)?"><\/script>/.test(index),'the student page must load math practice');
-console.log('math practice server validation and direct building entry contract self-test passed');
+console.log('math practice server validation and teacher-unit filtering contract self-test passed');
