@@ -3,6 +3,10 @@ const assert=require('assert');
 const src=fs.readFileSync('building-interiors.js','utf8');
 const guard=fs.readFileSync('assets/expedition-entry-guard.js','utf8');
 const exploration=fs.readFileSync('assets/student-exploration-v2.js','utf8');
+const math=fs.readFileSync('math-practice.js','utf8');
+const library=fs.readFileSync('library-game.js','utf8');
+const curriculum=fs.readFileSync('assets/student-curriculum-learning.js','utf8');
+const overlays=fs.readFileSync('assets/student-overlay-manager.js','utf8');
 assert.ok(src.includes("const active=game.classList.contains('active')&&!document.hidden"),'건물 거리 계산은 실제 게임 화면이 보일 때만 해야 합니다.');
 assert.ok(src.includes('if(active&&!open){const b=nearest()'),'건물 안내 계산은 활성 게임 화면에서만 수행해야 합니다.');
 assert.ok(src.includes('⭐ 별로 아이템을 사고'),'꾸미기 상점 안내는 현재 별 상점 흐름을 설명해야 합니다.');
@@ -15,4 +19,15 @@ for(const type of ['studyvillage:open-library-game','studyvillage:open-math-prac
 assert.ok(guard.includes(".school,.library,#quiz-hall,.shop-zone,#guide-npc,#talk-button"),'탐험 중 건물·NPC 상호작용이 새 활동을 열면 안 됩니다.');
 assert.ok(guard.includes("headers().Authorization")&&guard.includes('교실 서버 계정으로 로그인된 상태가 아니에요.'),'탐험 시작 전 서버 로그인 상태를 확인해야 합니다.');
 assert.ok(guard.includes("button.dataset.expeditionStarting='true'")&&guard.includes('START_LOCK_MS=7000'),'빠른 연속 터치로 탐험 시작 요청이 중복되면 안 됩니다.');
+for(const activity of [math,library,curriculum]){
+  assert.ok(activity.includes("document.body.classList.contains('study-expedition-active')"),'각 건물 활동도 탐험 활성 상태를 자체 확인해야 합니다.');
+  assert.ok(activity.includes("#student-explore-panel,#study-expedition-stage"),'각 건물 활동은 탐험 허브와 스테이지를 모두 확인해야 합니다.');
+  assert.ok(activity.includes("studyvillage:return-to-village"),'각 건물 활동 종료는 공통 마을 복귀 상태 정리를 호출해야 합니다.');
+}
+assert.ok(math.includes("if(busy||!panel.hidden||explorationOpen())return"),'수학은 중복 시작과 탐험 중 시작을 동시에 막아야 합니다.');
+assert.ok(library.includes("if(opening||!panel.hidden||explorationOpen())return"),'책마루는 중복 시작과 탐험 중 시작을 동시에 막아야 합니다.');
+assert.ok(curriculum.includes("activity-attempt-status/${encodeURIComponent(set.activityId)}"),'교과 배움터는 선택한 과목 활동 ID의 참여 횟수를 시작 전에 확인해야 합니다.');
+assert.ok(curriculum.includes("if(!status.allowed)")&&curriculum.includes('오늘 참여 횟수를 모두 사용했어요'),'교과 배움터는 소진된 참여 횟수를 문제 시작 전에 차단해야 합니다.');
+assert.ok(curriculum.includes('if(starting||saving||explorationOpen())return'),'교과 배움터는 중복 시작·저장 중 시작·탐험 중 시작을 차단해야 합니다.');
+for(const selector of ['#library-game','.math-practice-panel','#curriculum-learning','#student-explore-panel','#study-expedition-stage'])assert.ok(overlays.includes(selector),`overlay manager missing ${selector}`);
 console.log('student building/exploration interaction safety contract self-test passed');
