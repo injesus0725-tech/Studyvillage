@@ -8,3 +8,4 @@ for(const id of efficientBasics)assert.match(renderer,new RegExp(`'${id}':\\{svg
 for(const id of ['crown-gold','outfit-wizard','bottom-shorts','shoes-wing','hand-wand','pet-dragon'])assert.match(renderer,new RegExp(`'${id}':\\{src:`),`${id} must preserve its premium raster artwork`);
 assert.ok(css.includes('saturate(1.12)')&&css.includes('contrast(1.04)'),'small-screen SVG polish must remain enabled');
 console.log(`avatar medium template contract passed: ${efficientBasics.length} efficient basics, premium set preserved`);
+require('./avatar-basic-pack-contract-selftest.js');
