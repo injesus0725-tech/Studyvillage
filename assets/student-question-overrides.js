@@ -1,4 +1,4 @@
-/* v1.13 shared student question override loader. Applies teacher-reviewed edits and teacher activation settings without destructively shrinking the bundled question bank. */
+/* v1.14 shared student question override loader. Teacher unit checks are the single rollout source across learning spaces. */
 import('./student-question-catalog-live-refresh.js').catch(()=>{});
 import('./student-riddle-completion-guard.js').catch(()=>{});
 import('./student-activity-save-recovery.js').catch(()=>{});
@@ -11,8 +11,10 @@ import('./student-activity-save-recovery.js').catch(()=>{});
   async function fetchJson(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);try{const response=await fetch(url,{cache:'no-store',signal:controller.signal}),data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw new Error(data.code||'question-data-load-failed');return data}finally{clearTimeout(timer)}}
   const unitKey=q=>[q.subject,q.grade,q.semester,q.unit].map(v=>String(v??'').trim()).join('|');
   const questionKey=(q,set,index)=>String(q?.catalogId||q?.id||`${set?.activityId||'question'}:${Number(index)+1}`);
-  const enabled=(q,settings)=>q.enabled!==false&&settings[`unit:${unitKey(q)}`]?.enabled!==false&&settings[`question:${questionKey(q)}`]?.enabled!==false;
-  const eligible=(q,space,settings)=>enabled(q,settings)&&settings[`space-subject:${space}|${q.subject}`]?.enabled!==false&&settings[`space-unit:${space}|${unitKey(q)}`]?.enabled!==false;
+  const enabled=(q,settings)=>q.enabled!==false&&settings[`subject:${q.subject}`]?.enabled!==false&&settings[`unit:${unitKey(q)}`]?.enabled!==false&&settings[`question:${questionKey(q)}`]?.enabled!==false;
+  // Final V1 rule: the teacher checks a unit once. The same checked range is shared by challenge/curriculum/exploration.
+  // A question's own `spaces` metadata still decides where that question is suitable. Legacy per-space settings are intentionally not required here.
+  const eligible=(q,space,settings)=>enabled(q,settings)&&(!Array.isArray(q.spaces)||!q.spaces.length||q.spaces.includes(space));
   function sourceQuestions(set){
     const id=String(set.activityId||'');
     if(!originals.has(id))originals.set(id,(set.questions||[]).map(clone));
