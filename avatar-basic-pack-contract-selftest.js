@@ -32,6 +32,8 @@ for(const [slot,items] of Object.entries(v5))for(const id of items){assert.ok(ca
 assert.ok(catalogV3.includes("import { avatarShopPackV4 } from './avatar-shop-pack-v4.js'")&&catalogV3.includes("import { avatarShopPackV5 } from './avatar-shop-pack-v5.js'"),'merged shop catalog must include v4/v5');
 assert.ok(catalogV3.includes('...packV3,...avatarShopPackV4,...avatarShopPackV5'),'v4/v5 shop data must be active');
 assert.ok(clientV3.includes("extra.src='assets/avatar-basic-pack-v5.js?v=20260826v5'"),'active runtime must load v5 visuals');
+assert.ok(shop.includes("const RANKING_SLOTS=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet']"),'ranking must preserve every modular equipment slot including face/expression');
+assert.ok(shop.includes("if((ITEM_SLOTS[id]||BUILTIN_STYLE_SLOTS[id])===slot)out[slot]=id"),'ranking must restore both purchased and built-in face/expression styles');
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking equipment restoration required');
 assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=20260826v3')&&html.includes('assets/avatar-secondary-sync-v2.js?v=20260826v2'),'student runtime avatar loaders required');
 assert.ok(secondary.includes("'face','expression','hair'")&&secondary.includes('syncProfile()')&&secondary.includes('syncExpedition()'),'secondary views must synchronize full equipment');
@@ -45,4 +47,4 @@ assert.ok(clientV5.includes("data-shop-slot=\"face\"")||clientV5.includes("['fac
 assert.ok(clientV5.includes("['expression','표정']"),'large shop must expose expression filtering');
 assert.ok(clientV5.includes('#student-shop-items{max-height:min(44vh,420px);overflow-y:auto'),'87-item shop list must remain bounded and scrollable');
 assert.ok(!ids.some(id=>client.includes(`${id}.png`))&&!v3Ids.some(id=>clientV3.includes(`${id}.png`))&&!v4Ids.some(id=>clientV3.includes(`${id}.png`))&&!v5Ids.some(id=>clientV5.includes(`${id}.png`)),'lightweight packs must remain SVG-only');
-console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with end-to-end save + secondary-view safeguards`);
+console.log(`avatar basic packs contract passed: ${ids.length+v3Ids.length+v4Ids.length+v5Ids.length} active lightweight shop items with end-to-end save + ranking + secondary-view safeguards`);
