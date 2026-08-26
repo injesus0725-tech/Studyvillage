@@ -172,7 +172,8 @@ const tests=[
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js',
   'student-modular-avatar-visual-contract-selftest.js',
-  'avatar-rpg-hair-alignment-contract-selftest.js'
+  'avatar-rpg-hair-alignment-contract-selftest.js',
+  'avatar-runtime-contract-selftest.js'
 ];
 for(const file of tests){
   const result=spawnSync(process.execPath,[file],{stdio:'inherit'});
