@@ -7,8 +7,11 @@ const sourceDir=path.join(root,'assets/avatar-rpg');
 const runtimeDir=path.join(root,'assets/avatar-runtime');
 const renderer=fs.readFileSync(path.join(root,'avatar-renderer.js'),'utf8');
 const names=[...new Set([...renderer.matchAll(/([a-z0-9-]+\.png)/g)].map(match=>match[1]))].sort();
+const developmentOnly=name=>/^proof-|reference/i.test(name);
 
 if(!names.length)throw new Error('No avatar PNG assets were found in avatar-renderer.js');
+if(names.some(developmentOnly))throw new Error(`Development-only avatar image referenced by live renderer: ${names.find(developmentOnly)}`);
+fs.rmSync(runtimeDir,{recursive:true,force:true});
 fs.mkdirSync(runtimeDir,{recursive:true});
 
 let sourceBytes=0;
