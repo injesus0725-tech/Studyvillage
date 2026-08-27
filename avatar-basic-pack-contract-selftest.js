@@ -31,7 +31,7 @@ for(const [slot,items] of Object.entries(v4))for(const id of items){assert.ok(ca
 for(const [slot,items] of Object.entries(v5))for(const id of items){assert.ok(catalogV5.includes(`'${id}':{name:`)&&catalogV5.includes(`slot:'${slot}'`),`v5 catalog missing ${id}`);assert.ok(clientV5.includes(`'${id}':{svg:`),`v5 visual missing ${id}`)}
 assert.ok(catalogV3.includes("import { avatarShopPackV4 } from './avatar-shop-pack-v4.js'")&&catalogV3.includes("import { avatarShopPackV5 } from './avatar-shop-pack-v5.js'"),'merged shop catalog must include v4/v5');
 assert.ok(catalogV3.includes('...packV3,...avatarShopPackV4,...avatarShopPackV5'),'v4/v5 shop data must be active');
-assert.ok(clientV3.includes("extra.src='assets/avatar-basic-pack-v5.js?v=20260826v5'"),'active runtime must load v5 visuals');
+assert.ok(clientV3.includes("extra.src='assets/avatar-basic-pack-v5.js?v=20260827v6'"),'active runtime must load v5 visuals');
 assert.ok(shop.includes("const RANKING_SLOTS=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet']"),'ranking must preserve every modular equipment slot including face/expression');
 assert.ok(shop.includes("if((ITEM_SLOTS[id]||BUILTIN_STYLE_SLOTS[id])===slot)out[slot]=id"),'ranking must restore both purchased and built-in face/expression styles');
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking equipment restoration required');

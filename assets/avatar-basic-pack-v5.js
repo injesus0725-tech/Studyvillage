@@ -27,7 +27,7 @@
   window.fetch=async function(input,init={}){
     const url=typeof input==='string'?input:input?.url||'',method=String(init?.method||(typeof input!=='string'&&input?.method)||'GET').toUpperCase();
     const response=await originalFetch(input,init);
-    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok){
+    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok&&!new Headers(init?.headers||{}).has('X-StudyVillage-Keep-Builtin')){
       try{
         const headers=new Headers(init?.headers||{});if(!headers.has('Content-Type'))headers.set('Content-Type','application/json');
         const cleared=await originalFetch('/api/shop/equipment',{method:'PUT',headers,body:JSON.stringify({equipment:emptyEquipment()})});

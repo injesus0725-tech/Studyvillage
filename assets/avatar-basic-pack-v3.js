@@ -36,5 +36,5 @@
     'pet-duck':{svg:svg('<ellipse fill="#ead45a" cx="81" cy="122" rx="14" ry="11"/><circle fill="#ead45a" cx="81" cy="112" r="10"/><path fill="#e79242" d="M86 114h10l-8 5z"/><circle fill="#333" cx="78" cy="110" r="2"/>')},
     'pet-star':{svg:svg('<path fill="#e8c857" d="M81 104l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z"/><circle fill="#574b3f" cx="77" cy="121" r="1.5"/><circle fill="#574b3f" cx="85" cy="121" r="1.5"/><path fill="none" d="M78 126q3 2 6 0"/>')}
   });
-  if(!document.querySelector('script[data-avatar-pack-v5]')){const extra=document.createElement('script');extra.src='assets/avatar-basic-pack-v5.js?v=20260826v5';extra.dataset.avatarPackV5='1';document.head.appendChild(extra)}
+  if(!document.querySelector('script[data-avatar-pack-v5]')){const extra=document.createElement('script');extra.src='assets/avatar-basic-pack-v5.js?v=20260827v6';extra.dataset.avatarPackV5='1';document.head.appendChild(extra)}
 })();
