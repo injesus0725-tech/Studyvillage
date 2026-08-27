@@ -17,6 +17,12 @@ function time(){const h=rand(1,11),m=rand(0,9)*5,elapsed=rand(1,9)*5,total=h*60+
 function fraction(){const d=rand(2,10),a=rand(1,d-1),mode=rand(0,2);if(mode===0)return{prompt:`분수 ${a}/${d}에서 분자는 얼마인가요?`,answer:a,unit:'6단원 분수와 소수'};if(mode===1)return{prompt:`분수 ${a}/${d}에서 분모는 얼마인가요?`,answer:d,unit:'6단원 분수와 소수'};let b=rand(1,d-1);while(b===a)b=rand(1,d-1);return{prompt:`${a}/${d}와 ${b}/${d} 중 더 큰 분수의 분자를 입력하세요.`,answer:Math.max(a,b),unit:'6단원 분수와 소수'}}
 function unitFraction(){let a=rand(2,10),b=rand(2,10);while(a===b)b=rand(2,10);return{prompt:`1/${a}와 1/${b} 중 더 큰 분수의 분모를 입력하세요.`,answer:Math.min(a,b),unit:'6단원 분수와 소수'}}
 function decimal(){const whole=rand(0,9),tenth=rand(1,9);return{prompt:`${whole}.${tenth}에서 소수 첫째 자리 숫자는 무엇인가요?`,answer:tenth,unit:'6단원 분수와 소수'}}
+function multiplication2(){const a=rand(101,299),b=rand(2,4);return{prompt:`${a} × ${b} = ?`,answer:a*b,unit:'1단원 곱셈'}}
+function multiplicationTens(){const a=rand(11,49),b=rand(2,9)*10;return{prompt:`${a} × ${b} = ?`,answer:a*b,unit:'1단원 곱셈'}}
+function division2(){const d=rand(2,9),q=rand(10,49),r=rand(0,d-1);return{prompt:`${d*q+r} ÷ ${d}의 몫은?`,answer:q,unit:'2단원 나눗셈'}}
+function fraction2(){const d=rand(2,9),whole=rand(1,4),n=rand(1,d-1);return Math.random()<.5?{prompt:`${whole}와 ${n}/${d}을 가분수로 나타낼 때 분자는?`,answer:whole*d+n,unit:'4단원 분수'}:{prompt:`${whole*d+n}/${d}을 대분수로 나타낼 때 자연수 부분은?`,answer:whole,unit:'4단원 분수'}}
+function capacity(){const l=rand(1,8),ml=rand(1,9)*100;return{prompt:`${l} L ${ml} mL는 모두 몇 mL인가요?`,answer:l*1000+ml,unit:'5단원 들이와 무게'}}
+function weight(){const kg=rand(1,8),g=rand(1,9)*100;return{prompt:`${kg} kg ${g} g은 모두 몇 g인가요?`,answer:kg*1000+g,unit:'5단원 들이와 무게'}}
 const GENERATOR_ROWS=Object.freeze([
  {unit:'1단원 덧셈과 뺄셈',modes:['mixed','addition'],make:addition},
  {unit:'1단원 덧셈과 뺄셈',modes:['mixed','subtraction'],make:subtraction},
@@ -26,14 +32,21 @@ const GENERATOR_ROWS=Object.freeze([
  {unit:'5단원 길이와 시간',modes:['mixed'],make:time},
  {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:fraction},
  {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:unitFraction},
- {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:decimal}
+ {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:decimal},
+ {semester:2,unit:'1단원 곱셈',modes:['mixed','multiplication'],make:multiplication2},
+ {semester:2,unit:'1단원 곱셈',modes:['mixed','multiplication'],make:multiplicationTens},
+ {semester:2,unit:'2단원 나눗셈',modes:['mixed','division'],make:division2},
+ {semester:2,unit:'4단원 분수',modes:['mixed','fraction'],make:fraction2},
+ {semester:2,unit:'5단원 들이와 무게',modes:['mixed'],make:capacity},
+ {semester:2,unit:'5단원 들이와 무게',modes:['mixed'],make:weight}
 ]);
 const VALID_MODES=new Set(['mixed','addition','subtraction','multiplication','division','fraction']);
 function normalizeMode(value){const mode=clean(value,30).toLowerCase();return VALID_MODES.has(mode)?mode:'mixed'}
 function readCatalogSettings(){let db;try{const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;db=new Database(path.join(dataDir,'studyvillage.db'),{readonly:true,fileMustExist:false});const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(CATALOG_KEY)?.value||'{}',value=JSON.parse(raw);return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return{}}finally{try{db?.close()}catch{}}}
 const mathUnitKey=unit=>`unit:수학|3|1|${unit}`;
 function unitEnabled(unit,settings){return settings[mathUnitKey(unit)]?.enabled!==false}
-function generatorsFor(mode,settings){const normalized=normalizeMode(mode);return GENERATOR_ROWS.filter(row=>row.modes.includes(normalized)&&unitEnabled(row.unit,settings))}
+const mathUnitKey2=unit=>`unit:수학|3|2|${unit}`;
+function generatorsFor(mode,settings){const normalized=normalizeMode(mode);return GENERATOR_ROWS.filter(row=>row.modes.includes(normalized)&&(row.semester===2?settings[mathUnitKey2(row.unit)]?.enabled!==false:unitEnabled(row.unit,settings)))}
 function makeProblem(mode='mixed',settings={}){const rows=generatorsFor(mode,settings);return rows.length?pick(rows).make():null}
 function explain(problem){const p=problem.prompt,a=problem.answer;if(p.includes(' + '))return`각 자리의 수를 더하면 정답은 ${a}입니다.`;if(p.includes(' - '))return`각 자리에서 빼기를 계산하면 정답은 ${a}입니다.`;if(p.includes(' × '))return`앞의 수를 뒤의 수만큼 곱하면 ${a}입니다.`;if(p.includes(' ÷ '))return`나누는 수와 ${a}를 곱하면 나누어지는 수가 됩니다.`;if(p.includes('몇 mm'))return`1 cm는 10 mm이므로 단위를 mm로 바꾸어 더하면 ${a}입니다.`;if(p.includes('몇 m'))return`1 km는 1000 m이므로 단위를 m로 바꾸어 더하면 ${a}입니다.`;if(p.includes('분 후'))return`시각을 분으로 바꾸고 지난 시간을 더하면 ${a}분입니다.`;if(p.includes('분자'))return`분수에서 가로선 위의 수가 분자이므로 정답은 ${a}입니다.`;if(p.includes('분모'))return`분수에서 가로선 아래의 수가 분모이므로 정답은 ${a}입니다.`;return`문제의 수와 단위를 차례로 확인하면 정답은 ${a}입니다.`}
 export function installMathPracticeRoutes(app,{requireSession}){
