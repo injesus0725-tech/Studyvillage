@@ -9,10 +9,10 @@ for(const slot of ['hair','outfit','bottom','shoes','hat','glasses','bag','hand'
 }
 for(const id of ['bottom-jeans','bottom-shorts','bottom-skirt'])assert.ok(renderer.includes(`'${id}'`),`missing anatomical lower-body asset ${id}`);
 assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'avatar parts must fill the same anchored box');
-assert.ok(!css.includes('visibility:hidden!important'),'hats must not make the character bald; their opaque SVG must naturally cover only the hair beneath them');
+assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png")&&renderer.includes("function defaultHair(){return''}"),'머리와 얼굴은 완성형 남녀 캐릭터 본체에 포함되어야 합니다.');
 assert.ok(renderer.includes("hat-wizard-rpg-v4.png")&&!renderer.includes("'hat-wizard':{svg"),'wizard hat must use the approved premium raster asset instead of the comedy SVG triangle');
 assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('StudyVillageAvatar.paintItem(part,item.id)'),'shop cards must show the exact applied SVG item');
-assert.ok(shop.includes("item.slot==='hat'")&&shop.includes("paintHair(hair,null,'student-boy')"),'hat shop previews must include the canonical default hair beneath the brim');
-assert.ok(renderer.includes('paintAvatarBase')&&renderer.includes('paintHair'),'production raster bodies and hair must remain independently composable');
+assert.ok(shop.includes("!['face','expression','hair','hat','glasses'].includes(item.slot)"),'상점은 제거된 얼굴 조립 부품을 노출하지 않아야 합니다.');
+assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("['outfit','bottom','shoes','bag','hand','pet']"),'완성형 본체에는 옷·손 아이템·친구만 조합해야 합니다.');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
 console.log('student modular mini-me visual contract self-test passed');

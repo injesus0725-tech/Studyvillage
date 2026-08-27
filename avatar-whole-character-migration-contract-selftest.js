@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const shop=fs.readFileSync('server/item-shop.js','utf8');
+const renderer=fs.readFileSync('avatar-renderer.js','utf8');
+const customize=fs.readFileSync('customize.js','utf8');
+const studentShop=fs.readFileSync('student-shop.js','utf8');
+assert.ok(shop.includes("AVATAR_RESET_KEY='avatar:whole-character-reset:v1'"),'구매·장착 초기화는 한 번만 실행되어야 합니다.');
+assert.ok(shop.includes("owned_items_json='[]',equipment_json='{}'")&&shop.includes('setSetting(db,AVATAR_RESET_KEY'),'기존 테스트 구매 목록과 장착 상태를 초기화해야 합니다.');
+assert.ok(shop.includes("RETIRED_AVATAR_SLOTS=new Set(['face','expression','hair','hat','glasses'])"),'오류가 잦은 얼굴 조립 슬롯을 판매 중지해야 합니다.');
+assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png"),'완성형 남녀 캐릭터 본체를 사용해야 합니다.');
+for(const slot of ['outfit','bottom','shoes','bag','hand','pet'])assert.ok(customize.includes("'"+slot+"'"),`남겨야 할 착용 슬롯 누락: ${slot}`);
+assert.ok(studentShop.includes("!['face','expression','hair','hat','glasses'].includes(item.slot)"),'학생 상점에서 폐기 슬롯을 숨겨야 합니다.');
+console.log('whole-character avatar migration contract self-test passed');

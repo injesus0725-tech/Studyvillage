@@ -24,8 +24,10 @@
     };
     wardrobeButton.addEventListener('click', () => setMode('wardrobe'), true);
     shopButton.addEventListener('click', () => {
-      wardrobeButton.click();
       setMode('shop');
+      panel.hidden = false;
+      window.dispatchEvent(new Event('studyvillage:shop-refresh'));
+      requestAnimationFrame(() => setMode('shop'));
     });
     setMode('wardrobe');
   }

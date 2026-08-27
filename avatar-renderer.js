@@ -38,8 +38,9 @@ window.StudyVillageAvatar=(()=>{
   const face=(kind)=>{const shapes={round:`<path fill="#ffd2ad" d="M27 32q1-20 21-20t21 20v19q0 18-21 18T27 51z"/>`,soft:`<path fill="#ffd2ad" d="M26 33q2-21 22-21t22 21v17q-2 20-22 22-20-2-22-22z"/>`,brave:`<path fill="#efbf99" d="M28 30q3-18 20-18t20 18v22q-3 17-20 17T28 52z"/>`};return frame(`<g ${stroke}>${shapes[kind]||shapes.round}</g>`) };
   const expression=kind=>{const shapes={smile:`<ellipse fill="#493935" stroke="none" cx="37" cy="44" rx="2.4" ry="3.7"/><ellipse fill="#493935" stroke="none" cx="59" cy="44" rx="2.4" ry="3.7"/><path fill="none" d="M42 56q6 6 12 0"/>`,calm:`<path fill="none" d="M33 44q4-4 8 0m14 0q4-4 8 0M43 57q5 3 10 0"/>`,sparkle:`<path fill="#493935" d="M37 38l2 4 4 2-4 2-2 4-2-4-4-2 4-2zm22 0l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" stroke="none"/><path fill="none" d="M41 56q7 8 14 0"/>`};return frame(`<g stroke="#493935" stroke-width="1.7" stroke-linecap="round">${shapes[kind]||shapes.smile}<ellipse fill="#f1a0a0" stroke="none" cx="31" cy="52" rx="4" ry="2"/><ellipse fill="#f1a0a0" stroke="none" cx="65" cy="52" rx="4" ry="2"/></g>`) };
   const RPG='/assets/avatar-runtime/';
+  const RETIRED_BASE_ASSETS=[`${RPG}base-boy-hairless-v3.png`,`${RPG}base-girl-hairless-v3.png`];void RETIRED_BASE_ASSETS;
   const BASES={'student-default':{src:`${RPG}base-boy-v2.png`,alt:'남자 캐릭터'},'student-boy':{src:`${RPG}base-boy-v2.png`,alt:'남자 캐릭터'},'student-girl':{src:`${RPG}base-girl-v2.png`,alt:'여자 캐릭터'}};
-  const INTERNAL_BASES={'student-default':{src:`${RPG}base-boy-hairless-v3.png`,alt:'남자 캐릭터 몸'},'student-boy':{src:`${RPG}base-boy-hairless-v3.png`,alt:'남자 캐릭터 몸'},'student-girl':{src:`${RPG}base-girl-hairless-v3.png`,alt:'여자 캐릭터 몸'}};
+  const INTERNAL_BASES={'student-default':{src:`${RPG}base-boy-v2.png`,alt:'완성형 남자 캐릭터'},'student-boy':{src:`${RPG}base-boy-v2.png`,alt:'완성형 남자 캐릭터'},'student-girl':{src:`${RPG}base-girl-v2.png`,alt:'완성형 여자 캐릭터'}};
   const ASSETS={
     'face-round':{emoji:''},'face-soft':{emoji:''},'face-brave':{emoji:''},
     'expression-smile':{emoji:''},'expression-calm':{emoji:''},'expression-sparkle':{emoji:''},
@@ -56,11 +57,11 @@ window.StudyVillageAvatar=(()=>{
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}
   function internalBase(id='student-default'){return INTERNAL_BASES[id]||INTERNAL_BASES['student-default']}
-  function defaultHair(id='student-default'){return id==='student-girl'?'hair-bob':'hair-short'}
+  function defaultHair(){return''}
   function asset(id,fallback=''){if(!id)return{emoji:'',src:null,svg:'',alt:''};return ASSETS[id]||{emoji:fallback,src:null,svg:'',alt:id}}
   function paintBase(element,id='student-default'){paint(element,base(id));if(element)element.dataset.avatarBase=BASES[id]?id:'student-default'}
   function paintAvatarBase(element,id='student-default'){paint(element,internalBase(id));if(element)element.dataset.avatarBase=INTERNAL_BASES[id]?id:'student-default'}
-  function paintHair(element,itemId,baseId='student-default'){const id=itemId||defaultHair(baseId);paintItem(element,id);if(element)element.dataset.avatarDefault=String(!itemId)}
+  function paintHair(element,itemId){paintItem(element,itemId||'');if(element)element.dataset.avatarDefault='false'}
   function paintItem(element,id,fallback=''){paint(element,asset(id,fallback));if(element)element.dataset.avatarItem=id||''}
   function setMotion(container,{moving=false,direction='down'}={}){if(!container)return;const dir=['up','down','left','right'].includes(direction)?direction:'down';container.dataset.motion=moving?'walk':'idle';container.dataset.direction=dir;container.classList.toggle('is-walking',!!moving);container.classList.toggle('is-idle',!moving);container.classList.toggle('facing-left',dir==='left');container.classList.toggle('facing-right',dir==='right');container.classList.toggle('facing-up',dir==='up');container.classList.toggle('facing-down',dir==='down')}
   return{BASES,INTERNAL_BASES,ASSETS,base,internalBase,defaultHair,asset,paint,paintBase,paintAvatarBase,paintHair,paintItem,setMotion};

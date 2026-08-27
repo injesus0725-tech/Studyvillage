@@ -11,9 +11,9 @@ assert.strictEqual(ids.length,30,'exploration needs 30 riddles');
 assert.strictEqual(new Set(ids).size,30,'riddle ids must be unique');
 assert.strictEqual((questions.match(/difficulty:'easy'/g)||[]).length,15,'forest needs 15 easy candidates');
 assert.strictEqual((questions.match(/difficulty:'challenge'/g)||[]).length,15,'mountain needs 15 challenge candidates');
-assert.match(hub,/name:'수수께끼 숲'[\s\S]*difficulty:'easy'[\s\S]*count:5/,'forest must select five easy riddles');
-assert.match(hub,/name:'도전의 산'[\s\S]*difficulty:'challenge'[\s\S]*count:7/,'mountain must select seven challenge riddles');
-assert.match(hub,/filter\(q=>q\.difficulty===exp\.difficulty&&[\s\S]*eligible\?\.\(q,'exploration'\)/,'v2 expeditions must use separate difficulty pools and exploration availability');
+assert.doesNotMatch(hub,/name:'수수께끼 숲'|name:'도전의 산'|data-subject="수수께끼"/,'수수께끼는 별도 탐험이나 필터로 분리하지 않습니다.');
+assert.match(hub,/riddles=eligible\.filter\(q=>q\.subject==='창의적 사고'\)/,'수수께끼 문제는 탐험 공통 문제 풀에서 찾아야 합니다.');
+assert.match(hub,/subjectPool=exp\.subject==='랜덤'\?eligible:\[\.\.\.curriculum\.filter[\s\S]*\.\.\.riddles\]/,'교과 탐험에도 수수께끼가 무작위로 섞여야 합니다.');
 assert.match(hub,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/,'questions must use Fisher-Yates shuffle');
 assert.match(hub,/shuffle\(q\.options\)/,'answer choices must be shuffled');
 assert.match(hub,/answer:options\.indexOf\(correct\)/,'answer index must follow shuffled choices');
@@ -24,8 +24,5 @@ assert.match(hub,/submission/,'expedition saves must carry an idempotent submiss
 assert.match(hub,/REQUEST_TIMEOUT=7000/,'expedition requests must not hang forever');
 assert.match(index,/question-data\.js[\s\S]*assets\/student-exploration-v2\.js/,'question data must load before exploration v2');
 assert.doesNotMatch(index,/assets\/student-study-menu\.js/,'retired exploration menu must not load in production');
-for(const id of ['exploration-forest-riddle','exploration-mountain-riddle']){
-  assert(taxonomy.includes(id),`${id} needs client metadata`);
-  assert(metadata.includes(id),`${id} needs server metadata`);
-}
+for(const id of ['exploration-forest-riddle','exploration-mountain-riddle']){assert(taxonomy.includes(id),`${id} legacy records need client metadata`);assert(metadata.includes(id),`${id} legacy records need server metadata`)}
 console.log('student random exploration v2 contract selftest passed');

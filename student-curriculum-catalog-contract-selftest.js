@@ -5,7 +5,7 @@ for(const token of ['GROUPS','과목과 단원을 선택해요','spaces','/api/p
 assert.ok(ui.includes("subjects:['국어']")&&ui.includes("subjects:['수학']")&&ui.includes("subjects:['사회','과학','음악','예체능']"),'curriculum UI must keep Korean/math unit selection and the integrated subject group');
 assert.ok(building.includes("action:'curriculum'")&&building.includes("title:'수학 놀이터'"),'village learning buildings must use the new structure');
 for(const name of ['국어의 숲','사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
-assert.ok(explore.includes("picked[picked.length-1]=shuffle(riddles)[0]"),'random forest must add at most one fun riddle');
+assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('...riddles'),'수수께끼는 별도 숲 없이 교과·랜덤 탐험 문제에 섞여야 합니다.');
 assert.ok(reward.includes("id.startsWith('curriculum-')"),'curriculum activities must share regular XP/star balance');
 assert.ok(stars.includes("'curriculum-korean'")&&stars.includes("'exploration-random'"),'curriculum and catalog exploration stars must be server-confirmed');
 console.log('student curriculum catalog contract self-test passed');

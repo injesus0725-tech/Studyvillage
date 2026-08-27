@@ -42,7 +42,6 @@
 (()=>{
   function enhance(){
     const filters=document.querySelector('#student-shop-filters'),list=document.querySelector('#student-shop-items');if(!filters||!list)return false;
-    if(!filters.querySelector('[data-shop-slot="face"]')){const all=filters.querySelector('[data-shop-slot="all"]');let anchor=all;for(const [slot,label] of [['face','얼굴'],['expression','표정']]){const b=document.createElement('button');b.type='button';b.dataset.shopSlot=slot;b.setAttribute('aria-pressed','false');b.textContent=label;anchor?.after(b);anchor=b}}
     if(!document.querySelector('#sv-avatar-shop-ux-style')){const style=document.createElement('style');style.id='sv-avatar-shop-ux-style';style.textContent='#student-shop-items{max-height:min(44vh,420px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}.student-shop-filters{display:flex;flex-wrap:wrap;gap:6px;max-height:94px;overflow-y:auto;overscroll-behavior:contain}.student-shop .inventory-item{min-height:92px}.student-shop-head{position:sticky;top:0;z-index:2;background:inherit}';document.head.appendChild(style)}
     return true;
   }
