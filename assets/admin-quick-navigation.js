@@ -22,6 +22,8 @@
   const jump=target=>{if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('admin-jump-highlight');setTimeout(()=>target.classList.remove('admin-jump-highlight'),1300);return true};
   for(const[label,resolver]of items){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{const target=resolver();if(!jump(target))setTimeout(()=>jump(resolver()),350)};nav.appendChild(button)}
   const header=app.querySelector('header');header?.after(nav);if(!header)app.prepend(nav);
+  const organizeQuestionPanels=()=>{let anchor=nav;for(const selector of ['#question-review-panel','#question-editor-panel','#question-catalog-panel']){const target=document.querySelector(selector);if(!target)continue;anchor.after(target);anchor=target}};
+  setTimeout(organizeQuestionPanels,1000);
 
   function decorateStudentRows(){
     const body=document.querySelector('#ranking-body');if(!body)return;
