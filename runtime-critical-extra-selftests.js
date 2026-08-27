@@ -70,6 +70,7 @@ const tests=[
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
+  'curriculum-question-bank-packaging-contract-selftest.js',
   'question-catalog-settings-contract-selftest.js',
   'student-curriculum-catalog-contract-selftest.js',
   'legacy-quiz-completion-recovery-contract-selftest.js',
