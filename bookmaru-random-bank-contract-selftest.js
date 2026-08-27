@@ -23,6 +23,8 @@ assert.ok(game.includes('국어에서 만난 어려운 낱말의 뜻'),'the stud
 assert.ok(data.includes('bookmaru:true')&&data.includes('bookmaru:false'),'question sets must explicitly opt in or out of Bookmaru');
 assert.ok(!game.includes('score+=20'),'Bookmaru scoring must not retain fixed five-question increments');
 assert.ok(!game.includes('score/20'),'Bookmaru result counts must not depend on five-question scoring');
+assert.ok(!game.includes('AUTO_NEXT_MS')&&!game.includes('advanceTimer=setTimeout'),'Bookmaru feedback must remain visible until the student presses next');
+assert.ok(game.includes("next.textContent=index===questions.length-1?'결과 보기 ▶':'다음 문제 ▶'"),'Bookmaru must expose an explicit next button after feedback');
 assert.ok((data.match(/category:'어휘'/g)||[]).length===5,'the bundled starter questions must remain categorized for future guide additions');
 
 console.log('Bookmaru seven-question vocabulary bank contract self-test passed');
