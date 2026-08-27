@@ -17,6 +17,8 @@ const isPrivateIpv4=address=>{
 function scoreAddress(adapter,address){
   let score=0;const name=clean(adapter);
   if(PHYSICAL_HINTS.test(name))score+=40;
+  if(WIRELESS_HINTS.test(name))score+=25;
+  if(WIRED_HINTS.test(name))score+=5;
   if(VIRTUAL_HINTS.test(name))score-=80;
   if(isPrivateIpv4(address))score+=30;
   if(/^169\.254\./.test(address))score-=60;
@@ -34,7 +36,7 @@ export function classroomNetworkAddresses(port){
   }
   rows.sort((a,b)=>b.score-a.score||a.adapter.localeCompare(b.adapter,'ko'));
   const best=rows[0]?.score;
-  return rows.map((row,index)=>({...row,recommended:index===0&&best!==undefined,recommendation:VIRTUAL_HINTS.test(row.adapter)?'가상/VPN 어댑터일 수 있음':index===0?'학생 패드 한 대로 먼저 접속 시험 권장':'대체 접속 주소'}));
+  return rows.map((row,index)=>({...row,recommended:index===0&&best!==undefined,recommendation:VIRTUAL_HINTS.test(row.adapter)?'가상/VPN 어댑터일 수 있음':index===0&&row.kind==='wireless'?'교사 PC의 현재 Wi-Fi 주소 · 학생 패드 한 대로 먼저 시험':index===0?'학생 패드 한 대로 먼저 접속 시험 권장':'대체 접속 주소'}));
 }
 export function installNetworkAccessRoute(app,{port}){
   app.get('/api/network',async(_req,res)=>{

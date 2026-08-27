@@ -41,8 +41,8 @@ window.StudyVillageAvatar=(()=>{
   const BASES={'student-default':{src:`${RPG}base-boy-v2.png`,alt:'남자 캐릭터'},'student-boy':{src:`${RPG}base-boy-v2.png`,alt:'남자 캐릭터'},'student-girl':{src:`${RPG}base-girl-v2.png`,alt:'여자 캐릭터'}};
   const INTERNAL_BASES={'student-default':{src:`${RPG}base-boy-hairless-v3.png`,alt:'남자 캐릭터 몸'},'student-boy':{src:`${RPG}base-boy-hairless-v3.png`,alt:'남자 캐릭터 몸'},'student-girl':{src:`${RPG}base-girl-hairless-v3.png`,alt:'여자 캐릭터 몸'}};
   const ASSETS={
-    'face-round':{svg:face('round')},'face-soft':{svg:face('soft')},'face-brave':{svg:face('brave')},
-    'expression-smile':{svg:expression('smile')},'expression-calm':{svg:expression('calm')},'expression-sparkle':{svg:expression('sparkle')},
+    'face-round':{emoji:''},'face-soft':{emoji:''},'face-brave':{emoji:''},
+    'expression-smile':{emoji:''},'expression-calm':{emoji:''},'expression-sparkle':{emoji:''},
     'hair-short':{src:`${RPG}hair-short-rpg-v3.png`,alt:'갈색 레이어드 숏컷'},'hair-bob':{src:`${RPG}hair-bob-rpg-v3.png`,alt:'갈색 단발머리'},'hair-ponytail':{src:`${RPG}hair-ponytail-rpg-v4.png`,alt:'밤색 하이 포니테일'},'hair-blue':{src:`${RPG}hair-blue-rpg-v4.png`,alt:'별빛 남색 레이어드 숏컷'},
     'cap-blue':{svg:hat('cap','#294f79')},'crown-gold':{src:`${RPG}hat-crown-rpg-v5.png`,alt:'별보석 황금 왕관'},'leaf-cap':{src:`${RPG}hat-leaf-rpg-v5.png`,alt:'초록 잎 탐험 베레모'},'scholar-cap':{src:`${RPG}hat-academy-v2.png`,alt:'별빛 아카데미 모자'},'hat-wizard':{src:`${RPG}hat-wizard-rpg-v4.png`,alt:'별자리 마법사 모자'},'hat-pirate':{src:`${RPG}hat-pirate-rpg-v4.png`,alt:'별나침반 해적 선장 모자'},'hat-flower':{src:`${RPG}hat-flower-rpg-v5.png`,alt:'들꽃 장식 로즈 베레모'},
     'glasses-round':{svg:glasses('round','#51454d')},'explorer-goggles':{svg:glasses('goggles','#50634b')},'star-monocle':{svg:glasses('monocle','#a88737')},'glasses-sun':{svg:glasses('sun','#292936')},'glasses-heart':{src:`${RPG}glasses-heart-star-rpg-v8.png`,alt:'로즈골드 별하트 안경'},
