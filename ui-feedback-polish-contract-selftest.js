@@ -1,0 +1,10 @@
+const fs=require('fs'),assert=require('assert');
+const student=fs.readFileSync('index.html','utf8'),admin=fs.readFileSync('admin.html','utf8'),src=fs.readFileSync('assets/ui-feedback-polish.js','utf8'),css=fs.readFileSync('assets/ui-feedback-polish.css','utf8'),library=fs.readFileSync('library-game.js','utf8');
+assert.ok(student.includes('id="shop-button"')&&student.includes('id="customize-button"'),'상점과 내 옷장 입구가 분리되어야 합니다.');
+assert.ok(src.includes("setMode('shop')")&&src.includes("setMode('wardrobe')"),'상점과 옷장 내용이 한 화면에 동시에 길게 나오면 안 됩니다.');
+assert.ok(css.includes('.avatar-preview')&&css.includes('position: sticky'),'상점과 옷장 위에서 현재 캐릭터를 계속 확인할 수 있어야 합니다.');
+assert.ok(src.includes("app.prepend(header)")&&src.includes('(nav || header).after(summary)'),'교사용 관리자 머리말과 요약이 동적 상점보다 위에 있어야 합니다.');
+assert.ok(library.includes("next.hidden=false")&&library.includes("next.onclick=()=>"),'책마루는 정오답 피드백 뒤 다음 문제 버튼을 기다려야 합니다.');
+for(const kind of ['angel','villain','reward','mystery'])assert.ok(src.includes(`'${kind}'`),`${kind} 등장 효과음을 연결해야 합니다.`);
+assert.ok(student.includes('ui-feedback-polish.js')&&admin.includes('ui-feedback-polish.js'),'학생·관리자 화면 모두 안정화 모듈을 불러야 합니다.');
+console.log('UI feedback polish contract self-test passed');

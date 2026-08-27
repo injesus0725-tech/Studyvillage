@@ -1,0 +1,14 @@
+#customize-panel[data-mode="shop"] .student-shop { display: block !important; }
+#customize-panel[data-mode="wardrobe"] .student-shop { display: none !important; }
+#customize-panel .avatar-preview {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #eaf7e7;
+}
+#customize-panel[data-mode="shop"] #student-shop-items,
+#customize-panel[data-mode="wardrobe"] #inventory-list {
+  max-height: min(430px, 46vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
