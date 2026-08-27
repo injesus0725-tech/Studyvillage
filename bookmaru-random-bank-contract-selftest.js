@@ -5,7 +5,8 @@ const data=fs.readFileSync('question-data.js','utf8');
 
 assert.ok(game.includes("const ACTIVITY_ID='vocabulary',ROUND_SIZE=7"),'Bookmaru must draw seven questions per daily challenge');
 assert.ok(game.includes('일곱 문제에 도전해요'),'the student guide must describe the seven-question challenge');
-assert.ok(game.includes('const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(set=>set?.bookmaru===true'),'Bookmaru must aggregate only explicitly approved vocabulary sets');
+assert.ok(game.includes('const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(')&&game.includes('set.bookmaru===true')&&game.includes("(set.spaces||[]).includes('bookmaru')")&&game.includes("(q.spaces||[]).includes('bookmaru')"),'Bookmaru must aggregate only sets or questions explicitly approved for Bookmaru');
+assert.ok(game.includes("((q.spaces||set.spaces||[]).includes('bookmaru')||set.bookmaru===true)"),'Bookmaru must exclude non-vocabulary questions from mixed sets');
 assert.ok(game.includes('_sourceActivityId:set.activityId,_sourceNumber:i+1'),'Bookmaru questions must retain source identity for teacher overrides');
 assert.ok(game.includes('const buildRound=bank=>shuffle(bank).slice(0,Math.min(ROUND_SIZE,bank.length)).map(randomizeQuestion)'),'Bookmaru must draw a random bounded round');
 assert.ok(game.includes('const correct=item.options[Number(item.answer)],options=shuffle(item.options)'),'choice options must be shuffled with their answer preserved');

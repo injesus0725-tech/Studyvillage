@@ -14,7 +14,7 @@ assert.ok(review.includes('installQuestionCatalogSettingRoutes'),'catalog routes
 for(const token of ['/api/question-catalog/settings','subject:','unit:','question:','.filter(question=>','const originals=new Map()','sourceQuestions(set)','student-question-catalog-live-refresh.js','q.spaces.includes(space)'])assert.ok(loader.includes(token),`student activation filter missing ${token}`);
 assert.ok(!loader.includes('settings[`space-subject:')&&!loader.includes('settings[`space-unit:'),'student rollout must not require duplicate per-space teacher checks');
 assert.ok(loader.includes('questionKey(base,set,index)')&&loader.includes('catalogId'),'questions without explicit ids must receive stable catalog ids before filtering');
-assert.ok(loader.includes('originals.set(id,(set.questions||[]).map(clone))'),'teacher disable/enable cycles must rebuild from the preserved bundled question bank');
+assert.ok(/originals\.set\(id,\(set\.questions\|\|\[\]\)\.map\([^)]*\)\)/.test(loader)&&loader.includes('originals.get(id)'),'teacher disable/enable cycles must rebuild from the preserved bundled question bank');
 for(const token of ['studyvillage:open-library-game','studyvillage:open-curriculum-learning','#exploration-cave','api.refresh()','catalogRefreshBypass'])assert.ok(live.includes(token),`live catalog refresh missing ${token}`);
 for(const token of ['배운 단원 출제 관리','국어·수학','사회·과학·예체능','음악 이론 문제','data-subject-filter','data-catalog-search','_questionKey','data-scope="subject"','data-scope="unit"','data-scope="question"'])assert.ok(admin.includes(token),`teacher catalog UI missing ${token}`);
 assert.ok(!admin.includes('data-scope="space-subject"')&&!admin.includes('data-scope="space-unit"'),'teacher UI must not ask for duplicate per-space unit checks');
