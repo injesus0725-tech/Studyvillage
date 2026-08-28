@@ -30,5 +30,23 @@
       try{cave.click()}finally{delete cave.dataset.catalogRefreshBypass}
     });
   },true);
+  /* The hub may remain open while the teacher changes unit checks. Refresh again at
+     the actual expedition start, redraw the hub from the fresh catalog, then replay
+     the same expedition button. An expedition already in progress is never touched. */
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('#student-explore-panel button[data-exp]');
+    if(!button||button.dataset.catalogRefreshBypass==='1')return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const id=button.dataset.exp;
+    refresh().finally(()=>{
+      const selected=document.querySelector('#student-explore-panel .sv2-filters button.selected');
+      selected?.click();
+      const fresh=[...document.querySelectorAll('#student-explore-panel button[data-exp]')].find(item=>item.dataset.exp===id);
+      if(!fresh||fresh.disabled)return;
+      fresh.dataset.catalogRefreshBypass='1';
+      try{fresh.click()}finally{delete fresh.dataset.catalogRefreshBypass}
+    });
+  },true);
   window.StudyVillageQuestionCatalogLiveRefresh={refresh};
 })();
