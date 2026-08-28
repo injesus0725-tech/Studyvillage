@@ -17,6 +17,7 @@ const mobile=read('onboarding.js');
 const overlay=read('assets/student-overlay-manager.js');
 const sound=read('sound-effects.js');
 const index=read('index.html');
+const game=read('game.js'),pkg=JSON.parse(read('package.json'));
 
 // Login/session: restore may retry once after connectivity/focus recovery, and replaced
 // sessions are explicitly cleared instead of leaving an old device stuck in a loading state.
@@ -62,5 +63,6 @@ for(const token of ["'.sv-mission-panel'","'.sv-collection-panel'","button.class
 assert.ok(index.includes('sound-effects.js?v='),'student build must package/load shared sound manager');
 assert.ok(sound.includes("document.addEventListener('click'")&&sound.includes("play(button.closest('.building-interior,.sv2-hub')?'enter':'tap')"),'shared sound manager must cover major menu/shop buttons');
 for(const kind of ['correct:','wrong:','reward:','danger:','angel:','villain:','mystery:','complete:','levelup:'])assert.ok(sound.includes(kind),`shared sound pattern missing ${kind}`);
+assert.ok(game.includes(`StudyVillage v${pkg.version}`),'student title version must match the packaged release version');
 
 console.log('V1 release readiness contract self-test passed');

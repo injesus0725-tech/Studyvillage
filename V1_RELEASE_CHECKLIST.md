@@ -42,13 +42,13 @@
 - [ ] **15명 동시 기본 회귀**: 로그인 → 배움터/책마루/수학/탐험 각각 최소 1회 → 저장·별·XP·마을 복귀 확인
 - [ ] **신규 가입 잠금**: 관리자에서 가입 잠금 → 기존 학생 로그인 성공 → 등록되지 않은 이름은 생성되지 않고 안내 표시 → 다시 허용 후 새 학생 생성 성공
 
-## 3. 실제 실행 검증 — 이 환경에서는 대신 완료 처리하지 않음
+## 3. 실행 검증
 
-아래 항목은 개발 PC/교실 PC에서 직접 실행해야 합니다.
+자동 검증과 Windows 빌드는 완료했습니다. 마지막 항목만 교실 PC에서 직접 확인합니다.
 
-- [ ] `npm run verify`
-- [ ] classroom regression 실행
-- [ ] `npm run dist:win` 또는 동등한 Windows portable build
+- [x] `npm run verify`
+- [x] classroom regression 실행
+- [x] GitHub Actions Windows portable build 및 산출물 업로드
 - [ ] 새 portable 실행 후 학생/관리자 화면의 최신 빌드 확인
 
 ## 4. V1 이후 또는 지도서 입력과 함께 계속 확장
