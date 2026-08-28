@@ -174,6 +174,7 @@ const tests=[
   'bookmaru-next-button-contract-selftest.js',
   'student-shop-separation-contract-selftest.js',
   'repeat-xp-and-riddle-integration-contract-selftest.js',
+  'curriculum-content-expansion-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js',
   'student-modular-avatar-visual-contract-selftest.js',
   'avatar-rpg-hair-alignment-contract-selftest.js',
