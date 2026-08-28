@@ -171,6 +171,7 @@ const tests=[
   'checkpoint-session-isolation-contract-selftest.js',
   'student-expedition-checkpoint-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
+  'bookmaru-next-button-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js',
   'student-modular-avatar-visual-contract-selftest.js',
   'avatar-rpg-hair-alignment-contract-selftest.js',
