@@ -49,6 +49,14 @@
     return false;
   }
   function guardWrite(){if(!writeInProgress())return false;alert('기록을 안전하게 저장하고 있어요.\n완료 또는 다시 시도 안내가 나온 뒤 나가 주세요.');return true}
+  function syncCompletedChallengeReturn(){
+    const quiz=document.querySelector('#quiz-panel:not([hidden])');
+    const next=quiz?.querySelector('#quiz-next');
+    if(quiz?.querySelector('#quiz-progress')?.textContent==='완료'&&next&&!next.hidden)next.textContent='마을로 돌아가기 🏡';
+  }
+  const challengeObserver=new MutationObserver(syncCompletedChallengeReturn);
+  const quizPanel=document.querySelector('#quiz-panel');if(quizPanel)challengeObserver.observe(quizPanel,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+
   button.addEventListener('click',async()=>{
     if(switching)return;
     if(guardWrite())return;
@@ -74,6 +82,12 @@
   });
 
   document.addEventListener('click',event=>{
+    const completedChallengeNext=event.target.closest('#quiz-panel:not([hidden]) #quiz-next');
+    if(completedChallengeNext&&document.querySelector('#quiz-panel #quiz-progress')?.textContent==='완료'){
+      event.preventDefault();event.stopImmediatePropagation();
+      document.querySelector('#quiz-panel #quiz-close')?.click();
+      return;
+    }
     const closeActivity=event.target.closest('.math-practice-panel:not([hidden]) .quiz-close,#library-game:not([hidden]) #library-close,#quiz-panel:not([hidden]) #quiz-close');
     if(!closeActivity)return;
     if(writeInProgress()){event.preventDefault();event.stopImmediatePropagation();guardWrite();return}
