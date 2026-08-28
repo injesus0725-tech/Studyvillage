@@ -11,7 +11,7 @@ for(const id of ['bottom-jeans','bottom-shorts','bottom-skirt'])assert.ok(render
 assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'avatar parts must fill the same anchored box');
 assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png")&&renderer.includes("function defaultHair(){return''}"),'머리와 얼굴은 완성형 남녀 캐릭터 본체에 포함되어야 합니다.');
 assert.ok(renderer.includes("hat-wizard-rpg-v4.png")&&!renderer.includes("'hat-wizard':{svg"),'wizard hat must use the approved premium raster asset instead of the comedy SVG triangle');
-assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('StudyVillageAvatar.paintItem(part,item.id)'),'shop cards must show the exact applied SVG item');
+assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact applied item');
 assert.ok(shop.includes("!['face','expression','hair','hat','glasses'].includes(item.slot)"),'상점은 제거된 얼굴 조립 부품을 노출하지 않아야 합니다.');
 assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("['outfit','bottom','shoes','bag','hand','pet']"),'완성형 본체에는 옷·손 아이템·친구만 조합해야 합니다.');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');

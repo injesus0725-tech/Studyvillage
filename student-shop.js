@@ -6,18 +6,22 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
   const shop=document.createElement('section');shop.className='inventory-group student-shop';shop.innerHTML='<div class="student-shop-head"><h3>⭐ 별 상점</h3><strong id="student-shop-balance">0별</strong></div><p id="student-shop-status" class="record-message">상점 정보를 불러오는 중이에요.</p><div id="student-shop-filters" class="student-shop-filters" role="group" aria-label="아이템 종류"><button type="button" data-shop-slot="all" aria-pressed="true">전체</button><button type="button" data-shop-slot="outfit">상의</button><button type="button" data-shop-slot="bottom">하의</button><button type="button" data-shop-slot="shoes">신발</button><button type="button" data-shop-slot="bag">가방</button><button type="button" data-shop-slot="hand">손</button><button type="button" data-shop-slot="pet">친구</button><button type="button" data-shop-slot="effect">효과</button><button type="button" data-shop-slot="physical">실물</button></div><div id="student-shop-items" class="inventory-items"></div>';
+  const allFilter=shop.querySelector('[data-shop-slot="all"]'),characterFilter=document.createElement('button');characterFilter.type='button';characterFilter.dataset.shopSlot='character';characterFilter.textContent='캐릭터';allFilter?.after(characterFilter);
   const inventory=document.querySelector('#inventory-list');inventory?.before(shop);
   const balance=shop.querySelector('#student-shop-balance'),status=shop.querySelector('#student-shop-status'),filters=shop.querySelector('#student-shop-filters'),list=shop.querySelector('#student-shop-items');
   let busy=false,loadPromise=null,activeSlot='all',lastData=null,transitionTimer=null;
   async function timedFetch(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
   function scheduleTransition(data){if(transitionTimer){clearTimeout(transitionTimer);transitionTimer=null}if(!data?.enabled)return;const serverNow=Date.parse(data.serverNow);if(!Number.isFinite(serverNow))return;const future=[];for(const item of data.items||[]){if(!item.limited)continue;for(const value of [item.saleStartsAt,item.saleEndsAt]){const time=Date.parse(value);if(Number.isFinite(time)&&time>serverNow)future.push(time)}}if(!future.length)return;const delay=Math.min(2147483000,Math.max(250,Math.min(...future)-serverNow+250));transitionTimer=setTimeout(()=>{transitionTimer=null;load()},delay)}
   function paintProductPreview(button,item){
-    if(['physical','effect'].includes(item.slot)||!window.StudyVillageAvatar?.ASSETS?.[item.id])return;
+    const renderer=window.StudyVillageAvatar;
+    if(['physical','effect'].includes(item.slot)||!renderer)return;
     const host=button.querySelector('span');if(!host)return;host.className='shop-wearable-preview';host.replaceChildren();
+    if(item.slot==='character'){const base=document.createElement('i');base.className='shop-preview-base';host.append(base);renderer.paintBase(base,item.id);return}
+    if(!renderer.ASSETS?.[item.id])return;
     const base=document.createElement('i'),part=document.createElement('i');base.className='shop-preview-base';part.className=`shop-preview-part shop-preview-${item.slot}`;host.append(base);
-    if(item.slot==='hair')window.StudyVillageAvatar.paintAvatarBase(base,'student-boy');else window.StudyVillageAvatar.paintBase(base,'student-boy');
-    if(item.slot==='hat'){const hair=document.createElement('i');hair.className='shop-preview-hair';host.append(hair);window.StudyVillageAvatar.paintHair(hair,null,'student-boy')}
-    host.append(part);window.StudyVillageAvatar.paintItem(part,item.id);
+    if(item.slot==='hair')renderer.paintAvatarBase(base,'student-boy');else renderer.paintBase(base,'student-boy');
+    if(item.slot==='hat'){const hair=document.createElement('i');hair.className='shop-preview-hair';host.append(hair);renderer.paintHair(hair,null,'student-boy')}
+    host.append(part);renderer.paintItem(part,item.id);
   }
   function render(data={}){
     const fresh=data!==lastData;lastData=data;if(fresh)scheduleTransition(data);const owned=new Set(Array.isArray(data.ownedItems)?data.ownedItems:[]);balance.textContent=`${Math.max(0,Number(data.balance)||0)}별`;list.innerHTML='';
