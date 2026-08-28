@@ -9,4 +9,8 @@ for(const slot of slots){
   assert.ok(ranking.includes(`sv-rank-${slot}`),`ranking must render ${slot}`);
 }
 assert.ok(customize.includes('for(const slot of slots)')&&customize.includes('`#player-${slot}`')&&customize.includes('`#preview-${slot}`'),'customizer must render every canonical slot through one shared loop');
+const inventoryStart=customize.indexOf('function renderInventory()'),inventoryEnd=customize.indexOf('async function fetchPlayer',inventoryStart),inventory=customize.slice(inventoryStart,inventoryEnd);
+assert.ok(inventoryStart>=0&&inventoryEnd>inventoryStart,'wardrobe inventory renderer must exist');
+assert.ok(inventory.includes('for(const slot of slots)'),'wardrobe list must expose every purchasable modular slot, including face, expression, hair, hat, and glasses');
+assert.ok(!inventory.includes("['outfit','bottom','shoes','bag','hand','pet']"),'wardrobe must not hide purchased head/face accessories behind a partial slot list');
 console.log('student full wardrobe reload contract self-test passed');
