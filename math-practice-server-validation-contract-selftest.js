@@ -11,7 +11,8 @@ assert.ok(activity.includes('validateActivityCompletion({name,activityId,score,s
 assert.ok(activity.includes('finalizeActivityCompletion({name,activityId,score,submissionId})'),'successful activity saving must consume the completion authorization');
 assert.ok(server.includes('!row.finalized'),'a finalized math session cannot authorize a second activity save');
 for(const token of ["CATALOG_KEY='question-catalog:settings-v1'","mathUnitKey=unit=>`unit:수학|3|1|${unit}`",'unitEnabled(row.unit,settings)','generatorsFor(mode,settings)',"code:'no-math-playground-unit-enabled'"])assert.ok(server.includes(token),`math playground teacher-unit link missing ${token}`);
-assert.ok(!server.includes('그래프'),'visual-only graph units must not accidentally gain a text random generator');
+for(const token of ["unit:'2단원 평면도형'","semester:2,unit:'3단원 원'","semester:2,unit:'6단원 그림그래프'",'function planeShape()','function circle()','function pictograph()'])assert.ok(server.includes(token),`safe auto-generatable math unit missing ${token}`);
+assert.ok(server.includes("p.includes('그림그래프')")&&server.includes("p.includes('원의 지름')")&&server.includes("p.includes('직각')"),'new text-only generators need child-readable review explanations');
 assert.ok(client.includes("error.code==='no-math-playground-unit-enabled'"),'student must get a clear message when checked units have no auto-generatable math type');
 assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
