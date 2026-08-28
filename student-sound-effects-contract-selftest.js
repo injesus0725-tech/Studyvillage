@@ -6,4 +6,6 @@ assert.ok(index.indexOf('sound-effects.js')<index.indexOf('game.js?v='),'sound m
 for(const token of ['studyvillage-sound-enabled-v1',"button.id='sound-toggle'",'correct:', 'wrong:', 'reward:', 'danger:', 'angel:', 'villain:', 'mystery:', 'complete:', 'levelup:'])assert.ok(sound.includes(token),`sound manager missing ${token}`);
 for(const [name,source] of [['challenge',game],['library',library],['math',math],['exploration',exploration]])assert.ok(source.includes('StudyVillageSound?.play'),`${name} must use the shared sound manager`);
 assert.ok(exploration.includes("sound(kind='reward')")&&exploration.includes("'danger'"),'exploration reveals must distinguish reward and danger');
+assert.ok(sound.includes("document.addEventListener('click'")&&sound.includes("play(button.closest('.building-interior,.sv2-hub')?'enter':'tap')"),'shared sound manager must cover menu, shop, wardrobe, and other major buttons');
 console.log('student sound effects contract self-test passed');
+require('./v1-release-readiness-contract-selftest.js');
