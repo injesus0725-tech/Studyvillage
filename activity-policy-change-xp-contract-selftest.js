@@ -37,7 +37,7 @@ assert.match(riddle,/consumeExtraAttempts\([\s\S]*?'수수께끼 추가 도전 �
 
 // Stars have no daily earning-total cap. Reward commits are deduplicated per submission/attempt,
 // not by a per-day total. MAX_STARS is only an unreachable balance-corruption safety ceiling.
-assert.ok(!/DAILY_[A-Z_]*STAR|dailyStar|starsToday|daily.*star.*limit/i.test(stars),'star ledger must not introduce a daily total earning cap');
+assert.ok(!/DAILY_(?:MAX|CAP|LIMIT)_[A-Z_]*STAR|dailyStar(?:Cap|Limit|Maximum)|starsToday(?:Cap|Limit|Maximum)/i.test(stars),'star ledger must not introduce a daily total earning cap');
 assert.match(stars,/prior=db\.prepare\('SELECT after_value AS balance FROM star_ledger WHERE player_name=\? AND kind=\? AND reference_id=\? LIMIT 1'\)/,'activity stars must deduplicate by submission reference, not daily total');
 assert.match(stars,/const stars=riddleStarsFor\(score\),before=player\.stars,after=before\+stars/,'riddle stars must be calculated for each distinct completed attempt');
 

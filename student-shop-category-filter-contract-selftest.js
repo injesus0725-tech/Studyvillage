@@ -3,8 +3,7 @@ const assert=require('assert');
 const src=fs.readFileSync('student-shop.js','utf8');
 const css=fs.readFileSync('style.css','utf8');
 
-for(const [slot,label] of [['all','전체'],['outfit','상의'],['bottom','하의'],['shoes','신발'],['bag','가방'],['hand','손'],['pet','친구']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
-for(const slot of ['hair','hat','glasses','face','expression'])assert.ok(!src.includes(`data-shop-slot="${slot}"`),`완성형 캐릭터에서 ${slot} 필터는 제거해야 합니다.`);
+for(const [slot,label] of [['all','전체'],['character','캐릭터'],['face','얼굴'],['expression','표정'],['hair','머리'],['hat','모자'],['glasses','안경'],['outfit','상의'],['bottom','하의'],['shoes','신발'],['bag','가방'],['hand','손'],['pet','친구'],['effect','효과'],['physical','실물']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
 assert.ok(src.includes("activeSlot==='all'||item.slot===activeSlot"),'선택한 종류만 표시해야 합니다.');
 assert.ok(src.includes("aria-pressed',String(candidate===button)"),'현재 필터를 접근성 상태로 표시해야 합니다.');
 assert.ok(src.includes('if(lastData)render(lastData)'),'필터 변경은 서버 재요청 없이 즉시 반영해야 합니다.');

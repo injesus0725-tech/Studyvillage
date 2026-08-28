@@ -30,7 +30,7 @@ assert.ok(overrides.includes('await Promise.all([guidePacksReady,supplementReady
 assert.ok(overrides.includes("fetchJson('/api/question-catalog/settings')"),'student catalog must fetch fresh teacher settings');
 
 // Every teacher-allowed fresh core completion earns XP; attempt limits remain a separate policy.
-for(const id of ['library-vocabulary','math-practice','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random','riddle-demo'])assert.ok(policy.includes(`'${id}'`)&&policy.includes('REPEAT_XP_ACTIVITIES'),`repeat-XP core activity missing ${id}`);
+for(const id of ['library-vocabulary','math-arithmetic','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random','riddle-demo'])assert.ok(policy.includes(`'${id}'`)&&policy.includes('REPEAT_XP_ACTIVITIES'),`repeat-XP core activity missing ${id}`);
 assert.ok(policy.includes("xpMode:'every-attempt'"),'core reward policy must preserve every-attempt XP');
 assert.ok(activityStudent.includes('submissionId')&&activityStudent.includes('deduplicated'),'fresh attempts must reward while duplicate submissions remain idempotent');
 
@@ -56,7 +56,7 @@ assert.ok(customize.includes("'/api/player/me/equipment'")&&customize.includes("
 assert.ok(!index.includes('data-key="ArrowUp"')&&!index.includes('data-key="ArrowDown"')&&!index.includes('data-key="ArrowLeft"')&&!index.includes('data-key="ArrowRight"'),'legacy direction pad must stay removed');
 assert.ok(mobile.includes("if(!world.contains(e.target))return")&&mobile.includes('visibleBlockingPanel()'),'tap movement must be world-scoped and blocked by foreground panels');
 assert.ok(!mobile.includes("document.addEventListener('touchend'"),'pointer/touch handlers must not double-fire');
-for(const token of ['.sv-mission-panel:not([hidden])','.sv-collection-panel:not([hidden])',"button.id==='mission'","button.id==='collection'"])assert.ok(overlay.includes(token),`overlay isolation missing ${token}`);
+for(const token of ["'.sv-mission-panel'","'.sv-collection-panel'","button.classList?.contains('mission')","button.classList?.contains('collection')"])assert.ok(overlay.includes(token),`overlay isolation missing ${token}`);
 
 // One shared, locally generated sound manager covers global buttons and explicit activity feedback.
 assert.ok(index.includes('sound-effects.js?v='),'student build must package/load shared sound manager');
