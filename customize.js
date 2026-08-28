@@ -24,14 +24,27 @@
   async function load(){if(loading)return false;loading=true;try{const[next,shop]=await Promise.all([fetchPlayer(),fetchShop()]);playerData=next;shopData=shop;draftBase=(next.baseCharacters||[]).some(c=>c.id===next.baseCharacter)?next.baseCharacter:'student-boy';draft=normalizeEquipment({...next.equipment,...shop.equipment});renderBases();renderInventory();renderAvatar();return true}catch{message.textContent='꾸미기 정보를 불러오지 못했어요.';return false}finally{loading=false}}
   async function openPanel(){if(await load()){panel.hidden=false;message.textContent='캐릭터·얼굴·표정·머리·모자·안경·옷·신발·가방·손 아이템·친구를 한 번에 골라 저장할 수 있어요.'}}
   function closePanel(){if(save.disabled)return;panel.hidden=true}
+  async function persistEquipment(legacy,purchased){
+    let lastError=null;
+    for(let attempt=0;attempt<2;attempt++){
+      try{
+        const first=await timedFetch('/api/player/me/equipment',{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({baseCharacter:draftBase,equipment:legacy})}),firstData=await first.json().catch(()=>({}));
+        if(!first.ok||!firstData.ok)throw new Error(firstData.code||'legacy-equipment-save-failed');
+        // Send every shop slot, including null. The shop API is a partial updater, so omitting
+        // the last unequipped purchased slot would leave the old item equipped after reload.
+        const second=await timedFetch('/api/shop/equipment',{method:'PUT',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({equipment:purchased})}),secondData=await second.json().catch(()=>({}));
+        if(!second.ok||!secondData.ok)throw new Error(secondData.code||'shop-equipment-save-failed');
+        return true;
+      }catch(err){lastError=err;if(attempt===1)throw lastError}
+    }
+    throw lastError||new Error('equipment-save-failed');
+  }
   async function saveEquipment({closeAfter=false}={}){
     if(save.disabled)return false;save.disabled=true;message.textContent='저장 중...';
     try{
-      const owned=ownedSet(),legacy={face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null},purchased={};
-      for(const slot of slots){const id=draft[slot],info=itemInfo(id);if(!id)legacy[slot]=null;else if(info?.builtUnlocked)legacy[slot]=id;else legacy[slot]=null}
-      const first=await timedFetch('/api/player/me/equipment',{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({baseCharacter:draftBase,equipment:legacy})}),firstData=await first.json().catch(()=>({}));if(!first.ok||!firstData.ok)throw new Error(firstData.code||'legacy-equipment-save-failed');
-      for(const slot of slots){const id=draft[slot],info=itemInfo(id);if(id&&owned.has(id)&&!info?.builtUnlocked)purchased[slot]=id}
-      if(Object.keys(purchased).length){const second=await timedFetch('/api/shop/equipment',{method:'PUT',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({equipment:purchased})}),secondData=await second.json().catch(()=>({}));if(!second.ok||!secondData.ok)throw new Error(secondData.code||'shop-equipment-save-failed')}
+      const owned=ownedSet(),legacy={face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null},purchased=Object.fromEntries(slots.map(slot=>[slot,null]));
+      for(const slot of slots){const id=draft[slot],info=itemInfo(id);if(!id)legacy[slot]=null;else if(info?.builtUnlocked)legacy[slot]=id;else legacy[slot]=null;if(id&&owned.has(id)&&!info?.builtUnlocked)purchased[slot]=id}
+      await persistEquipment(legacy,purchased);
       await load();message.textContent='캐릭터 모습이 저장됐어요! ✨';window.dispatchEvent(new Event('studyvillage:ranking-refresh'));if(closeAfter){panel.hidden=true;button.focus?.()}return true
     }catch(err){console.warn('[StudyVillage customize save]',err);message.textContent='저장하지 못했어요. 잠시 후 다시 눌러 주세요.';return false}finally{save.disabled=false}
   }
