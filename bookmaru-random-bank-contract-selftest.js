@@ -2,11 +2,15 @@ const fs=require('fs');
 const assert=require('assert');
 const game=fs.readFileSync('library-game.js','utf8');
 const data=fs.readFileSync('question-data.js','utf8');
+const response=fs.readFileSync('question-response.js','utf8');
+const admin=fs.readFileSync('admin.html','utf8');
 
 assert.ok(game.includes("const ACTIVITY_ID='vocabulary',ROUND_SIZE=7"),'Bookmaru must draw seven questions per daily challenge');
 assert.ok(game.includes('일곱 문제에 도전해요'),'the student guide must describe the seven-question challenge');
+assert.ok(game.includes('어휘·수수께끼·상식·교과 문제'),'Bookmaru guide must describe the mixed daily bank');
+assert.ok(game.includes('<h2>일일 책마루 도전</h2>'),'Bookmaru title must not describe a vocabulary-only activity');
 assert.ok(game.includes('const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(')&&game.includes('set.bookmaru===true')&&game.includes("(set.spaces||[]).includes('bookmaru')")&&game.includes("(q.spaces||[]).includes('bookmaru')"),'Bookmaru must aggregate only sets or questions explicitly approved for Bookmaru');
-assert.ok(game.includes("((q.spaces||set.spaces||[]).includes('bookmaru')||set.bookmaru===true)"),'Bookmaru must exclude non-vocabulary questions from mixed sets');
+assert.ok(game.includes("((q.spaces||set.spaces||[]).includes('bookmaru')||set.bookmaru===true)"),'Bookmaru must exclude questions not tagged for Bookmaru from mixed sets');
 assert.ok(game.includes('_sourceActivityId:set.activityId,_sourceNumber:i+1'),'Bookmaru questions must retain source identity for teacher overrides');
 assert.ok(game.includes('const buildRound=bank=>shuffle(bank).slice(0,Math.min(ROUND_SIZE,bank.length)).map(randomizeQuestion)'),'Bookmaru must draw a random bounded round');
 assert.ok(game.includes('const correct=item.options[Number(item.answer)],options=shuffle(item.options)'),'choice options must be shuffled with their answer preserved');
@@ -19,12 +23,13 @@ assert.ok(game.includes("if(!Number.isInteger(savedCorrect))savedCorrect=Math.ro
 assert.ok(game.includes('questions=buildRound(questionBank)'),'a new challenge must create a fresh random round');
 assert.ok(game.includes('/api/question-overrides'),'Bookmaru must load teacher question overrides');
 assert.ok(game.includes('if(!row||!validQuestion(row))return base'),'invalid teacher overrides must fail safely');
-assert.ok(game.includes('국어에서 만난 어려운 낱말의 뜻'),'the student guide must describe the vocabulary-only bank');
 assert.ok(data.includes('bookmaru:true')&&data.includes('bookmaru:false'),'question sets must explicitly opt in or out of Bookmaru');
+assert.ok(response.includes("import('./assets/bookmaru-variety-supplement.js?v=20260828v1')"),'student readiness must load the Bookmaru variety supplement');
+assert.ok(admin.includes('assets/bookmaru-variety-supplement.js?v=20260828v1'),'admin catalog must load the Bookmaru variety supplement');
 assert.ok(!game.includes('score+=20'),'Bookmaru scoring must not retain fixed five-question increments');
 assert.ok(!game.includes('score/20'),'Bookmaru result counts must not depend on five-question scoring');
 assert.ok(!game.includes('AUTO_NEXT_MS')&&!game.includes('advanceTimer=setTimeout'),'Bookmaru feedback must remain visible until the student presses next');
 assert.ok(game.includes("next.textContent=index===questions.length-1?'결과 보기 ▶':'다음 문제 ▶'"),'Bookmaru must expose an explicit next button after feedback');
-assert.ok((data.match(/category:'어휘'/g)||[]).length===5,'the bundled starter questions must remain categorized for future guide additions');
+assert.ok((data.match(/category:'어휘'/g)||[]).length===5,'the bundled starter vocabulary questions must remain available alongside mixed supplements');
 
-console.log('Bookmaru seven-question vocabulary bank contract self-test passed');
+console.log('Bookmaru seven-question mixed bank contract self-test passed');
