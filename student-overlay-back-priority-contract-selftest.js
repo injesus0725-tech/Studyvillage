@@ -9,4 +9,8 @@ assert.ok(onboarding.includes('if(overlay.hidden)return')&&onboarding.includes("
 assert.ok(onboarding.includes('Never open a modal automatically after login.')&&!onboarding.includes('studyvillage:first-character-choice'),'onboarding must remain manual-only after login');
 const building=fs.readFileSync('building-interiors.js','utf8');
 assert.ok(building.includes('foregroundPanelOpen()')&&building.includes('if(foregroundPanelOpen())return'),'a building interior must not consume the same Escape used by a foreground activity');
-console.log('student overlay back priority contract self-test passed');
+const panels=fs.readFileSync('assets/student-overlay-manager.js','utf8');
+for(const token of ["'.sv-mission-panel'","'.sv-collection-panel'","el.classList?.contains('mission')","el.classList?.contains('collection')","el.querySelector('.secondary')?.click()","el.querySelector('.sv-collection-head button')?.click()"]){assert.ok(panels.includes(token),`HUD overlay isolation missing ${token}`)}
+assert.ok(panels.includes("button.classList?.contains('mission'))except=document.querySelector('.sv-mission-panel')"),'opening Today mission must close other foreground panels without closing itself');
+assert.ok(panels.includes("button.classList?.contains('collection'))except=document.querySelector('.sv-collection-panel')"),'opening exploration collection must close other foreground panels without closing itself');
+console.log('student overlay back priority and HUD isolation contract self-test passed');
