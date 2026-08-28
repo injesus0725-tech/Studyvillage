@@ -1,5 +1,5 @@
 /* v1.9 teacher question review panel. Question source stays read-only; review alerts can jump to teacher editor. */
-const adminQuestionSupplementReady=import('./assets/curriculum-content-supplement.js?v=20260828v1').catch(()=>null);
+const adminQuestionSupplementReady=Promise.all([import('./assets/curriculum-content-supplement.js?v=20260828v1'),import('./assets/social-science-curriculum-supplement.js?v=20260828v1')]).catch(()=>null);
 adminQuestionSupplementReady.then(()=>import('./assets/admin-question-catalog.js')).catch(()=>{});
 (()=>{
   const esc=v=>String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));

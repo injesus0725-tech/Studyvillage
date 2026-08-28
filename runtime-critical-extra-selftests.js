@@ -177,6 +177,7 @@ const tests=[
   'student-shop-separation-contract-selftest.js',
   'repeat-xp-and-riddle-integration-contract-selftest.js',
   'curriculum-content-expansion-contract-selftest.js',
+  'social-science-curriculum-supplement-contract-selftest.js',
   'wardrobe-replace-write-integrity-contract-selftest.js',
   'v1-release-readiness-contract-selftest.js',
   'student-modular-avatar-visual-contract-selftest.js',

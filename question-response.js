@@ -9,6 +9,7 @@
   window.StudyVillageCurriculumSupplementReady=Promise.all([
     import('./assets/curriculum-content-supplement.js?v=20260828v1'),
     import('./assets/bookmaru-variety-supplement.js?v=20260828v1'),
-    import('./assets/math-curriculum-supplement.js?v=20260828v1')
+    import('./assets/math-curriculum-supplement.js?v=20260828v1'),
+    import('./assets/social-science-curriculum-supplement.js?v=20260828v1')
   ]).catch(err=>{console.warn('[Studyvillage] curriculum supplement unavailable',err);return null});
 })();
