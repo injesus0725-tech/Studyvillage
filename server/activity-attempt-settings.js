@@ -6,7 +6,7 @@ const STORE_KEY='activity-attempt-policies:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const clean=(v,n=80)=>String(v??'').trim().slice(0,n);
 const DAILY_CORE_POLICIES=Object.freeze({
-  'riddle-demo':Object.freeze({mode:'limited',limit:1,xpMode:'first-completion',period:'daily'}),
+  'riddle-demo':Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'}),
   'library-vocabulary':Object.freeze({mode:'limited',limit:1,xpMode:'every-attempt',period:'daily'}),
   'math-arithmetic':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
   'curriculum-korean':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
@@ -14,13 +14,12 @@ const DAILY_CORE_POLICIES=Object.freeze({
   'curriculum-social':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'curriculum-science':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'curriculum-arts':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
-  'exploration-korean':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
-  'exploration-social':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
-  'exploration-science':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
-  'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
-  'exploration-forest-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'}),
-  'exploration-mountain-riddle':Object.freeze({mode:'limited',limit:3,xpMode:'first-completion',period:'daily'})
+  'exploration-korean':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-social':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-science':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'})
 });
+const REPEAT_XP_ACTIVITIES=new Set(['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','exploration-korean','exploration-social','exploration-science','exploration-random']);
 const withDailyReset=policy=>{
   const normalized=normalizeAttemptPolicy(policy||{});
   return normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'};
@@ -30,7 +29,7 @@ export function readActivityAttemptPolicies(getSetting){
   try{
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
-    const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).map(([id,policy])=>[id,withDailyReset(policy)])):{};
+    const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).map(([id,policy])=>{const normalized=withDailyReset(policy);return[id,REPEAT_XP_ACTIVITIES.has(id)?{...normalized,xpMode:'every-attempt'}:normalized]})):{};
     // Defaults fill only missing activities.  The old order overwrote every
     // teacher-saved value on the next read, making the screen appear to save
     // but immediately return to 1/3.

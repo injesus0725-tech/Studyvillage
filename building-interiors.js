@@ -50,7 +50,7 @@
     document.body.classList.add('inside-building')
   }
   function interact(e){if(open||performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
-  function foregroundPanelOpen(){return[...document.querySelectorAll('#student-explore-panel,#study-expedition-stage,#curriculum-learning,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,.welcome-guide')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
+  function foregroundPanelOpen(){return[...document.querySelectorAll('#student-explore-panel,#study-expedition-stage,#curriculum-learning,.math-practice-panel,#library-game-panel,#library-game,#quiz-panel,#record-panel,#customize-panel,#student-shop-panel,.welcome-guide')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
   window.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){if(foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();leave();return}if((e.code==='Space'||e.key==='Enter')&&!open)interact(e)},true);
   talk?.addEventListener('click',e=>{if(!open)interact(e)},true);exit.addEventListener('click',leave);window.addEventListener('studyvillage:return-to-village',()=>{bypassUntil=0;leave()});
   guideNpc?.addEventListener('click',e=>{if(open||foregroundPanelOpen())return;e.preventDefault();e.stopImmediatePropagation();bypassUntil=performance.now()+500;window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}))},true);

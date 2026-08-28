@@ -21,7 +21,7 @@
   const ensureFilter=()=>{
     if(filters.querySelector('[data-subject="integrated"]'))return;
     const b=document.createElement('button');b.type='button';b.dataset.subject='integrated';b.textContent=LABEL;
-    const riddle=filters.querySelector('[data-subject="수수께끼"]');filters.insertBefore(b,riddle||null);
+    filters.appendChild(b);
   };
   const sourceButton=()=>list.querySelector('[data-exp="random"],[data-exp="social"],[data-exp="science"]')||list.querySelector('.sv2-exp');
 
@@ -93,7 +93,7 @@
     };
   };
 
-  const refresh=()=>{ensureFilter();makeIntegrated();hideLegacy()};
+  const refresh=()=>{filters.querySelector('[data-subject="수수께끼"]')?.remove();list.querySelectorAll('[data-exp*="riddle"]').forEach(el=>el.remove());ensureFilter();makeIntegrated();hideLegacy()};
   const observer=new MutationObserver(()=>{observer.disconnect();refresh();observer.observe(list,{childList:true})});
   refresh();observer.observe(list,{childList:true});
 
