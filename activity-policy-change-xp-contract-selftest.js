@@ -22,11 +22,12 @@ assert.ok(writeAt>gainAt,'XP amount must be decided before player XP write');
 
 // Every core learning completion that the teacher authorizes must remain reward-bearing.
 // A saved legacy first-completion value must never turn an increased attempt limit into 0 XP.
-for(const activityId of ['riddle-demo','library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','exploration-korean','exploration-social','exploration-science','exploration-random']){
+for(const activityId of ['riddle-demo','library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random']){
   assert.ok(settings.includes(`'${activityId}'`),`core reward activity missing: ${activityId}`);
 }
 assert.match(settings,/REPEAT_XP_ACTIVITIES=new Set\(\['riddle-demo','library-vocabulary'/,'riddle-demo must be protected from legacy first-completion saves');
 assert.match(settings,/REPEAT_XP_ACTIVITIES\.has\(id\)\?\{\.\.\.normalized,xpMode:'every-attempt'\}/,'saved core policies must be normalized to every-attempt rewards');
+assert.match(settings,/'curriculum-integrated':Object\.freeze\(\{mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'\}\)/,'integrated curriculum must never fall back to first-completion-only XP');
 
 // The legacy riddle save path is separate from the generic activity route. It must obey
 // the same every-authorized-attempt reward rule, including teacher-granted extra attempts.
