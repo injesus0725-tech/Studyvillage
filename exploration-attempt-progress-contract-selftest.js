@@ -11,7 +11,7 @@ assert.match(server,/attemptRecord=policyRecord\(db,name,activityId,policy,recor
 assert.match(server,/extra=readExtraAttempts\([^;]+name,policyId\)/,'status must read teacher-granted extra attempts');
 assert.match(server,/decision=evaluateWithExtra\(policy,attemptRecord,extra\)/,'status must include teacher-granted extra attempts in the authoritative decision');
 assert.match(server,/allowed:decision\.allowed,remaining:decision\.remaining,extraAttempts:extra/,'status must expose the authoritative allowance and extra attempts');
-for(const id of ['exploration-forest-riddle','exploration-mountain-riddle'])assert.ok(admin.includes(`'${id}'`)||admin.includes(id),`${id} must appear in teacher attempt settings`);
+for(const id of ['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random'])assert.ok(admin.includes(`'${id}'`)||admin.includes(id),`${id} must appear in teacher attempt settings`);
 assert.match(exploration,/json\(`\/api\/player\/me\/activity-attempt-status\/\$\{encodeURIComponent\(exp\.activityId\)\}`/,'exploration V2 must own the single allowance check');
 assert.match(exploration,/if\(!s\.allowed\)/,'an exhausted expedition must be blocked before play');
 assert.match(exploration,/탐험 참여 횟수를 확인하지 못했어요/,'failure to verify a controlled attempt must fail closed');

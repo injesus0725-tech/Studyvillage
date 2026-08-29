@@ -19,7 +19,7 @@
     {id:'school',selector:'.school',icon:'🏫',title:'교과 배움터',text:'국어·수학·사회·과학·예체능을 과목과 단원별로 학습하는 공간입니다.',action:'curriculum'},
     {id:'library',selector:'.library',icon:'📚',title:'책마루',text:'독서·어휘 활동을 위한 공간입니다.',action:'library'},
     {id:'quiz',selector:'#quiz-hall',icon:'➕',title:'수학 놀이터',text:'매번 달라지는 수학 문제를 풀며 계산 감각을 기르는 공간입니다.',action:'math'},
-    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고, 가지고 있는 캐릭터 아이템을 골라 꾸미는 공간입니다.',action:'customize'}
+    {id:'shop',selector:'.shop-zone',icon:'🏪',title:'꾸미기 상점',text:'⭐ 별로 아이템을 사고 판매 중인 상품을 확인하는 공간입니다. 구입한 아이템은 내 옷장에서 착용할 수 있어요.',action:'shop'}
   ];
   const mathHall=document.querySelector('#quiz-hall');if(mathHall){mathHall.childNodes[0].nodeValue='➕';const label=mathHall.querySelector('span');if(label)label.textContent='수학 놀이터'}
   const overlay=document.createElement('div');overlay.id='building-interior';overlay.hidden=true;overlay.innerHTML=`<div class="interior-room"><button id="interior-exit" class="interior-exit">← 마을로</button><div id="interior-icon" class="interior-icon">🏠</div><span class="interior-label">실내 공간</span><h2 id="interior-title">건물</h2><p id="interior-text"></p><div id="interior-action-wrap"></div><div class="interior-decor"><span>🪴</span><span>🪟</span><span>🪑</span><span>📌</span></div></div>`;game.appendChild(overlay);
@@ -46,7 +46,7 @@
     if(b.action==='curriculum')addActionButton('📚 과목 선택하기',()=>runScoredAction(async()=>{await import('./assets/student-curriculum-learning.js');window.dispatchEvent(new CustomEvent('studyvillage:open-curriculum-learning'))}),true);
     else if(b.action==='math')addActionButton('➕ 랜덤 수학 문제 시작',()=>runScoredAction(async()=>{await import('./assets/student-math-review.js');window.dispatchEvent(new CustomEvent('studyvillage:open-math-practice'))}),true);
     else if(b.action==='library')addActionButton('📖 낱말 뜻 맞추기 시작',()=>runScoredAction(async()=>{await window.StudyVillageStudentQuestionOverrides?.ready;window.dispatchEvent(new CustomEvent('studyvillage:open-library-game'))}),true);
-    else if(b.action==='customize')addActionButton('🎨 내 캐릭터 꾸미기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#customize-button')?.click())});
+    else if(b.action==='shop')addActionButton('🏪 꾸미기 상점 열기',()=>{leave();requestAnimationFrame(()=>document.querySelector('#shop-button')?.click())});
     document.body.classList.add('inside-building')
   }
   function interact(e){if(open||performance.now()<bypassUntil)return;const b=nearest();if(!b)return;if(e){e.preventDefault();e.stopImmediatePropagation()}enter(b)}
