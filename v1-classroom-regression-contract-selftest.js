@@ -48,7 +48,7 @@ assert.ok(explorer.includes('PATHS')&&explorer.includes('choosePath()'),'explora
 assert.ok(explorer.includes('first')&&explorer.includes('mathAnswers'),'exploration V2 must preserve first-choice answer state for scoring');
 assert.ok(expeditionGuard.includes("#student-explore-panel button[data-exp]"),'classroom build must guard the active V2 expedition controls');
 assert.ok(explorationPools.includes("new Set(['사회','과학','음악','예체능'])"),'exploration integrated pool must keep subjects separate internally');
-assert.ok(explorationPools.includes("eligible?.(q,'exploration')"),'exploration integrated pool must respect teacher unit toggles');
+assert.ok(explorationPools.includes("eligible?.(q,'curriculum')"),'exploration integrated pool must follow the teacher-checked curriculum units');
 assert.ok(explorationUi.includes("const LABEL='사회·과학·예체능'"),'student exploration must expose the integrated subject label');
 assert.ok(explorationUi.includes("[data-exp=\"social\"],[data-exp=\"science\"],[data-exp=\"random\"]"),'legacy social/science/random cards must be hidden from students');
 assert.ok(explorationUi.includes('window.StudyVillageQuestionSets={'),'integrated exploration must feed its filtered five-question pool into V2');
