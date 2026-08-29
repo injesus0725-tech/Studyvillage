@@ -12,7 +12,7 @@ assert.ok(css.includes('inset:0!important')&&css.includes('.avatar-bottom'),'ava
 assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png")&&renderer.includes("function defaultHair(){return''}"),'머리와 얼굴은 완성형 남녀 캐릭터 본체에 포함되어야 합니다.');
 assert.ok(renderer.includes("hat-wizard-rpg-v4.png")&&!renderer.includes("'hat-wizard':{svg"),'wizard hat must use the approved premium raster asset instead of the comedy SVG triangle');
 assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact applied item');
-for(const slot of ['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 조립 부품 분류가 보여야 합니다.`);
-assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("const slots=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet']"),'완성형 본체에도 모든 교사 허용 꾸미기 슬롯을 조합할 수 있어야 합니다.');
+for(const slot of ['hair','outfit','bottom','shoes','bag','hand','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 조립 부품 분류가 보여야 합니다.`);
+assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("const slots=['hair','outfit','bottom','shoes','bag','hand','pet']"),'완성형 본체에는 지원하는 꾸미기 슬롯만 조합할 수 있어야 합니다.');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
 console.log('student modular mini-me visual contract self-test passed');

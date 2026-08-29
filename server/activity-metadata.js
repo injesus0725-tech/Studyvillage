@@ -16,6 +16,7 @@ const META=Object.freeze({
   'exploration-forest-riddle':{subject:'창의적 사고',topic:'쉬운 수수께끼',name:'생각의 숲 · 수수께끼'},
   'exploration-mountain-riddle':{subject:'창의적 사고',topic:'도전 수수께끼',name:'도전의 산 · 수수께끼'},
   'exploration-korean':{subject:'국어',topic:'전체 문제은행',name:'탐험 · 국어의 숲'},
+  'exploration-math':{subject:'수학',topic:'랜덤 계산',name:'탐험 · 수학 동굴'},
   'exploration-social':{subject:'사회',topic:'전체 문제은행',name:'탐험 · 사회의 숲'},
   'exploration-science':{subject:'과학',topic:'전체 문제은행',name:'탐험 · 과학의 숲'},
   'exploration-random':{subject:'통합',topic:'사회·과학·예체능',name:'탐험 · 사회·과학·예체능 통합'}

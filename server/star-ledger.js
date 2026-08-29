@@ -77,7 +77,7 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
-const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle','exploration-korean','exploration-social','exploration-science','exploration-random']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts']);
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle','exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts']);
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
   if(activityId==='exploration-forest-riddle')return value>0?Math.min(2,Math.ceil(value/50)):0;

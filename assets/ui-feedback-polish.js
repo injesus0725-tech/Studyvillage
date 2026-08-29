@@ -23,12 +23,7 @@
       if (shop) shop.hidden = !shopping;
     };
     wardrobeButton.addEventListener('click', () => setMode('wardrobe'), true);
-    shopButton.addEventListener('click', () => {
-      setMode('shop');
-      panel.hidden = false;
-      window.dispatchEvent(new Event('studyvillage:shop-refresh'));
-      requestAnimationFrame(() => setMode('shop'));
-    });
+    // The shop owns a separate panel; only the wardrobe button controls this one.
     setMode('wardrobe');
   }
 

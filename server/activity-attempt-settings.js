@@ -16,13 +16,14 @@ const DAILY_CORE_POLICIES=Object.freeze({
   'curriculum-arts':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'curriculum-integrated':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'exploration-korean':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-math':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
   'exploration-social':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
   'exploration-science':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
   'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'})
 });
 // Core learning activities always reward every teacher-authorized completion.
 // Attempt limits control whether another play is allowed; they must not silently become reward caps.
-const REPEAT_XP_ACTIVITIES=new Set(['riddle-demo','library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random']);
+const REPEAT_XP_ACTIVITIES=new Set(['riddle-demo','library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random']);
 const withDailyReset=policy=>{
   const normalized=normalizeAttemptPolicy(policy||{});
   return normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'};
