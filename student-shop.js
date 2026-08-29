@@ -39,4 +39,6 @@
   async function openShop(){panel.hidden=false;status.textContent='상점 정보를 불러오는 중이에요.';await load()}
   function closeShop(){if(busy)return;panel.hidden=true;shopButton.focus?.()}
   filters.addEventListener('click',event=>{const button=event.target.closest('button[data-shop-slot]');if(!button)return;activeSlot=button.dataset.shopSlot||'all';for(const candidate of filters.querySelectorAll('button[data-shop-slot]'))candidate.setAttribute('aria-pressed',String(candidate===button));if(lastData)render(lastData)});shopButton.addEventListener('click',openShop);panel.querySelector('#student-shop-close')?.addEventListener('click',closeShop);window.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopImmediatePropagation();closeShop()}},true);window.addEventListener('studyvillage:shop-refresh',load);window.addEventListener('studyvillage:stars-refresh',()=>{if(!panel.hidden)load()});window.addEventListener('pagehide',()=>{if(transitionTimer)clearTimeout(transitionTimer)},{once:true});
+  window.addEventListener('focus',()=>{if(!panel.hidden)load()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!panel.hidden)load()});
 })();

@@ -175,6 +175,7 @@ const tests=[
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
   'bookmaru-next-button-contract-selftest.js',
   'student-shop-separation-contract-selftest.js',
+  'shop-live-availability-contract-selftest.js',
   'repeat-xp-and-riddle-integration-contract-selftest.js',
   'curriculum-content-expansion-contract-selftest.js',
   'social-science-curriculum-supplement-contract-selftest.js',
