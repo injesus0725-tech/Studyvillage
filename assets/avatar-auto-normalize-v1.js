@@ -70,11 +70,18 @@
 
   function scan(root=document){
     if(root instanceof HTMLImageElement)normalize(root);
+    if(root?.matches?.('[data-avatar-item^="outfit-"],[data-avatar-item^="pet-"]'))root.querySelectorAll?.(':scope > img').forEach(normalize);
     root.querySelectorAll?.('[data-avatar-item^="outfit-"] > img,[data-avatar-item^="pet-"] > img').forEach(normalize);
   }
 
-  const observer=new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===1)scan(node)})));
-  function start(){scan(document);observer.observe(document.documentElement,{childList:true,subtree:true});}
+  const observer=new MutationObserver(records=>records.forEach(record=>{
+    if(record.type==='attributes'){scan(record.target);return;}
+    record.addedNodes.forEach(node=>{if(node.nodeType===1)scan(node)});
+  }));
+  function start(){
+    scan(document);
+    observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['data-avatar-item']});
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.StudyVillageAvatarNormalizer={MASTER_SIZE,RULES,scan};
 })();
