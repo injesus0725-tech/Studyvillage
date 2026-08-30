@@ -1,22 +1,25 @@
 const fs=require('fs'),assert=require('assert');
 const server=fs.readFileSync('server/server.js','utf8'),shop=fs.readFileSync('server/item-shop.js','utf8'),customize=fs.readFileSync('customize.js','utf8'),index=fs.readFileSync('index.html','utf8'),ranking=fs.readFileSync('assets/student-stability-fixes.js','utf8');
-const slots=['hair','outfit','bottom','shoes','bag','hand','pet'];
-assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must restore all wardrobe and face slots');
-assert.ok(customize.includes("const slots=['hair','outfit','bottom','shoes','bag','hand','pet']"),'customizer must expose only supported whole-character wardrobe layers');
+const legacySlots=['hair','outfit','bottom','shoes','bag','hand','pet'],visibleSlots=['hair','outfit','effect','pet'];
+assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must restore all legacy wardrobe and face slots');
+assert.ok(customize.includes("const slots=['hair','outfit','effect','pet','bottom','shoes','bag','hand']"),'customizer must expose the four primary avatar slots while retaining legacy equipment compatibility');
+assert.ok(customize.includes("effect:'효과'")&&customize.includes("pet:'펫'")&&customize.includes("bottom:'기존 하의'")&&customize.includes("hand:'기존 손 아이템'"),'wardrobe labels must distinguish primary four-slot architecture from legacy compatibility slots');
 assert.ok(server.includes('RANKING_ITEM_SLOTS[id]===slot'),'student reload must validate purchased and unlocked items against the complete item registry');
-for(const slot of slots){assert.ok(index.includes(`id="player-${slot}"`)&&index.includes(`id="preview-${slot}"`),`village and preview must expose ${slot} layers`);assert.ok(ranking.includes(`sv-rank-${slot}`),`ranking must render ${slot}`)}
-assert.ok(customize.includes('for(const slot of slots)')&&customize.includes('`#player-${slot}`')&&customize.includes('`#preview-${slot}`'),'customizer must render every canonical slot through one shared loop');
+for(const slot of legacySlots){assert.ok(index.includes(`id="player-${slot}"`)&&index.includes(`id="preview-${slot}"`),`village and preview must retain legacy ${slot} layers`);assert.ok(ranking.includes(`sv-rank-${slot}`),`ranking must render legacy ${slot}`)}
+for(const slot of visibleSlots){assert.ok(customize.includes(`'${slot}'`),`customizer must support primary ${slot} slot`)}
+assert.ok(customize.includes("for(const slot of ['face','expression','effect'])")&&customize.includes('host.prepend(layer)'),'effect layer must be created for player and preview without removing legacy DOM layers');
+assert.ok(customize.includes('for(const slot of slots)')&&customize.includes('`#player-${slot}`')&&customize.includes('`#preview-${slot}`'),'customizer must render canonical and compatibility slots through one shared loop');
 const inventoryStart=customize.indexOf('function renderInventory()'),inventoryEnd=customize.indexOf('async function fetchPlayer',inventoryStart),inventory=customize.slice(inventoryStart,inventoryEnd);
 assert.ok(inventoryStart>=0&&inventoryEnd>inventoryStart,'wardrobe inventory renderer must exist');
-assert.ok(inventory.includes('for(const slot of slots)'),'wardrobe list must expose every supported modular slot');
+assert.ok(inventory.includes('for(const slot of slots)'),'wardrobe list must expose primary and legacy-compatible slots');
 assert.ok(!customize.includes("const slots=['face','expression'")&&!customize.includes("const slots=['hair','hat','glasses'"),'retired face, expression, hat, and glasses slots must stay out of the wardrobe');
 assert.ok(customize.includes('draft=normalizeEquipment({...next.equipment,...shop.equipment})'),'reload must merge player and shop equipment with purchased equipment precedence');
 assert.ok(customize.includes("draftBase=(next.baseCharacters||[]).some(c=>c.id===next.baseCharacter)?next.baseCharacter:'student-boy'"),'reload must restore a validated whole-character selection');
 assert.ok(customize.includes("window.addEventListener('studyvillage:equip-purchased-item'"),'a newly purchased item must enter the immediate equip path');
 
-// The player endpoint replaces the complete equipment JSON first. That replacement clears any
-// formerly purchased slot that is now unequipped. The shop partial updater then restores only
-// selected purchased items; blanket nulls would erase freshly saved built-in equipment.
+// The player endpoint replaces the complete legacy equipment JSON first. That replacement clears any
+// formerly purchased legacy slot that is now unequipped. The shop partial updater then restores selected
+// purchased items, including the new effect slot, without erasing built-in equipment.
 assert.ok(shop.includes('if(!(slot in equipment))continue'),'shop equipment API must remain recognized as a partial updater');
 assert.ok(customize.includes('purchased={}')&&customize.includes('purchased[slot]=id'),'client save must build a sparse restore map for selected purchased items');
 assert.ok(customize.includes("timedFetch('/api/shop/equipment'"),'wardrobe saves with purchased items must persist the shop equipment layer');
@@ -28,4 +31,4 @@ assert.ok(persistStart>=0&&persistEnd>persistStart,'shared wardrobe persistence 
 assert.ok(persist.includes('for(let attempt=0;attempt<2;attempt++)'),'wardrobe save must retry the complete persistence path at most once');
 assert.ok(persist.includes("'/api/player/me/equipment'")&&persist.includes("'/api/shop/equipment'"),'persistence helper must contain both equipment persistence layers');
 assert.ok(customize.includes('await persistEquipment(legacy,purchased)'),'normal and immediate-purchase equip saves must share the hardened persistence path');
-console.log('student full wardrobe reload contract self-test passed');
+console.log('student four-slot wardrobe compatibility contract self-test passed');
