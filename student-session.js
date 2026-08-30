@@ -30,11 +30,12 @@
 
   let navigationArmed=false,leaving=false,noticeTimer=0;
   function active(){return game.classList.contains('active')}
-  function armNavigation(){if(navigationArmed)return;history.pushState({studyvillageGuard:true},'',location.href);navigationArmed=true}
+  function armNavigation(){if(navigationArmed)return;history.replaceState({studyvillageBase:true},'',location.href);history.pushState({studyvillageGuard:true},'',location.href);navigationArmed=true}
   function showBackNotice(){notice.style.opacity='1';notice.style.transform='translate(-50%,0)';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{notice.style.opacity='0';notice.style.transform='translate(-50%,12px)'},1800)}
   window.addEventListener('popstate',()=>{if(leaving)return;history.pushState({studyvillageGuard:true},'',location.href);if(active())window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));showBackNotice()});
   new MutationObserver(armNavigation).observe(game,{attributes:true,attributeFilter:['class']});
   armNavigation();
+  window.addEventListener('beforeunload',event=>{if(leaving||!active())return;event.preventDefault();event.returnValue='게임을 종료할까요?';return event.returnValue});
 
   let switching=false;
   function writeInProgress(){
