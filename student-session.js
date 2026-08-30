@@ -28,13 +28,13 @@
   notice.textContent='뒤로가기로 종료되지 않아요. 접속 후 🚪 나가기 또는 멀티태스킹 닫기를 사용해 주세요.';
   document.body.appendChild(notice);
 
-  let navigationArmed=false,leaving=false,noticeTimer=0;
+  let navigationArmed=false,leaving=false,noticeTimer=0,wasActive=false;
   function active(){return game.classList.contains('active')}
-  function armNavigation(){if(navigationArmed)return;history.replaceState({studyvillageBase:true},'',location.href);history.pushState({studyvillageGuard:true},'',location.href);navigationArmed=true}
+  function armNavigation(force=false){if(navigationArmed&&!force)return;history.replaceState({studyvillageBase:true},'',location.href);history.pushState({studyvillageGuard:true},'',location.href);navigationArmed=true}
   function showBackNotice(){notice.style.opacity='1';notice.style.transform='translate(-50%,0)';clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{notice.style.opacity='0';notice.style.transform='translate(-50%,12px)'},1800)}
   window.addEventListener('popstate',()=>{if(leaving)return;history.pushState({studyvillageGuard:true},'',location.href);if(active())window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true}));showBackNotice()});
-  new MutationObserver(armNavigation).observe(game,{attributes:true,attributeFilter:['class']});
-  armNavigation();
+  new MutationObserver(()=>{const now=active();if(now&&!wasActive)armNavigation(true);wasActive=now}).observe(game,{attributes:true,attributeFilter:['class']});
+  armNavigation();wasActive=active();
   window.addEventListener('beforeunload',event=>{if(leaving||!active())return;event.preventDefault();event.returnValue='게임을 종료할까요?';return event.returnValue});
 
   let switching=false;
