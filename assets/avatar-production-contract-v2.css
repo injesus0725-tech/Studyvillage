@@ -2,8 +2,10 @@
 /* Separate hair is retired; hairstyle and expression live inside the selected base character. */
 .avatar-hair,.preview-hair,.shop-preview-hair,.sv-profile-hair,.sv-exp2-hair,.sv-rank-hair{display:none!important}
 
-/* Production art is normalized by avatar-auto-normalize-v1.js into one 256x256 master canvas.
-   Do not add per-item x/y/scale corrections here. */
+/* FINAL LIGHTWEIGHT RUNTIME CONTRACT
+   Production PNGs are authored on the shared 256x256 master canvas.
+   Runtime never scans pixels, creates canvases, or rewrites PNGs.
+   Every wearable is a plain 0,0 overlay. */
 [data-avatar-item^="outfit-"],[data-avatar-item^="pet-"]{overflow:visible!important}
 [data-avatar-item^="outfit-"]>img,[data-avatar-item^="pet-"]>img{
   width:100%!important;
