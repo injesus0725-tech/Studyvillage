@@ -1,4 +1,4 @@
-/* v1.15 atomic item shop + teacher delivery fulfillment.
+/* v1.16 atomic item shop + teacher delivery fulfillment.
    Digital purchases commit star deduction + permanent wardrobe ownership together.
    Physical purchases commit star deduction + teacher delivery request together.
    Teacher cancellation refunds stars exactly once.
@@ -19,9 +19,9 @@ const PHYSICAL_ITEM_IDS=new Set(['candy','stationery']);
 const REMOVED_STYLE_SLOTS=new Set(['face','expression','hat','glasses']);
 const ACTIVE_ITEM_IDS=Object.freeze(Object.keys(DEFAULT_PRICES).filter(id=>!REMOVED_STYLE_SLOTS.has(ITEM_SLOTS[id])));
 const FEATURED_ITEM_IDS=new Set(['crown-gold','star-monocle','pet-fox']);
-const SLOT_NAMES=new Set(['hair','outfit','bottom','shoes','bag','hand','pet']);
+const SLOT_NAMES=new Set(['hair','outfit','effect','bottom','shoes','bag','hand','pet']);
 const BUILTIN_STYLE_SLOTS=Object.freeze({'face-round':'face','face-soft':'face','face-brave':'face','expression-smile':'expression','expression-calm':'expression','expression-sparkle':'expression'});
-const RANKING_SLOTS=['hair','outfit','bottom','shoes','bag','hand','pet'];
+const RANKING_SLOTS=['hair','outfit','effect','bottom','shoes','bag','hand','pet'];
 const clean=(v,n=160)=>String(v??'').trim().slice(0,n),mirrorKey=name=>`compat:stars:${encodeURIComponent(clean(name,12))}`;
 const compatibilityKeysFor=name=>['compat:stars:','compat:base-character:','compat:owned-items:'].map(prefix=>`${prefix}${encodeURIComponent(clean(name,12))}`);
 const validStarBalance=value=>Number.isSafeInteger(value)&&value>=0&&value<=MAX_STARS;
@@ -69,10 +69,10 @@ function readLimited(db){let raw={};try{const parsed=JSON.parse(getSetting(db,LI
 function normalizeSaleEnd(value){if(value===null||value==='')return null;if(typeof value!=='string')return undefined;const time=Date.parse(value);if(!Number.isFinite(time)||time<Date.UTC(2020,0,1)||time>Date.UTC(2100,0,1))return undefined;return new Date(time).toISOString()}
 function readSaleStarts(db){let raw={};try{const parsed=JSON.parse(getSetting(db,SALE_STARTS_KEY)||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))raw=parsed}catch{}const out={};for(const id of Object.keys(DEFAULT_PRICES)){const value=normalizeSaleEnd(raw[id]);out[id]=value===undefined?null:value}return out}
 function readSaleEnds(db){let raw={};try{const parsed=JSON.parse(getSetting(db,SALE_ENDS_KEY)||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))raw=parsed}catch{}const out={};for(const id of Object.keys(DEFAULT_PRICES)){const value=normalizeSaleEnd(raw[id]);out[id]=value===undefined?null:value}return out}
-function validateEquipment(value){let raw;try{raw=JSON.parse(value||'{}')}catch{return{ok:false,code:'corrupt-equipment',equipment:null}};if(!raw||typeof raw!=='object'||Array.isArray(raw))return{ok:false,code:'corrupt-equipment',equipment:null};const out={hair:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null};for(const key of Object.keys(raw))if(!SLOT_NAMES.has(key)&&!REMOVED_STYLE_SLOTS.has(key))return{ok:false,code:'corrupt-equipment',equipment:null};for(const slot of Object.keys(out)){const value=raw?.[slot];if(value===undefined||value===null||value==='')continue;if(typeof value!=='string'||(ITEM_SLOTS[value]||BUILTIN_STYLE_SLOTS[value])!==slot)return{ok:false,code:'corrupt-equipment',equipment:null};out[slot]=value}return{ok:true,equipment:out}}
+function validateEquipment(value){let raw;try{raw=JSON.parse(value||'{}')}catch{return{ok:false,code:'corrupt-equipment',equipment:null}};if(!raw||typeof raw!=='object'||Array.isArray(raw))return{ok:false,code:'corrupt-equipment',equipment:null};const out={hair:null,outfit:null,effect:null,bottom:null,shoes:null,bag:null,hand:null,pet:null};for(const key of Object.keys(raw))if(!SLOT_NAMES.has(key)&&!REMOVED_STYLE_SLOTS.has(key))return{ok:false,code:'corrupt-equipment',equipment:null};for(const slot of Object.keys(out)){const value=raw?.[slot];if(value===undefined||value===null||value==='')continue;if(typeof value!=='string'||(ITEM_SLOTS[value]||BUILTIN_STYLE_SLOTS[value])!==slot)return{ok:false,code:'corrupt-equipment',equipment:null};out[slot]=value}return{ok:true,equipment:out}}
 function repairWardrobeData(db,name,player){
   const owned=parseOwnedItems(player?.owned_items_json).filter(id=>ACTIVE_ITEM_IDS.includes(id));
-  const ownedSet=new Set(owned),equipment={hair:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null};
+  const ownedSet=new Set(owned),equipment={hair:null,outfit:null,effect:null,bottom:null,shoes:null,bag:null,hand:null,pet:null};
   let raw={};try{const parsed=JSON.parse(player?.equipment_json||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))raw=parsed}catch{}
   for(const slot of SLOT_NAMES){const id=typeof raw[slot]==='string'?raw[slot]:'';if(id&&ITEM_SLOTS[id]===slot&&ACTIVE_ITEM_IDS.includes(id)&&(ownedSet.has(id)||BUILTIN_STYLE_SLOTS[id]===slot))equipment[slot]=id}
   const ownedJson=serializeOwnedItems(owned),equipmentJson=JSON.stringify(equipment);
