@@ -2,11 +2,12 @@
 (()=>{
   const game=document.querySelector('#game-screen');if(!game)return;
 
-  /* The old standalone riddle challenge is retired. Keep the legacy nodes inert because game.js still
-     owns references to them, but move the hall permanently out of interaction range and keep its panel closed. */
-  const legacyQuizHall=document.querySelector('#quiz-hall'),legacyQuizPanel=document.querySelector('#quiz-panel');
-  if(legacyQuizHall){legacyQuizHall.setAttribute('aria-hidden','true');legacyQuizHall.style.setProperty('position','fixed','important');legacyQuizHall.style.setProperty('left','-10000px','important');legacyQuizHall.style.setProperty('top','-10000px','important');legacyQuizHall.style.setProperty('visibility','hidden','important');legacyQuizHall.style.setProperty('pointer-events','none','important')}
+  /* The old standalone riddle challenge is retired, but its former hall is now the visible math playground.
+     Keep only the legacy riddle panel inert. Building-interiors owns the repurposed hall interaction. */
+  const legacyQuizHall=document.querySelector('#quiz-hall'),legacyQuizPanel=document.querySelector('#quiz-panel'),legacyHint=document.querySelector('#interaction-hint');
+  if(legacyQuizHall){legacyQuizHall.removeAttribute('aria-hidden');legacyQuizHall.style.removeProperty('position');legacyQuizHall.style.removeProperty('left');legacyQuizHall.style.removeProperty('top');legacyQuizHall.style.removeProperty('visibility');legacyQuizHall.style.removeProperty('pointer-events')}
   if(legacyQuizPanel){legacyQuizPanel.hidden=true;legacyQuizPanel.setAttribute('aria-hidden','true')}
+  if(legacyHint)legacyHint.style.setProperty('display','none','important');
 
   document.addEventListener('click',event=>{
     const button=event.target.closest?.('#record-button');if(!button)return;
