@@ -14,4 +14,12 @@
   };
   Object.assign(renderer.BASES, variants);
   Object.assign(renderer.INTERNAL_BASES, variants);
+
+  /* One shared normalizer handles transparent-margin differences for every current/future outfit and pet. */
+  if (!window.StudyVillageAvatarNormalizer && !document.querySelector('script[data-avatar-normalizer]')) {
+    const script = document.createElement('script');
+    script.src = '/assets/avatar-auto-normalize-v1.js?v=20260830b';
+    script.dataset.avatarNormalizer = 'v1';
+    document.head.appendChild(script);
+  }
 })();
