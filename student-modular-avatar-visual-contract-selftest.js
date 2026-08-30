@@ -1,6 +1,6 @@
 const fs=require('fs'),assert=require('assert');
 const renderer=fs.readFileSync('avatar-renderer.js','utf8'),css=fs.readFileSync('avatar-assets.css','utf8'),server=fs.readFileSync('server/server.js','utf8'),index=fs.readFileSync('index.html','utf8'),expedition=fs.readFileSync('assets/avatar-fullbody-fix.js','utf8');
-const shop=fs.readFileSync('student-shop.js','utf8'),customize=fs.readFileSync('customize.js','utf8'),contract=fs.readFileSync('assets/avatar-production-contract-v2.css','utf8'),variants=fs.readFileSync('assets/avatar-base-variants-v1.js','utf8'),normalizer=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8');
+const shop=fs.readFileSync('student-shop.js','utf8'),customize=fs.readFileSync('customize.js','utf8'),contract=fs.readFileSync('assets/avatar-production-contract-v2.css','utf8'),variants=fs.readFileSync('assets/avatar-base-variants-v1.js','utf8'),normalizer=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8'),spec=fs.readFileSync('AVATAR_ITEM_SPEC.md','utf8');
 
 assert.ok(renderer.includes('viewBox="0 0 96 144"'),'avatar part compatibility renderer must retain its fixed canvas');
 assert.ok(!renderer.includes('student-hero')&&!server.includes('student-hero')&&!server.includes('우주 탐험가'),'retired astronaut base must not return');
@@ -18,12 +18,11 @@ assert.ok(customize.includes("effect:'효과'")&&customize.includes("outfit:'한
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
 assert.ok(contract.includes('.avatar-hair')&&contract.includes('display:none!important'),'legacy hair overlay must stay hidden so base-character face/hair remains intact');
 assert.ok(contract.includes('transform:none!important'),'production CSS must not carry per-item transform corrections');
-assert.ok(normalizer.includes('const MASTER_SIZE=256'),'production assets must normalize to the shared 256 master canvas');
-assert.ok(normalizer.includes("outfit:{centerX:128,bottomY:246,maxHeight:180,maxWidth:248}"),'all outfits must share one master anchor');
-assert.ok(normalizer.includes("pet:{centerX:180,bottomY:246,maxHeight:112,maxWidth:96}"),'all pets must share one close-to-leg master anchor');
-assert.ok(normalizer.includes('medianX')&&normalizer.includes('alphaMetrics'),'outfit alignment must use visible alpha mass instead of transparent file margins');
-assert.ok(normalizer.includes("attributeFilter:['data-avatar-item']"),'normalizer must run after renderer assigns the avatar item id');
-assert.ok(!normalizer.includes('outfit-silver-knight')&&!normalizer.includes('pet-maltese-production'),'normalizer may not contain per-item exceptions');
-assert.ok(variants.includes('avatar-auto-normalize-v1.js?v=20260830d'),'shared normalizer must load for student avatar surfaces');
+assert.ok(spec.includes('256×256')&&spec.includes('발바닥'),'production assets must be authored on the shared fixed 256 master canvas');
+assert.ok(spec.includes('기본 캐릭터')&&spec.includes('기본 의상'),'outfit production must be authored against the base character and cover default clothing');
+assert.ok(!normalizer.includes('getImageData')&&!normalizer.includes('alphaMetrics')&&!normalizer.includes('medianX'),'runtime alpha scanning and whole-image alignment must remain retired');
+assert.ok(!normalizer.includes('MutationObserver')&&!normalizer.includes('toDataURL'),'runtime canvas/data-url rewriting must remain retired');
+assert.ok(!variants.includes('avatar-auto-normalize-v1.js'),'base variant gate must not dynamically load the retired normalizer');
+assert.ok(!index.includes('avatar-auto-normalize-v1.js'),'index must not load the retired normalizer');
 assert.ok(!index.includes('assets/avatar-rpg-unification.js'),'legacy separate face/expression overlay runtime must stay disabled');
 console.log('student base-character modular visual contract self-test passed');
