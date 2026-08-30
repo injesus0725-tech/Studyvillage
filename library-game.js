@@ -2,7 +2,7 @@
 (()=>{
   const game=document.querySelector('#game-screen');
   if(!game)return;
-  const ACTIVITY_ID='vocabulary',ROUND_SIZE=7,SAVE_TIMEOUT_MS=8000,QUESTION_TIMEOUT_MS=5000;
+  const ACTIVITY_ID='vocabulary',ROUND_SIZE=7,SAVE_TIMEOUT_MS=5000,QUESTION_TIMEOUT_MS=5000;
   const cloneQuestion=q=>({...q,options:Array.isArray(q.options)?[...q.options]:[],acceptedAnswers:Array.isArray(q.acceptedAnswers)?[...q.acceptedAnswers]:[]});
   const shuffle=values=>{const out=[...values];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out};
   const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(set=>Array.isArray(set?.questions)&&set.questions.length&&(set.bookmaru===true||(set.spaces||[]).includes('bookmaru')||set.questions.some(q=>(q.spaces||[]).includes('bookmaru'))));
