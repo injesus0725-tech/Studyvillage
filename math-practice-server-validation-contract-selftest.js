@@ -26,10 +26,11 @@ assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,ind
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
 assert.ok(building.includes("{id:'school',selector:'.school',icon:'🏫',title:'교과 배움터'")&&building.includes("action:'math'"),'교과 배움터는 탐험과 분리된 직접 수학 활동 진입점이어야 합니다.');
 assert.ok(building.includes("studyvillage:open-math-practice"),'마을 수학 놀이터는 서버 검증 수학 활동을 열어야 합니다.');
-assert.ok(review.includes("url==='/api/player/me/math-practice/start'")&&review.includes("JSON.stringify({mode:'addition'})"),'마을 수학 놀이터의 기존 랜덤 덧셈은 탐험 정리와 무관하게 유지해야 합니다.');
-assert.ok(review.includes("&&!options?.body"),'탐험에서 명시한 곱셈·덧셈 mode 요청은 마을 덧셈 보정이 덮어쓰면 안 됩니다.');
+assert.ok(review.includes("originalFetch(input,options)"),'수학 놀이터 복습 도우미는 원래 요청을 그대로 전달해야 합니다.');
+assert.ok(!review.includes("mode:'addition'")&&!review.includes('mode:"addition"'),'수학 놀이터를 덧셈 전용으로 강제하면 안 됩니다.');
+assert.ok(explore.includes("mode:'addition'")&&explore.includes("mode:'multiplication'"),'탐험의 덧셈·곱셈 모드는 수학 놀이터와 독립적으로 명시되어야 합니다.');
 assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브로 강제 라우팅하면 안 됩니다.');
 assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
 assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');
 assert.ok(/<script src="math-practice\.js(?:\?v=[^"]+)?"><\/script>/.test(index),'the student page must load math practice');
-console.log('math remainder, server scoring, village addition, and teacher-unit filtering contract self-test passed');
+console.log('math remainder, server scoring, mixed village review, exploration isolation, and teacher-unit filtering contract self-test passed');
