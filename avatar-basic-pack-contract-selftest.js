@@ -32,7 +32,7 @@ for(const [slot,items] of Object.entries(v5))for(const id of items){assert.ok(ca
 assert.ok(catalogV3.includes("import { avatarShopPackV4 } from './avatar-shop-pack-v4.js'")&&catalogV3.includes("import { avatarShopPackV5 } from './avatar-shop-pack-v5.js'"),'merged shop catalog must include v4/v5');
 assert.ok(catalogV3.includes('...packV3,...avatarShopPackV4,...avatarShopPackV5'),'v4/v5 shop data must be active');
 assert.ok(clientV3.includes("extra.src='assets/avatar-basic-pack-v5.js?v=20260827v7'"),'active runtime must load v5 visuals');
-assert.ok(shop.includes("const RANKING_SLOTS=['hair','outfit','bottom','shoes','bag','hand','pet']"),'ranking must preserve every supported modular equipment slot');
+assert.ok(shop.includes("const RANKING_SLOTS=['hair','outfit','effect','bottom','shoes','bag','hand','pet']"),'ranking must preserve every supported modular equipment slot including the four-slot effect layer');
 assert.ok(shop.includes("REMOVED_STYLE_SLOTS=new Set(['face','expression','hat','glasses'])"),'ranking and shop must retire separate face, expression, hat, and glasses styles');
 assert.ok(shop.includes('rankingEquipmentFromRaw')&&shop.includes("app.use('/api/ranking'"),'ranking equipment restoration required');
 assert.ok(html.includes('assets/avatar-basic-pack-v3.js?v=')&&html.includes('assets/avatar-secondary-sync-v2.js?v='),'student runtime avatar loaders required');
