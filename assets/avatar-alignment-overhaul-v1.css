@@ -1,6 +1,6 @@
 /* Full wardrobe alignment pass for the tiny 96x144 avatar canvas. */
 /* Hair was previously hidden by the temporary RPG unification layer. Show owned/equipped hair again. */
-.avatar-hair[data-avatar-item]:not([data-avatar-item=""]),.preview-hair[data-avatar-item]:not([data-avatar-item=""]),.shop-preview-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-profile-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-exp2-hair[data-avatar-item]:not([data-avatar-item=""]){display:block!important}
+.avatar-hair[data-avatar-item]:not([data-avatar-item=""]),.preview-hair[data-avatar-item]:not([data-avatar-item=""]),.shop-preview-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-profile-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-exp2-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-rank-hair[data-avatar-item]:not([data-avatar-item=""]){display:block!important}
 [data-avatar-item^="hair-"] img,[data-avatar-item^="hair-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-1%) scale(1.02,.94)!important;transform-origin:center top!important}
 [data-avatar-item="hair-bob"] img,[data-avatar-item="hair-long"] img,[data-avatar-item="hair-shoulder-wave"] svg,[data-avatar-item="hair-lavender-bob"] svg{transform:translateY(1%) scale(1.01,.97)!important}
 [data-avatar-item="hair-ponytail"] img,[data-avatar-item="hair-braid"] svg,[data-avatar-item="hair-twintail"] svg{transform:translateY(-1%) scale(1.01,.96)!important}
@@ -16,5 +16,9 @@
 [data-avatar-item="shoes-boots"] img,[data-avatar-item="shoes-hightop-blue"] img,[data-avatar-item="shoes-trail-orange"] svg{transform:translateY(-1%) scale(1,.99)!important}
 [data-avatar-item="shoes-wing"] img{transform:translateY(-.5%) scale(.98,.98)!important}
 [data-avatar-item="shoes-slipon-yellow"] svg,[data-avatar-item="shoes-sneakers"] svg,[data-avatar-item="shoes-sneakers-red"] svg,[data-avatar-item="shoes-sneakers-black"] svg,[data-avatar-item="shoes-sneakers-green"] svg,[data-avatar-item="shoes-runners-purple"] svg{transform:translateY(0) scale(1,.98)!important}
+/* Ranking thumbnails use the exact same full-body canvas instead of browser-default SVG sizes. */
+.sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;line-height:0!important}
+.sv-rank-avatar>span>img,.sv-rank-avatar>span>svg{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}
+.sv-rank-base{z-index:1!important}.sv-rank-outfit{z-index:2!important}.sv-rank-bottom{z-index:3!important}.sv-rank-shoes{z-index:4!important}.sv-rank-hair{z-index:5!important}.sv-rank-bag{z-index:6!important}.sv-rank-hand{z-index:7!important}.sv-rank-pet{z-index:8!important}.sv-rank-hat{z-index:9!important}.sv-rank-glasses{z-index:10!important}
 /* Special complete characters use the same anatomical canvas and must not inherit wearable transforms. */
 [data-avatar-base^="character-boy-"] svg,[data-avatar-base^="character-girl-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
