@@ -11,7 +11,9 @@ assert.match(server,/attemptRecord=policyRecord\(db,name,activityId,policy,recor
 assert.match(server,/extra=readExtraAttempts\([^;]+name,policyId\)/,'status must read teacher-granted extra attempts');
 assert.match(server,/decision=evaluateWithExtra\(policy,attemptRecord,extra\)/,'status must include teacher-granted extra attempts in the authoritative decision');
 assert.match(server,/allowed:decision\.allowed,remaining:decision\.remaining,extraAttempts:extra/,'status must expose the authoritative allowance and extra attempts');
-for(const id of ['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random'])assert.ok(admin.includes(`'${id}'`)||admin.includes(id),`${id} must appear in teacher attempt settings`);
+for(const id of ['exploration-korean','exploration-math','exploration-random'])assert.ok(admin.includes(`'${id}'`)||admin.includes(id),`${id} must appear in teacher attempt settings`);
+for(const retired of ['exploration-social','exploration-science'])assert.ok(!admin.includes(`'${retired}'`),`${retired} must not reappear as a teacher attempt setting`);
+for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(exploration.includes(`name:'${name}'`),`${name} must remain in the four-type exploration hub`);
 assert.match(exploration,/json\(`\/api\/player\/me\/activity-attempt-status\/\$\{encodeURIComponent\(exp\.activityId\)\}`/,'exploration V2 must own the single allowance check');
 assert.match(exploration,/if\(!s\.allowed\)/,'an exhausted expedition must be blocked before play');
 assert.match(exploration,/탐험 참여 횟수를 확인하지 못했어요/,'failure to verify a controlled attempt must fail closed');
@@ -20,4 +22,4 @@ assert.ok(!guard.includes('approvedStatus')&&!guard.includes('consumeApproved(in
 assert.ok(guard.includes("#student-explore-panel button[data-exp]"),'entry guard must follow the current V2 expedition button contract');
 assert.ok(!layout.includes('activity-attempt-status/'),'retired village layout must never check expedition attempts');
 assert.ok(!layout.includes('studyvillage:exploration-map-open'),'retired legacy progress refresh event must not survive in village layout');
-console.log('exploration V2 attempt progress contract selftest passed');
+console.log('four-type exploration V2 attempt progress contract selftest passed');
