@@ -16,6 +16,15 @@
 [data-avatar-item="shoes-boots"] img,[data-avatar-item="shoes-hightop-blue"] img,[data-avatar-item="shoes-trail-orange"] svg{transform:translateY(-1%) scale(1,.99)!important}
 [data-avatar-item="shoes-wing"] img{transform:translateY(-.5%) scale(.98,.98)!important}
 [data-avatar-item="shoes-slipon-yellow"] svg,[data-avatar-item="shoes-sneakers"] svg,[data-avatar-item="shoes-sneakers-red"] svg,[data-avatar-item="shoes-sneakers-black"] svg,[data-avatar-item="shoes-sneakers-green"] svg,[data-avatar-item="shoes-runners-purple"] svg{transform:translateY(0) scale(1,.98)!important}
+/* Uniform, wizard and guardian are not torso skins anymore. They are real full-body costumes.
+   Suppress separately equipped bottoms/shoes anywhere the avatar is rendered so the costume remains intact. */
+[data-avatar-item="outfit-uniform"] svg,[data-avatar-item="outfit-wizard"] svg,[data-avatar-item="outfit-armor"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
+#player:has(#player-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #player-bottom,
+#player:has(#player-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #player-shoes,
+.avatar-preview:has(#preview-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #preview-bottom,
+.avatar-preview:has(#preview-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #preview-shoes,
+.sv-rank-avatar:has(.sv-rank-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) .sv-rank-bottom,
+.sv-rank-avatar:has(.sv-rank-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) .sv-rank-shoes{display:none!important}
 /* Ranking thumbnails use the exact same full-body canvas instead of browser-default SVG sizes. */
 .sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;line-height:0!important}
 .sv-rank-avatar>span>img,.sv-rank-avatar>span>svg{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}
