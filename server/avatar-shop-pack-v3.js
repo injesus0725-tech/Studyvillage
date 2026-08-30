@@ -1,12 +1,4 @@
 const productionItems={
-  'character-boy-02':{name:'남자 기본 캐릭터 2',slot:'character',price:24},
-  'character-boy-03':{name:'남자 기본 캐릭터 3',slot:'character',price:26},
-  'character-boy-04':{name:'남자 기본 캐릭터 4',slot:'character',price:28},
-  'character-boy-05':{name:'남자 기본 캐릭터 5',slot:'character',price:30},
-  'character-girl-02':{name:'여자 기본 캐릭터 2',slot:'character',price:24},
-  'character-girl-03':{name:'여자 기본 캐릭터 3',slot:'character',price:26},
-  'character-girl-04':{name:'여자 기본 캐릭터 4',slot:'character',price:28},
-  'character-girl-05':{name:'여자 기본 캐릭터 5',slot:'character',price:30},
   'outfit-silver-knight':{name:'은빛 수호 기사 세트',slot:'outfit',price:65},
   'outfit-star-mage-production':{name:'별자리 마법사 세트',slot:'outfit',price:58},
   'outfit-school-scientist':{name:'푸른빛 과학자 세트',slot:'outfit',price:42},
