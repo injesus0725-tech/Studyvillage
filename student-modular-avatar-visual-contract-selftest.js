@@ -22,7 +22,8 @@ assert.ok(normalizer.includes('const MASTER_SIZE=256'),'production assets must n
 assert.ok(normalizer.includes("outfit:{centerX:128,bottomY:246,maxHeight:180,maxWidth:248}"),'all outfits must share one master anchor');
 assert.ok(normalizer.includes("pet:{centerX:180,bottomY:246,maxHeight:112,maxWidth:96}"),'all pets must share one close-to-leg master anchor');
 assert.ok(normalizer.includes('medianX')&&normalizer.includes('alphaMetrics'),'outfit alignment must use visible alpha mass instead of transparent file margins');
+assert.ok(normalizer.includes("attributeFilter:['data-avatar-item']"),'normalizer must run after renderer assigns the avatar item id');
 assert.ok(!normalizer.includes('outfit-silver-knight')&&!normalizer.includes('pet-maltese-production'),'normalizer may not contain per-item exceptions');
-assert.ok(variants.includes('avatar-auto-normalize-v1.js?v=20260830c'),'shared normalizer must load for student avatar surfaces');
+assert.ok(variants.includes('avatar-auto-normalize-v1.js?v=20260830d'),'shared normalizer must load for student avatar surfaces');
 assert.ok(!index.includes('assets/avatar-rpg-unification.js'),'legacy separate face/expression overlay runtime must stay disabled');
 console.log('student base-character modular visual contract self-test passed');
