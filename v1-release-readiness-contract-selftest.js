@@ -10,7 +10,6 @@ const activityStudent=read('server/activity-attempt-student.js');
 const library=read('library-game.js');
 const studentSession=read('student-session.js');
 const exploration=read('assets/student-exploration-v2.js');
-const explorationUi=read('assets/student-exploration-v2-subject-ui.js');
 const shop=read('student-shop.js');
 const customize=read('customize.js');
 const mobile=read('onboarding.js');
@@ -44,7 +43,7 @@ assert.ok(studentSession.includes("document.querySelector('#quiz-panel #quiz-clo
 // may still be mixed into common subject/random pools.
 assert.doesNotMatch(exploration,/name:'수수께끼 숲'|name:'도전의 산'|data-subject="수수께끼"/,'standalone riddle exploration must remain retired');
 assert.ok(exploration.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')"),'riddles must remain available inside the shared exploration pool');
-assert.ok(explorationUi.includes("filters.querySelector('[data-subject=\"수수께끼\"]')?.remove()"),'standalone riddle filter must stay removed');
+assert.ok(exploration.includes('사회·과학·예체능 탐험')&&exploration.includes("exp.subject==='통합'"),'integrated exploration must be a direct V2 engine entry');
 
 // Shop and wardrobe remain separate. Wardrobe saves every purchased slot including null and
 // retries the complete two-layer persistence pair at most once.
