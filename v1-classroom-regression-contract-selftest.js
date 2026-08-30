@@ -11,7 +11,6 @@ const customize=fs.readFileSync('customize.js','utf8');
 const explorer=fs.readFileSync('assets/student-exploration-v2.js','utf8');
 const expeditionGuard=fs.readFileSync('assets/expedition-entry-guard.js','utf8');
 const explorationPools=fs.readFileSync('assets/student-exploration-subject-pools.js','utf8');
-const explorationUi=fs.readFileSync('assets/student-exploration-v2-subject-ui.js','utf8');
 const curriculum=fs.readFileSync('assets/student-curriculum-learning.js','utf8');
 const challenge=fs.readFileSync('assets/student-challenge-hall.js','utf8');
 const activityTaxonomy=fs.readFileSync('activity-taxonomy.js','utf8');
@@ -39,7 +38,7 @@ assert.ok(avatar.includes('viewBox="0 0 96 144"'),'all avatar parts must use the
 assert.ok(css.includes('One fixed full-body canvas'),'fixed full-body accessory alignment styles must be packaged');
 assert.ok(css.includes('.avatar-bag')&&css.includes('.avatar-glasses')&&css.includes('.avatar-hat'),'wearable slots must have body-relative positioning');
 
-// Keep the proven V2 engine internals available, but expose the final classroom subject structure through the adapter.
+// Keep the proven V2 engine internals available and expose the integrated classroom subject structure directly.
 for(const name of ['랜덤 덧셈 동굴','곱셈 던전','국어의 숲','사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(explorer.includes(name),`exploration V2 engine missing entry ${name}`);
 for(const retired of ['수수께끼 숲','도전의 산'])assert.ok(!explorer.includes(retired),`retired separate riddle entry remains: ${retired}`);
 assert.ok(explorer.includes("document.querySelector('.sv-quick-button.explore')?.remove()"),'obsolete top-menu exploration entry must stay removed');
@@ -49,10 +48,9 @@ assert.ok(explorer.includes('first')&&explorer.includes('mathAnswers'),'explorat
 assert.ok(expeditionGuard.includes("#student-explore-panel button[data-exp]"),'classroom build must guard the active V2 expedition controls');
 assert.ok(explorationPools.includes("new Set(['사회','과학','음악','예체능'])"),'exploration integrated pool must keep subjects separate internally');
 assert.ok(explorationPools.includes("eligible?.(q,'curriculum')"),'exploration integrated pool must follow the teacher-checked curriculum units');
-assert.ok(explorationUi.includes("const LABEL='사회·과학·예체능'"),'student exploration must expose the integrated subject label');
-assert.ok(explorationUi.includes("[data-exp=\"social\"],[data-exp=\"science\"],[data-exp=\"random\"]"),'legacy social/science/random cards must be hidden from students');
-assert.ok(explorationUi.includes('window.StudyVillageQuestionSets={'),'integrated exploration must feed its filtered five-question pool into V2');
-assert.ok(explorationUi.includes('legacy.click()'),'integrated exploration must reuse the proven V2 reward/save engine');
+assert.ok(explorer.includes("{id:'integrated'")&&explorer.includes('사회·과학·예체능 탐험'),'student exploration must expose a direct integrated V2 entry');
+assert.ok(explorer.includes("new Set(['사회','과학','음악','예체능'])"),'direct integrated exploration must retain all intended subjects');
+assert.ok(explorer.includes("exp.subject==='통합'"),'integrated exploration must use the proven V2 question and reward engine without a synthetic click bridge');
 
 // Shared checked unit ranges must drive curriculum and challenge hall; social/science/arts stay integrated for students.
 assert.ok(curriculum.includes("subjects:['사회','과학','음악','예체능']"),'curriculum integrated group missing');
