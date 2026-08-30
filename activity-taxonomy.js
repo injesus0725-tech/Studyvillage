@@ -13,7 +13,7 @@
     'curriculum-challenge-korean':{subject:'국어',topic:'문제은행 도전',name:'도전관 · 국어 도전',icon:'📖'},
     'curriculum-challenge-math':{subject:'수학',topic:'문제은행 도전',name:'도전관 · 수학 도전',icon:'➕'},
     'curriculum-challenge-integrated':{subject:'통합',topic:'사회·과학·예체능',name:'도전관 · 사회·과학·예체능 통합',icon:'🌏'},
-    riddle:{subject:'기타',topic:'수수께끼',name:'책마루 · 수수께끼',icon:'❓'},
+    riddle:{subject:'기타',topic:'수수께끼',name:'재미 수수께끼',icon:'❓'},
     'exploration-korean':{subject:'국어',topic:'전체 문제은행',name:'탐험 · 국어의 숲',icon:'📖'},
     'exploration-math':{subject:'수학',topic:'덧셈·곱셈',name:'탐험 · 덧셈 동굴·곱셈 던전',icon:'➕'},
     'exploration-random':{subject:'통합',topic:'사회·과학·예체능',name:'탐험 · 사회·과학·예체능 통합',icon:'🌏'}
