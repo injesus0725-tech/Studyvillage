@@ -22,6 +22,7 @@ assert.ok(!whole.includes('character-boy-02')&&!whole.includes('character-girl-0
 assert.ok(whole.includes("id:'student-boy'")&&whole.includes("id:'student-girl'"),'only the two basic bodies must remain');
 const expected=[
   'production/outfits/silver-knight.png','production/outfits/star-mage.png','production/outfits/school-scientist.png',
+  'production/outfits/forest-archer.png','production/outfits/pirate-captain.png','production/outfits/moon-priest.png',
   'production/pets/maltese.png','production/pets/toy-poodle.png','production/pets/corgi.png',
   'production/pets/cheese-cat.png','production/pets/lop-rabbit.png','production/pets/baby-dragon.png'
 ];
