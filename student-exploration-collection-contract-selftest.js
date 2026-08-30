@@ -10,7 +10,8 @@ assert.match(server,/addCollection\(db,name,'event',type\)/,'a successful map di
 assert.match(npcs,/kind:'npc',id:npc\.id/,'meeting an NPC must record that exact whitelisted NPC');
 assert.match(npcs,/controller\.abort\(\),5000/,'NPC collection saving must not hang movement');
 assert.match(client,/className=`sv-collection-item\$\{unlocked\?'':' locked'\}`/,'unseen collection entries must render locked');
-assert.match(client,/도감 \$\{foundNpcs\.size\+foundEvents\.size\} \/ \$\{npcs\.length\+events\.length\}개 등록/,'collection progress must be visible');
+assert.match(client,/발견 기록 \$\{foundNpcs\.size\+foundEvents\.size\} \/ \$\{npcs\.length\+events\.length\}/,'collection discovery progress must be visible');
+assert.ok(client.includes('silhouette')&&client.includes('???')&&client.includes('미발견'),'unseen entries must remain silhouette-based without revealing identity');
 assert(deleteFlow.includes('exploration-collection:${encodeURIComponent(name)}'),'deleting a student must delete their collection');
 assert(html.includes('<script src="exploration-collection.js"></script>'),'collection UI must load');
-console.log('student exploration collection contract selftest passed');
+console.log('student exploration discovery collection contract selftest passed');
