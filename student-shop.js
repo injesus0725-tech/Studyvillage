@@ -3,7 +3,7 @@
   const game=document.querySelector('#game-screen'),shopButton=document.querySelector('#shop-button');if(!game||!shopButton)return;
   const icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊','hair-short':'💇','hair-bob':'👩','hair-ponytail':'👱‍♀️','hair-blue':'🧑‍🎤','hat-wizard':'🧙','hat-pirate':'🏴‍☠️','hat-flower':'🌼','glasses-sun':'🕶️','glasses-heart':'💗','outfit-hoodie':'🧥','outfit-uniform':'👔','outfit-wizard':'🥻','outfit-armor':'🛡️','shoes-sneakers':'👟','shoes-boots':'🥾','shoes-wing':'🪽','bag-art':'🎨','bag-rocket':'🚀','hand-sword':'⚔️','hand-wand':'🪄','hand-book':'📖','hand-magnifier':'🔎','pet-dog':'🐶','pet-rabbit':'🐰','pet-dragon':'🐲','pet-slime':'🟢','aurora-effect':'🌈','candy':'🍬','stationery':'✏️'};
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
   document.querySelector('#student-shop-panel')?.remove();
   const panel=document.createElement('section');panel.id='student-shop-panel';panel.className='record-panel student-shop-panel';panel.hidden=true;
