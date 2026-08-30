@@ -1,0 +1,20 @@
+/* Full wardrobe alignment pass for the tiny 96x144 avatar canvas. */
+/* Hair was previously hidden by the temporary RPG unification layer. Show owned/equipped hair again. */
+.avatar-hair[data-avatar-item]:not([data-avatar-item=""]),.preview-hair[data-avatar-item]:not([data-avatar-item=""]),.shop-preview-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-profile-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-exp2-hair[data-avatar-item]:not([data-avatar-item=""]){display:block!important}
+[data-avatar-item^="hair-"] img,[data-avatar-item^="hair-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-1%) scale(1.02,.94)!important;transform-origin:center top!important}
+[data-avatar-item="hair-bob"] img,[data-avatar-item="hair-long"] img,[data-avatar-item="hair-shoulder-wave"] svg,[data-avatar-item="hair-lavender-bob"] svg{transform:translateY(1%) scale(1.01,.97)!important}
+[data-avatar-item="hair-ponytail"] img,[data-avatar-item="hair-braid"] svg,[data-avatar-item="hair-twintail"] svg{transform:translateY(-1%) scale(1.01,.96)!important}
+[data-avatar-item="hair-mohawk"] svg,[data-avatar-item="hair-spiky-brown"] svg,[data-avatar-item="hair-flame-red"] svg{transform:translateY(0) scale(.98,.95)!important}
+[data-avatar-item="hair-blue"] img,[data-avatar-item="hair-silver"] img,[data-avatar-item="hair-green"] svg{transform:translateY(0) scale(1.01,.95)!important}
+/* Bottoms now meet the torso around y=102 and finish before the shoe layer. */
+[data-avatar-item^="bottom-"] img,[data-avatar-item^="bottom-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-2%) scale(1,.98)!important;transform-origin:center bottom!important}
+[data-avatar-item="bottom-shorts"] img,[data-avatar-item="bottom-shorts-sport"] svg,[data-avatar-item="bottom-skirt"] svg,[data-avatar-item="bottom-skirt-navy"] svg{transform:translateY(-1%) scale(1,.98)!important}
+[data-avatar-item="bottom-cargo-khaki"] img,[data-avatar-item="bottom-jogger-gray"] svg,[data-avatar-item="bottom-adventure-brown"] svg{transform:translateY(-2.5%) scale(1.01,.99)!important}
+[data-avatar-item="bottom-leggings-black"] svg,[data-avatar-item="bottom-pants-black"] svg,[data-avatar-item="bottom-jeans"] svg{transform:translateY(-2%) scale(.99,1)!important}
+/* Shoes sit on the common foot line; remove the old -5% lift that caused ankle overlap. */
+[data-avatar-item^="shoes-"] img,[data-avatar-item^="shoes-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-.5%) scale(1,.99)!important;transform-origin:center bottom!important}
+[data-avatar-item="shoes-boots"] img,[data-avatar-item="shoes-hightop-blue"] img,[data-avatar-item="shoes-trail-orange"] svg{transform:translateY(-1%) scale(1,.99)!important}
+[data-avatar-item="shoes-wing"] img{transform:translateY(-.5%) scale(.98,.98)!important}
+[data-avatar-item="shoes-slipon-yellow"] svg,[data-avatar-item="shoes-sneakers"] svg,[data-avatar-item="shoes-sneakers-red"] svg,[data-avatar-item="shoes-sneakers-black"] svg,[data-avatar-item="shoes-sneakers-green"] svg,[data-avatar-item="shoes-runners-purple"] svg{transform:translateY(0) scale(1,.98)!important}
+/* Special complete characters use the same anatomical canvas and must not inherit wearable transforms. */
+[data-avatar-base^="character-boy-"] svg,[data-avatar-base^="character-girl-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
