@@ -1,0 +1,24 @@
+/* 2026-08-30 production contract: base character -> outfit -> effect -> pet. */
+/* Separate hair is retired; hairstyle and expression live inside the selected base character. */
+.avatar-hair,.preview-hair,.shop-preview-hair,.sv-profile-hair,.sv-exp2-hair,.sv-rank-hair{display:none!important}
+
+/* Production outfits may never cover the face/hair region. The transparent upper zone is enforced at render time too. */
+[data-avatar-item^="outfit-"]{overflow:visible!important}
+[data-avatar-item^="outfit-"]>img,[data-avatar-item^="outfit-"]>svg{clip-path:inset(27% 0 0 0)!important;transform-origin:center bottom!important}
+[data-avatar-item="outfit-silver-knight"]>img,
+[data-avatar-item="outfit-star-mage-production"]>img,
+[data-avatar-item="outfit-school-scientist"]>img,
+[data-avatar-item="outfit-forest-archer-production"]>img,
+[data-avatar-item="outfit-pirate-captain-production"]>img,
+[data-avatar-item="outfit-moon-priest-production"]>img{width:100%!important;height:100%!important;object-fit:contain!important}
+
+/* Current six production pets: 76px-era visual scale -> about 112px visual scale. */
+[data-avatar-item="pet-maltese-production"]>img,
+[data-avatar-item="pet-toy-poodle-production"]>img,
+[data-avatar-item="pet-corgi-production"]>img,
+[data-avatar-item="pet-cheese-cat-production"]>img,
+[data-avatar-item="pet-lop-rabbit-production"]>img,
+[data-avatar-item="pet-baby-dragon-production"]>img{transform:scale(1.45)!important;transform-origin:center bottom!important;object-fit:contain!important}
+
+/* Base variants are full-base skins only; never inherit wearable transforms. */
+[data-avatar-base^="character-boy-"]>img,[data-avatar-base^="character-girl-"]>img{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
