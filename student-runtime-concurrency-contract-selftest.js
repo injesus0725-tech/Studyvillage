@@ -6,8 +6,9 @@ assert.ok(/if\([^)]*loadPromise[^)]*\)return loadPromise/.test(records),'학생 
 assert.ok(shop.includes('let busy=false,loadPromise=null'),'학생 상점은 구매 중복과 조회 중복을 모두 막아야 합니다.');
 assert.ok(shop.includes('if(busy)return'),'학생 상점 구매 버튼 연타를 막아야 합니다.');
 assert.ok(shop.includes('if(loadPromise)return loadPromise'),'학생 상점 조회 요청이 겹치면 안 됩니다.');
-assert.ok(customize.includes('loading=false'),'꾸미기 화면은 조회 진행 상태를 추적해야 합니다.');
-assert.ok(customize.includes('if(loading)return false'),'꾸미기 조회 요청이 겹치면 안 됩니다.');
+assert.ok(customize.includes('loadPromise=null'),'꾸미기 화면은 조회 진행 Promise를 추적해야 합니다.');
+assert.ok(customize.includes('if(loadPromise)return loadPromise'),'꾸미기 조회가 겹치면 기존 요청을 재사용해 구매 직후 장착도 같은 완료를 기다려야 합니다.');
+assert.ok(customize.includes('try{return await loadPromise}finally{loadPromise=null}'),'꾸미기 공유 조회 Promise는 완료 뒤 반드시 해제해야 합니다.');
 assert.ok(customize.includes('const next=await fetchPlayer()')&&customize.includes('try{shop=await fetchShop()}catch'),'꾸미기는 한 번의 로드 사이클 안에서 상점 실패와 학생 정보 실패를 분리해야 합니다.');
 assert.ok(customize.includes('if(save.disabled)return false'),'꾸미기 저장 버튼 연타를 막아야 합니다.');
 assert.ok(/pinging|polling|sending/.test(presence),'학생 접속 상태 전송은 중복 실행 방지가 필요합니다.');
