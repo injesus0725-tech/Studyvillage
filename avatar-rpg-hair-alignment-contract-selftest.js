@@ -22,4 +22,18 @@ for(const file of files){
   assert.ok(fs.existsSync(full),`${file} must exist`);
   assert.ok(fs.statSync(full).size>10_000,`${file} must be a real production raster asset`);
 }
-console.log('avatar RPG hair alignment contract passed');
+
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const css=fs.readFileSync(path.join(root,'assets/avatar-alignment-overhaul-v1.css'),'utf8');
+const visual=fs.readFileSync(path.join(root,'assets/avatar-visual-overhaul-v1.js'),'utf8');
+const shop=fs.readFileSync(path.join(root,'server/avatar-shop-pack-v3.js'),'utf8');
+assert.ok(html.includes('assets/avatar-alignment-overhaul-v1.css?v=20260830a'),'student build must load the wardrobe alignment pass');
+assert.ok(html.includes('assets/avatar-visual-overhaul-v1.js?v=20260830a'),'student build must load the special-character overhaul');
+for(const id of ['hair-short','hair-bob','hair-ponytail','hair-mohawk','hair-braid','hair-spiky-brown','hair-shoulder-wave','hair-flame-red','hair-lavender-bob'])assert.ok(css.includes(id),`hair alignment missing ${id}`);
+for(const id of ['bottom-jeans','bottom-shorts','bottom-skirt','bottom-jogger-gray','bottom-leggings-black','bottom-adventure-brown'])assert.ok(css.includes(id),`bottom alignment missing ${id}`);
+for(const id of ['shoes-sneakers','shoes-boots','shoes-wing','shoes-sneakers-green','shoes-runners-purple','shoes-trail-orange'])assert.ok(css.includes(id),`shoe alignment missing ${id}`);
+assert.ok(css.includes('display:block!important'),'equipped hair must no longer stay hidden by the temporary RPG layer');
+for(const theme of ['scout','scholar','runner','mage','knight','ranger','bard','hero','guardian'])assert.ok(visual.includes(theme),`special character theme missing ${theme}`);
+for(const name of ['밤빛 모험가','책마루 학자','초록 정찰대','별빛 마법사','햇살 기사','숲의 레인저','보랏빛 음유시인','붉은 용사','은빛 수호자'])assert.ok(shop.includes(name),`special-character shop name missing ${name}`);
+for(const gender of ['boy','girl'])assert.ok(visual.includes(`for(const gender of ['boy','girl'])`),`special ${gender} characters must be generated from the nine distinct themes`);
+console.log('avatar RPG hair, full wardrobe alignment, and special-character differentiation contract passed');
