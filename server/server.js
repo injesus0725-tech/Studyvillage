@@ -18,7 +18,7 @@ import { wholeCharacterCatalog,wholeCharacterIds } from './whole-character-catal
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
 const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;fs.mkdirSync(dataDir,{recursive:true});
 const dbPath=path.join(dataDir,'studyvillage.db'),db=new Database(dbPath),app=express(),PORT=Number(process.env.PORT)||3000;
-const BUILD_ID='20260829-r12-v1-integration';
+const BUILD_ID='20260830-r3-v1-runtime-fix';
 const sessions=new Map(),adminSessions=new Map(),presence=new Map(),replacedStudentSessions=new Map();
 const liveEvents=[];let liveEventSeq=0;
 const STUDENT_SESSION_TTL_MS=12*60*60*1000,ADMIN_SESSION_TTL_MS=12*60*60*1000,PRESENCE_TTL_MS=5*60*1000,REPLACED_SESSION_TTL_MS=5*60*1000;
@@ -65,7 +65,7 @@ function normalizeRemoteAddress(value){const address=String(value||'').trim().to
 function localTeacherAddresses(){const addresses=new Set(['127.0.0.1','::1']);try{for(const entries of Object.values(os.networkInterfaces()))for(const entry of entries||[])if(entry?.address)addresses.add(normalizeRemoteAddress(entry.address))}catch{}return addresses}
 const LOCAL_TEACHER_ADDRESSES=localTeacherAddresses();
 function isLocalTeacherRequest(req){return LOCAL_TEACHER_ADDRESSES.has(normalizeRemoteAddress(req.socket?.remoteAddress))}
-function classroomUrls(){const u=[];for(const[adapter,entries]of Object.entries(os.networkInterfaces()))for(const n of entries||[])if(n.family==='IPv4'&&!n.internal)u.push({adapter,address:n.address,url:`http://${n.address}:${PORT}`});return u}
+function classroomUrls(){const u=[];let interfaces={};try{interfaces=os.networkInterfaces()||{}}catch(err){console.warn('Network interface lookup failed; localhost server remains available.',String(err?.message||err))}for(const[adapter,entries]of Object.entries(interfaces))for(const n of entries||[])if(n.family==='IPv4'&&!n.internal)u.push({adapter,address:n.address,url:`http://${n.address}:${PORT}`});return u}
 function prunePresence(now=Date.now()){for(const[name,seen]of presence.entries())if(now-seen>PRESENCE_TTL_MS)presence.delete(name)}
 function activePresenceNames(){const now=Date.now();prunePresence(now);return new Set([...presence.entries()].filter(([,seen])=>now-seen<=45000).map(([name])=>name))}
 function pruneLiveEvents(){const now=Date.now();while(liveEvents.length&&(liveEvents[0].expiresAt<=now||liveEvents.length>50))liveEvents.shift()}
