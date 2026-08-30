@@ -13,7 +13,7 @@ assert.strictEqual((questions.match(/difficulty:'easy'/g)||[]).length,15,'forest
 assert.strictEqual((questions.match(/difficulty:'challenge'/g)||[]).length,15,'mountain needs 15 challenge candidates');
 assert.doesNotMatch(hub,/name:'수수께끼 숲'|name:'도전의 산'|data-subject="수수께끼"/,'수수께끼는 별도 탐험이나 필터로 분리하지 않습니다.');
 assert.match(hub,/riddles=eligible\.filter\(q=>q\.subject==='창의적 사고'\)/,'수수께끼 문제는 탐험 공통 문제 풀에서 찾아야 합니다.');
-assert.match(hub,/subjectPool=exp\.subject==='랜덤'\?eligible:\[\.\.\.curriculum\.filter[\s\S]*\.\.\.riddles\]/,'교과 탐험에도 수수께끼가 무작위로 섞여야 합니다.');
+assert.match(hub,/baseSubjectPool=exp\.subject==='랜덤'\?eligible:\[\.\.\.curriculum\.filter[\s\S]*\.\.\.riddles\]/,'교과 탐험에도 수수께끼가 무작위로 섞여야 합니다.');
 assert.match(hub,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/,'questions must use Fisher-Yates shuffle');
 assert.match(hub,/shuffle\(q\.options\)/,'answer choices must be shuffled');
 assert.match(hub,/answer:options\.indexOf\(correct\)/,'answer index must follow shuffled choices');
