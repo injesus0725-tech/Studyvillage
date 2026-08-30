@@ -1,5 +1,5 @@
 const assert=require('assert'),fs=require('fs');
-const data=fs.readFileSync('question-data.js','utf8'),ui=fs.readFileSync('assets/student-curriculum-learning.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),live=fs.readFileSync('assets/student-question-catalog-live-refresh.js','utf8'),reward=fs.readFileSync('server/reward-economy.js','utf8'),stars=fs.readFileSync('server/star-ledger.js','utf8');
+const data=fs.readFileSync('question-data.js','utf8'),ui=fs.readFileSync('assets/student-curriculum-learning.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),live=fs.readFileSync('assets/student-question-catalog-live-refresh.js','utf8'),reward=fs.readFileSync('server/reward-economy.js','utf8'),stars=fs.readFileSync('server/star-ledger.js','utf8'),math=fs.readFileSync('server/math-practice.js','utf8');
 for(const id of ['curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts'])assert.ok(data.includes(`activityId:'${id}'`),`missing curriculum set ${id}`);
 for(const token of ['GROUPS','과목과 단원을 선택해요','spaces','/api/player/me/activity','studyvillage:open-curriculum-learning'])assert.ok(ui.includes(token),`curriculum UI missing ${token}`);
 assert.ok(ui.includes("subjects:['국어']")&&ui.includes("subjects:['수학']")&&ui.includes("subjects:['사회','과학','음악','예체능']"),'curriculum UI must keep Korean/math unit selection and the integrated subject group');
@@ -10,8 +10,10 @@ assert.ok(ui.indexOf('await window.StudyVillageStudentQuestionOverrides?.refresh
 assert.ok(live.includes("'#student-explore-panel button[data-exp]'"),'exploration must refresh again at the actual expedition start, not only when the cave opens');
 assert.ok(live.includes('selected?.click()')&&live.includes('if(!fresh||fresh.disabled)return'),'exploration start refresh must redraw fresh availability and refuse a newly closed expedition');
 assert.ok(building.includes("action:'curriculum'")&&building.includes("title:'수학 놀이터'"),'village learning buildings must use the new structure');
-for(const name of ['국어의 숲','사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
-assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('...riddles'),'수수께끼는 별도 숲 없이 교과·랜덤 탐험 문제에 섞여야 합니다.');
+for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
+for(const retired of ['사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(!explore.includes(`name:'${retired}'`),`retired exploration returned: ${retired}`);
+assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('Math.random()<.1')&&explore.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddles)[0]'),'catalog riddles must be rare, replace at most one subject question, and keep five total');
+assert.ok(math.includes('withExplorationRiddle')&&math.includes('Math.random()>=.1'),'math exploration riddle insertion must be decided by the server at the same low probability');
 assert.ok(reward.includes("id.startsWith('curriculum-')"),'curriculum activities must share regular XP/star balance');
 assert.ok(stars.includes("'curriculum-korean'")&&stars.includes("'exploration-random'"),'curriculum and catalog exploration stars must be server-confirmed');
-console.log('student curriculum catalog live-refresh contract self-test passed');
+console.log('student curriculum catalog live-refresh and consolidated exploration contract self-test passed');
