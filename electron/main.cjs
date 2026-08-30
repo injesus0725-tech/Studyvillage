@@ -41,8 +41,25 @@ async function startServer() {
   await import(pathToFileURL(hookPath).href);
   const serverPath = path.join(__dirname, '..', 'server', 'server.js');
   const serverModule = await import(pathToFileURL(serverPath).href);
-  classroomServer = serverModule.startClassroomServer();
-  classroomServer?.on?.('error',error=>writeRuntimeError('server-error',error));
+  const server = serverModule.startClassroomServer();
+  classroomServer = await new Promise((resolve,reject) => {
+    let settled = false;
+    const timeout = setTimeout(() => finish(new Error('Studyvillage server listen timed out.')), 10000);
+    const finish = error => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      server.removeListener('listening', onListening);
+      server.removeListener('error', onError);
+      if (error) reject(error); else resolve(server);
+    };
+    const onListening = () => finish();
+    const onError = error => finish(error);
+    server.once('listening', onListening);
+    server.once('error', onError);
+    if (server.listening) finish();
+  });
+  classroomServer.on('error',error=>writeRuntimeError('server-error',error));
 }
 
 async function createWindow() {
