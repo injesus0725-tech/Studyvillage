@@ -1,6 +1,12 @@
-/* Student tablet stability fixes: direct challenge launch, guide interaction, recoverable results, immediate records, and detailed ranking tabs. */
+/* Student tablet stability fixes: guide interaction, immediate records, ranking tabs, and retired legacy riddle guard. */
 (()=>{
   const game=document.querySelector('#game-screen');if(!game)return;
+
+  /* The old standalone riddle challenge is retired. Keep the legacy nodes inert because game.js still
+     owns references to them, but move the hall permanently out of interaction range and keep its panel closed. */
+  const legacyQuizHall=document.querySelector('#quiz-hall'),legacyQuizPanel=document.querySelector('#quiz-panel');
+  if(legacyQuizHall){legacyQuizHall.setAttribute('aria-hidden','true');legacyQuizHall.style.setProperty('position','fixed','important');legacyQuizHall.style.setProperty('left','-10000px','important');legacyQuizHall.style.setProperty('top','-10000px','important');legacyQuizHall.style.setProperty('visibility','hidden','important');legacyQuizHall.style.setProperty('pointer-events','none','important')}
+  if(legacyQuizPanel){legacyQuizPanel.hidden=true;legacyQuizPanel.setAttribute('aria-hidden','true')}
 
   document.addEventListener('click',event=>{
     const button=event.target.closest?.('#record-button');if(!button)return;
@@ -15,34 +21,6 @@
     if(typeof window.openDialogue==='function'){window.openDialogue();return}
     const talk=document.querySelector('#talk-button');if(talk)talk.click();
   },true);
-
-  /* Challenge hall must call the real quiz function directly. Fake Space caused the player to fall
-     back to the village or talk to the guide teacher depending on camera/proximity timing. */
-  document.addEventListener('click',event=>{
-    const button=event.target.closest?.('#interior-action-wrap .interior-primary');
-    if(!button||!button.textContent?.includes('수수께끼 도전 시작'))return;
-    event.preventDefault();event.stopImmediatePropagation();
-    const interior=document.querySelector('#building-interior');if(interior)interior.hidden=true;
-    document.body.classList.remove('inside-building');
-    if(typeof window.openQuiz==='function'){window.openQuiz();return}
-    const quizHall=document.querySelector('#quiz-hall'),player=document.querySelector('#player');
-    if(quizHall&&player){const old=player.style.left;player.style.left=quizHall.style.left||player.style.left;setTimeout(()=>{window.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));player.style.left=old},0)}
-  },true);
-
-  /* A failed legacy challenge save must never trap the student until refresh. Add an explicit exit
-     while preserving the checkpoint so the result can be retried later. */
-  const quiz=document.querySelector('#quiz-panel'),quizOptions=document.querySelector('#quiz-options'),quizNext=document.querySelector('#quiz-next'),quizQuestion=document.querySelector('#quiz-question');
-  const data=window.StudyVillageData;if(data?.savePlayerConfirmed&&!data.legacyQuizRetryInstalled){const original=data.savePlayerConfirmed.bind(data);data.savePlayerConfirmed=async record=>{for(let attempt=0;attempt<3;attempt++){const confirmed=await original(record);if(confirmed)return confirmed;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,350*(attempt+1)))}return null};data.legacyQuizRetryInstalled=true}
-  function addRecoveryExit(){
-    if(!quiz||quiz.hidden||!quizQuestion?.textContent?.includes('교실 서버 연결을 기다리고 있어요.'))return;
-    if(quiz.querySelector('[data-save-recovery-exit]'))return;
-    const exit=document.createElement('button');exit.type='button';exit.dataset.saveRecoveryExit='1';exit.className='quiz-next';exit.textContent='마을로 돌아가기 🏡';exit.style.marginLeft='8px';
-    exit.onclick=()=>{const close=document.querySelector('#quiz-close');if(close)close.click();else{quiz.hidden=true;document.body.classList.remove('inside-building')}};
-    (quizNext?.parentElement||quiz).appendChild(exit);
-  }
-  if(quiz)new MutationObserver(addRecoveryExit).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
-  const quizProgress=document.querySelector('#quiz-progress');function makeCompletedQuizReturnSafe(){if(!quiz||quiz.hidden||quizProgress?.textContent!=='완료'||!quizNext||quizNext.hidden)return;quizNext.textContent='결과 확인 완료 · 마을로 돌아가기 🏡';quizNext.onclick=()=>document.querySelector('#quiz-close')?.click()}
-  if(quiz)new MutationObserver(makeCompletedQuizReturnSafe).observe(quiz,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
 
   const ranking=document.querySelector('#student-ranking-panel'),rankingButton=document.querySelector('.sv-quick-button.ranking');
   if(!ranking||!rankingButton)return;
