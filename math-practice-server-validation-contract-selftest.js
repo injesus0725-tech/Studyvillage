@@ -1,6 +1,6 @@
 const fs=require('fs');
 const assert=require('assert');
-const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readFileSync('server/activity-attempt-student.js','utf8'),client=fs.readFileSync('math-practice.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),index=fs.readFileSync('index.html','utf8'),hub=fs.readFileSync('assets/student-study-menu.js','utf8');
+const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readFileSync('server/activity-attempt-student.js','utf8'),client=fs.readFileSync('math-practice.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),review=fs.readFileSync('assets/student-math-review.js','utf8'),index=fs.readFileSync('index.html','utf8'),hub=fs.readFileSync('assets/student-study-menu.js','utf8');
 assert.ok(server.includes("ACTIVITY_ID='math-arithmetic'"),'math practice needs a stable activity id');
 assert.ok(server.includes('problems:problems.map(publicProblem)'),'server must issue sanitized student-visible math problem fields');
 assert.ok(server.includes('function publicProblem(problem,index)')&&!server.match(/publicProblem\([^)]*\).*answer:problem\.answer/),'issued math problems must never expose answers');
@@ -25,9 +25,11 @@ assert.ok(client.includes("input.inputMode=isQr(problem)?'text':'numeric'"),'ord
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
 assert.ok(building.includes("{id:'school',selector:'.school',icon:'🏫',title:'교과 배움터'")&&building.includes("action:'math'"),'교과 배움터는 탐험과 분리된 직접 수학 활동 진입점이어야 합니다.');
-assert.ok(building.includes("studyvillage:open-math-practice"),'배움터 수학 버튼은 기존 서버 검증 수학 활동을 열어야 합니다.');
+assert.ok(building.includes("studyvillage:open-math-practice"),'마을 수학 놀이터는 서버 검증 수학 활동을 열어야 합니다.');
+assert.ok(review.includes("url==='/api/player/me/math-practice/start'")&&review.includes("JSON.stringify({mode:'addition'})"),'마을 수학 놀이터의 기존 랜덤 덧셈은 탐험 정리와 무관하게 유지해야 합니다.');
+assert.ok(review.includes("&&!options?.body"),'탐험에서 명시한 곱셈·덧셈 mode 요청은 마을 덧셈 보정이 덮어쓰면 안 됩니다.');
 assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브로 강제 라우팅하면 안 됩니다.');
 assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
 assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');
 assert.ok(/<script src="math-practice\.js(?:\?v=[^"]+)?"><\/script>/.test(index),'the student page must load math practice');
-console.log('math remainder, server scoring, and teacher-unit filtering contract self-test passed');
+console.log('math remainder, server scoring, village addition, and teacher-unit filtering contract self-test passed');
