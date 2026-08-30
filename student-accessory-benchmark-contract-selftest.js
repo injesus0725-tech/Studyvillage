@@ -4,8 +4,10 @@ const catalog=fs.readFileSync('server/avatar-shop-pack-v3.js','utf8');
 const renderer=fs.readFileSync('avatar-renderer.js','utf8');
 const variants=fs.readFileSync('assets/avatar-base-variants-v1.js','utf8');
 const client=fs.readFileSync('student-shop.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
 const contract=fs.readFileSync('assets/avatar-production-contract-v2.css','utf8');
 const itemSpec=fs.readFileSync('AVATAR_ITEM_SPEC.md','utf8');
+const direction=fs.readFileSync('AVATAR_PRODUCTION_DIRECTION.md','utf8');
 const retirement=fs.readFileSync('AVATAR_NORMALIZER_RETIREMENT.md','utf8');
 const normalizerStub=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8');
 
@@ -34,18 +36,19 @@ assert.ok(client.includes('data-shop-slot="character"'),'student shop must retai
 assert.ok(client.includes('data-shop-slot="outfit"'),'student shop must expose one-piece outfit category');
 assert.ok(client.includes('data-shop-slot="pet"'),'student shop must expose pet category');
 
-// Final production contract: assets are pre-aligned on the fixed 256x256 canvas.
-// Outfit alignment is based on the base character neck/sole lines and clothing coverage,
-// not whole-image bounds or runtime alpha analysis.
-assert.ok(itemSpec.includes('런타임 자동 픽셀 분석·Canvas 재생성·PNG data URL 변환은 금지한다'),'runtime pixel normalization must remain prohibited');
-assert.ok(itemSpec.includes('0,0에 그대로 겹치기만 한다'),'finished production PNGs must render directly at 0,0');
-assert.ok(retirement.includes('neck line and sole line'),'outfit production must use neck and sole anchors');
+// Final production contract. Verify durable concepts instead of one exact prose sentence.
+for(const token of ['256×256','목선','발바닥선','기본 의상','must-cover','0,0']){
+  assert.ok(itemSpec.includes(token),`avatar item spec missing final production concept: ${token}`);
+}
+assert.ok(itemSpec.includes('런타임 자동 픽셀 분석')&&itemSpec.includes('금지한다'),'runtime pixel normalization must remain prohibited');
+assert.ok(direction.includes('목선')&&direction.includes('발바닥선')&&direction.includes('must-cover'),'top-level production direction must use neck/sole/must-cover alignment');
+assert.ok(direction.includes('외부 장식')&&direction.includes('정렬'),'external decorations must be excluded from body alignment');
+assert.ok(retirement.includes('neck line and sole line'),'retirement contract must preserve neck and sole anchors');
 assert.ok(retirement.includes('fully cover the default clothing silhouette'),'outfits must cover the base clothing silhouette');
 assert.ok(retirement.includes('do not participate in alignment calculations'),'external decorations must not affect alignment');
-assert.ok(retirement.includes('Runtime performs no alpha-bound scan'),'runtime alpha-bound scanning must remain retired');
-assert.ok(!normalizerStub.includes('getImageData'),'compatibility stub must not scan pixels');
-assert.ok(!normalizerStub.includes('MutationObserver'),'compatibility stub must not observe/rewrite runtime images');
-assert.ok(!normalizerStub.includes('toDataURL'),'compatibility stub must not rewrite PNGs as data URLs');
+assert.ok(!normalizerStub.includes('getImageData')&&!normalizerStub.includes('MutationObserver')&&!normalizerStub.includes('toDataURL'),'compatibility stub must perform no runtime pixel rewriting');
+assert.ok(!variants.includes('avatar-auto-normalize-v1.js'),'base variant gate must not load retired normalizer');
+assert.ok(!index.includes('avatar-auto-normalize-v1.js'),'student runtime must not load retired normalizer');
 assert.ok(contract.includes('transform:none!important'),'manual item-specific transforms must remain removed');
 
 console.log('student production avatar benchmark contract selftest passed');
