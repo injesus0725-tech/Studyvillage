@@ -6,8 +6,8 @@
 (()=>{
   const MASTER_SIZE=256;
   const RULES={
-    outfit:{centerX:128,bottomY:246,maxHeight:176,maxWidth:248},
-    pet:{centerX:188,bottomY:246,maxHeight:112,maxWidth:96}
+    outfit:{centerX:128,bottomY:246,maxHeight:180,maxWidth:248},
+    pet:{centerX:180,bottomY:246,maxHeight:112,maxWidth:96}
   };
   const processed=new WeakMap();
 
