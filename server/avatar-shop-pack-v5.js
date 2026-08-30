@@ -1,47 +1,66 @@
 export const avatarShopPackV5=Object.freeze({
   'hair-flame-red':{name:'불꽃빛 머리',slot:'hair',price:24},
   'hair-lavender-bob':{name:'라벤더 단발머리',slot:'hair',price:22},
-  'hat-frog-hood':{name:'개구리 후드',slot:'hat',price:24},
-  'hat-knight-mini':{name:'꼬마 기사 투구',slot:'hat',price:30},
-  'glasses-lightning':{name:'번개 안경',slot:'glasses',price:18},
-  'outfit-adventure-red':{name:'빨간 모험가 상의',slot:'outfit',price:26},
-  'outfit-mage-blue':{name:'파란 견습 마법사 옷',slot:'outfit',price:30},
-  'bottom-adventure-brown':{name:'갈색 모험 바지',slot:'bottom',price:22},
-  'shoes-trail-orange':{name:'주황 탐험화',slot:'shoes',price:20},
-  'bag-treasure':{name:'작은 보물 가방',slot:'bag',price:28},
-  'hand-shield':{name:'나무 방패',slot:'hand',price:24},
-  'hand-crystal':{name:'빛나는 수정',slot:'hand',price:26},
+  'outfit-adventure-red':{name:'붉은 모험가 세트',slot:'outfit',price:34},
+  'outfit-mage-blue':{name:'푸른 견습 마법사 세트',slot:'outfit',price:38},
   'pet-fennec':{name:'사막여우 친구',slot:'pet',price:42},
   'pet-baby-wolf':{name:'아기 늑대 친구',slot:'pet',price:44},
-  'pet-moon':{name:'달빛 친구',slot:'pet',price:40}
-  ,'hand-balloon':{name:'하늘 풍선',slot:'hand',price:18}
-  ,'hand-candy-cane':{name:'별무늬 사탕',slot:'hand',price:12}
-  ,'hand-lollipop':{name:'무지개 막대사탕',slot:'hand',price:14}
-  ,'hand-flower-bouquet':{name:'작은 꽃다발',slot:'hand',price:18}
-  ,'hand-village-flag':{name:'학습마을 깃발',slot:'hand',price:20}
-  ,'hand-bubble-wand':{name:'비눗방울 막대',slot:'hand',price:16}
-  ,'hand-lantern':{name:'별빛 등불',slot:'hand',price:24}
-  ,'hand-umbrella':{name:'하늘색 우산',slot:'hand',price:22}
-  ,'hand-trophy':{name:'황금 트로피',slot:'hand',price:35}
-  ,'hand-guitar':{name:'작은 기타',slot:'hand',price:30}
-  ,'hand-star-cookie':{name:'별 쿠키',slot:'hand',price:10}
-  ,'hand-magic-orb':{name:'마법 구슬',slot:'hand',price:32}
-  ,'pet-unicorn':{name:'꼬마 유니콘',slot:'pet',price:55}
-  ,'pet-robot':{name:'미니 로봇',slot:'pet',price:48}
-  ,'pet-smile-cloud':{name:'미소 구름',slot:'pet',price:38}
-  ,'pet-friendly-ghost':{name:'꼬마 유령',slot:'pet',price:36}
-  ,'pet-sprout':{name:'새싹 친구',slot:'pet',price:28}
-  ,'pet-baby-seal':{name:'아기 물범',slot:'pet',price:44}
-  ,'pet-red-panda':{name:'레서판다 친구',slot:'pet',price:46}
-  ,'pet-phoenix':{name:'불꽃새 친구',slot:'pet',price:58}
-  ,'pet-octopus':{name:'꼬마 문어',slot:'pet',price:40}
-  ,'pet-side-heart':{name:'두근두근 하트',slot:'pet',price:20}
-  ,'pet-side-music':{name:'신나는 음표',slot:'pet',price:20}
-  ,'pet-side-wow':{name:'깜짝 느낌표',slot:'pet',price:18}
-  ,'pet-side-cheer':{name:'파이팅 말풍선',slot:'pet',price:22}
-  ,'pet-side-fire':{name:'열정 불꽃',slot:'pet',price:24}
-  ,'pet-side-rainbow':{name:'행운 무지개',slot:'pet',price:28}
-  ,'pet-side-sparkle':{name:'반짝 별무리',slot:'pet',price:26}
-  ,'pet-side-thumbs':{name:'최고 엄지',slot:'pet',price:22}
-  ,'pet-side-question':{name:'궁금한 물음표',slot:'pet',price:18}
+  'pet-moon':{name:'달빛 친구',slot:'pet',price:40},
+  'pet-unicorn':{name:'꼬마 유니콘',slot:'pet',price:55},
+  'pet-robot':{name:'미니 로봇',slot:'pet',price:48},
+  'pet-smile-cloud':{name:'미소 구름',slot:'pet',price:38},
+  'pet-friendly-ghost':{name:'꼬마 유령',slot:'pet',price:36},
+  'pet-sprout':{name:'새싹 친구',slot:'pet',price:28},
+  'pet-baby-seal':{name:'아기 물범',slot:'pet',price:44},
+  'pet-red-panda':{name:'레서판다 친구',slot:'pet',price:46},
+  'pet-phoenix':{name:'불꽃새 친구',slot:'pet',price:58},
+  'pet-octopus':{name:'꼬마 문어',slot:'pet',price:40},
+  'pet-side-heart':{name:'두근두근 하트',slot:'pet',price:20},
+  'pet-side-music':{name:'신나는 음표',slot:'pet',price:20},
+  'pet-side-wow':{name:'깜짝 느낌표',slot:'pet',price:18},
+  'pet-side-cheer':{name:'파이팅 말풍선',slot:'pet',price:22},
+  'pet-side-fire':{name:'열정 불꽃',slot:'pet',price:24},
+  'pet-side-rainbow':{name:'행운 무지개',slot:'pet',price:28},
+  'pet-side-sparkle':{name:'반짝 별무리',slot:'pet',price:26},
+  'pet-side-thumbs':{name:'최고 엄지',slot:'pet',price:22},
+  'pet-side-question':{name:'궁금한 물음표',slot:'pet',price:18},
+
+  'hair-choco-wave':{name:'초코 웨이브',slot:'hair',price:18},
+  'hair-honey-short':{name:'꿀빛 숏컷',slot:'hair',price:18},
+  'hair-berry-bob':{name:'베리 단발',slot:'hair',price:20},
+  'hair-mint-wave':{name:'민트 웨이브',slot:'hair',price:22},
+  'hair-night-short':{name:'밤하늘 숏컷',slot:'hair',price:22},
+  'hair-rose-pony':{name:'장미 포니테일',slot:'hair',price:24},
+  'hair-silver-wave':{name:'은빛 웨이브',slot:'hair',price:26},
+  'hair-sky-bob':{name:'하늘 단발',slot:'hair',price:24},
+
+  'outfit-campus-navy':{name:'캠퍼스 네이비 세트',slot:'outfit',price:28},
+  'outfit-hoodie-mint':{name:'민트 후드 세트',slot:'outfit',price:30},
+  'outfit-sport-sky':{name:'하늘 체육 세트',slot:'outfit',price:28},
+  'outfit-overall-yellow':{name:'노랑 멜빵 세트',slot:'outfit',price:30},
+  'outfit-raincoat':{name:'병아리 우비 세트',slot:'outfit',price:34},
+  'outfit-pajama-bear':{name:'곰돌이 잠옷 세트',slot:'outfit',price:36},
+  'outfit-cat-hood':{name:'고양이 후드 세트',slot:'outfit',price:38},
+  'outfit-dino-hood':{name:'공룡 후드 세트',slot:'outfit',price:40},
+  'outfit-chef':{name:'꼬마 요리사 세트',slot:'outfit',price:38},
+  'outfit-scientist':{name:'호기심 과학자 세트',slot:'outfit',price:40},
+  'outfit-artist':{name:'알록달록 화가 세트',slot:'outfit',price:38},
+  'outfit-detective':{name:'마을 탐정 세트',slot:'outfit',price:42},
+  'outfit-soccer':{name:'스타 축구선수 세트',slot:'outfit',price:42},
+  'outfit-rockstar':{name:'기타 스타 세트',slot:'outfit',price:48},
+  'outfit-ninja':{name:'밤빛 닌자 세트',slot:'outfit',price:50},
+  'outfit-knight-sword':{name:'은빛 기사 세트',slot:'outfit',price:55},
+  'outfit-wizard-wand':{name:'별빛 마법사 세트',slot:'outfit',price:55},
+  'outfit-space':{name:'우주 탐험대 세트',slot:'outfit',price:58},
+  'outfit-prince':{name:'별나라 왕자 세트',slot:'outfit',price:52},
+  'outfit-princess':{name:'별나라 공주 세트',slot:'outfit',price:52},
+
+  'pet-side-flower':{name:'살랑 꽃잎',slot:'pet',price:22},
+  'pet-side-snow':{name:'소복 눈송이',slot:'pet',price:24},
+  'pet-side-lightning':{name:'찌릿 번개',slot:'pet',price:24},
+  'pet-side-crown':{name:'반짝 왕관',slot:'pet',price:26},
+  'pet-side-stars':{name:'별빛 반짝이',slot:'pet',price:28},
+  'pet-side-confetti':{name:'축하 꽃가루',slot:'pet',price:28},
+  'pet-side-bubble':{name:'몽글 비눗방울',slot:'pet',price:24},
+  'pet-side-moonstar':{name:'달과 별',slot:'pet',price:30}
 });
