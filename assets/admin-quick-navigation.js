@@ -14,7 +14,8 @@
     ['활동 도전(매일)',()=>document.querySelector('#attempt-policy-panel')],
     ['별 지급·관리',()=>document.querySelector('#admin-star-panel')],
     ['아이템·상점',()=>document.querySelector('#shop-admin-panel')],
-    ['문제 관리',()=>panelByTitle('문제')],
+    ['단원 출제',()=>document.querySelector('#question-catalog-panel')],
+    ['문제 수정',()=>document.querySelector('#question-editor-panel')||panelByTitle('문제')],
     ['접속 학생',()=>panelByTitle('접속')],
     ['오류 기록',()=>[...app.querySelectorAll('.panel')].find(p=>/오류|진단/.test(p.querySelector('h2')?.textContent||''))],
     ['백업·복원',()=>panelByTitle('백업과 복원')]

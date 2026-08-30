@@ -17,6 +17,7 @@ assert.ok(admin.includes("audience.title='관리자 인증이 만료되었습니
 assert.ok(!admin.includes("s.src='admin-activity-state.js'"),'실시간 방송 스크립트가 활동 상태 스크립트를 다시 불러오면 안 됩니다.');
 assert.strictEqual((adminHtml.match(/<script src="admin-activity-state\.js"><\/script>/g)||[]).length,0,'폐기한 활동 열기·닫기 화면을 관리자 HTML에서 다시 불러오면 안 됩니다.');
 assert.ok(adminHtml.includes('assets/admin-question-catalog.js'),'관리자 화면은 배운 단원 출제 관리 메뉴를 불러와야 합니다.');
+assert.ok(adminHtml.includes('id="question-catalog-panel"')&&adminHtml.includes('배운 단원 출제 관리'),'단원 출제 메뉴의 기본 틀은 스크립트 실행 전에도 보여야 합니다.');
 assert.ok(student.includes('/api/live-events'),'학생 화면은 실시간 메시지를 서버에서 받아야 합니다.');
 assert.ok(!/setInterval\([^,]+,\s*(?:[0-9]{1,3}|1000)\)/.test(student),'학생 실시간 메시지 확인을 1초 이하로 과도하게 반복하면 안 됩니다.');
 assert.ok(/function resumeFromLatest\(\)\{[^}]*cursor=null;[^}]*start\(true\)/.test(student),'재연결 시 지난 방송을 다시 받지 않도록 최신 위치부터 시작해야 합니다.');
