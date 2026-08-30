@@ -7,9 +7,9 @@ for(const token of [
   'const checked=validateAttemptPolicyMap(raw)',
   "const withDailyReset=policy=>",
   "normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'}",
-  "Object.entries(checked.policies).map(([id,policy])=>{const normalized=withDailyReset(policy)",
+  "Object.entries(checked.policies).filter(([id])=>!RETIRED_ACTIVITY_IDS.has(id)).map(([id,policy])=>{const normalized=withDailyReset(policy)",
   "REPEAT_XP_ACTIVITIES.has(id)?{...normalized,xpMode:'every-attempt'}:normalized",
-  "'riddle-demo':Object.freeze({mode:'limited',limit:1",
+  "RETIRED_ACTIVITY_IDS=new Set(['riddle-demo','exploration-social','exploration-science'])",
   "'library-vocabulary':Object.freeze({mode:'limited',limit:1",
   "'math-arithmetic':Object.freeze({mode:'limited',limit:3",
   "'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt'",
@@ -18,6 +18,7 @@ for(const token of [
   'if(!checked.ok)return res.status(400)',
   'setSetting(STORE_KEY,JSON.stringify(checked.policies))'
 ])assert.ok(settings.includes(token),`activity attempt settings guard missing: ${token}`);
+for(const retired of ["'riddle-demo':Object.freeze","'exploration-social':Object.freeze","'exploration-science':Object.freeze"])assert.ok(!settings.includes(retired),`retired active policy returned: ${retired}`);
 for(const token of [
   'const MAX_LIMIT=1000',
   "const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/",
