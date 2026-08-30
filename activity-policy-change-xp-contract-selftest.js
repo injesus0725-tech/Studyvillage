@@ -20,26 +20,27 @@ const decisionAt=tx.search(/latestDecision\s*=\s*evaluateWithExtra/),gainAt=tx.s
 assert.ok(decisionAt>=0&&gainAt>decisionAt,'XP decision must come from latest policy evaluation');
 assert.ok(writeAt>gainAt,'XP amount must be decided before player XP write');
 
-// Every core learning completion that the teacher authorizes must remain reward-bearing.
-// A saved legacy first-completion value must never turn an increased attempt limit into 0 XP.
-for(const activityId of ['riddle-demo','library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random']){
+// Every active core learning completion that the teacher authorizes must remain reward-bearing.
+// Retired standalone riddle/social/science exploration policies must not be normalized back into the admin UI.
+for(const activityId of ['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math','exploration-random']){
   assert.ok(settings.includes(`'${activityId}'`),`core reward activity missing: ${activityId}`);
 }
-assert.match(settings,/REPEAT_XP_ACTIVITIES=new Set\(\['riddle-demo','library-vocabulary'/,'riddle-demo must be protected from legacy first-completion saves');
+assert.match(settings,/REPEAT_XP_ACTIVITIES=new Set\(\['library-vocabulary','math-arithmetic'/,'active repeat-XP activities must be protected from legacy first-completion saves');
+assert.match(settings,/RETIRED_ACTIVITY_IDS=new Set\(\['riddle-demo','exploration-social','exploration-science'\]\)/,'retired standalone and subject explorations must stay filtered from saved policies');
+for(const retired of ["'riddle-demo':Object.freeze","'exploration-social':Object.freeze","'exploration-science':Object.freeze"])assert.ok(!settings.includes(retired),`retired active policy returned: ${retired}`);
 assert.match(settings,/REPEAT_XP_ACTIVITIES\.has\(id\)\?\{\.\.\.normalized,xpMode:'every-attempt'\}/,'saved core policies must be normalized to every-attempt rewards');
 assert.match(settings,/'curriculum-integrated':Object\.freeze\(\{mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'\}\)/,'integrated curriculum must never fall back to first-completion-only XP');
 
-// The legacy riddle save path is separate from the generic activity route. It must obey
-// the same every-authorized-attempt reward rule, including teacher-granted extra attempts.
-assert.match(riddle,/const awardXp=newAttempts>0&&\(policy\.xpMode==='every-attempt'\|\|latestPeriodAttempts===0\)/,'riddle XP must follow the normalized every-attempt policy');
-assert.match(riddle,/const starReward=newAttempts>0&&commitRiddleReward\?commitRiddleReward/,'every newly completed riddle attempt must reach star reward commit');
-assert.match(riddle,/consumeExtraAttempts\([\s\S]*?'수수께끼 추가 도전 사용'/,'teacher-granted riddle attempts must be consumed without disabling rewards');
+// The old riddle persistence path is retained only for compatibility with historical/stale sessions.
+// If such a session is accepted, duplicate XP/star writes must still remain internally safe.
+assert.match(riddle,/const awardXp=newAttempts>0&&\(policy\.xpMode==='every-attempt'\|\|latestPeriodAttempts===0\)/,'legacy riddle persistence must keep its reward guard');
+assert.match(riddle,/const starReward=newAttempts>0&&commitRiddleReward\?commitRiddleReward/,'legacy riddle persistence must keep idempotent star commit wiring');
 
 // Stars have no daily earning-total cap. Reward commits are deduplicated per submission/attempt,
 // not by a per-day total. MAX_STARS is only an unreachable balance-corruption safety ceiling.
 assert.ok(!/DAILY_(?:MAX|CAP|LIMIT)_[A-Z_]*STAR|dailyStar(?:Cap|Limit|Maximum)|starsToday(?:Cap|Limit|Maximum)/i.test(stars),'star ledger must not introduce a daily total earning cap');
 assert.match(stars,/prior=db\.prepare\('SELECT after_value AS balance FROM star_ledger WHERE player_name=\? AND kind=\? AND reference_id=\? LIMIT 1'\)/,'activity stars must deduplicate by submission reference, not daily total');
-assert.match(stars,/const stars=riddleStarsFor\(score\),before=player\.stars,after=before\+stars/,'riddle stars must be calculated for each distinct completed attempt');
+assert.match(stars,/const stars=riddleStarsFor\(score\),before=player\.stars,after=before\+stars/,'legacy riddle star writes must remain idempotent for historical attempts');
 
 // Retried network submissions may return the cached result, but must not award twice.
 const cachedAt=src.indexOf('cachedSubmission(name,activityId,submissionId)'),txAt=src.indexOf('db.transaction(()=>{');
