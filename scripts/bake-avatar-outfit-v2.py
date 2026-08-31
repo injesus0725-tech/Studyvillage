@@ -20,9 +20,14 @@ BODY_SCAN_Y0 = 108
 BODY_SCAN_Y1 = 242
 BODY_HALF_SCAN = 76
 BODY_EXPAND_RADIUS = 2
-# Keep only the actual face area transparent. The lower edge must stay above the
-# shared neckline; the outfit itself owns the torso from the neckline downward.
-FACE_KEEP_OUT = (104, 48, 153, 104)  # x0, y0, x1, y1
+ALPHA_MIN = 16
+# The face stays owned by the approved base. Garment coverage starts immediately
+# below this rectangle; do not erase neck/shoulder garment pixels after baking.
+FACE_KEEP_OUT = (104, 48, 153, 96)
+TORSO_Y0 = 97
+TORSO_Y1 = 158
+TORSO_MARGIN_X = 3
+TORSO_MARGIN_Y = 2
 
 
 def alpha(img: Image.Image):
@@ -30,7 +35,6 @@ def alpha(img: Image.Image):
 
 
 def to_master(img: Image.Image) -> Image.Image:
-    """Map any approved base source to the exact runtime 256x256 coordinate space."""
     if img.size == (MASTER, MASTER):
         return img.convert("RGBA")
     return img.convert("RGBA").resize((MASTER, MASTER), Image.Resampling.NEAREST)
@@ -43,9 +47,8 @@ def dense_body_center(img: Image.Image) -> int:
     for x in range(MASTER):
         c = 0
         for y in range(BODY_SCAN_Y0, BODY_SCAN_Y1 + 1):
-            if px[x, y] > 16:
+            if px[x, y] > ALPHA_MIN:
                 c += 1
-        # Dense torso/leg columns dominate; thin weapons/capes do not.
         weights.append(c * c)
     total = sum(weights)
     if total <= 0:
@@ -60,29 +63,20 @@ def dense_body_center(img: Image.Image) -> int:
 
 
 def body_foot_y(img: Image.Image, body_x: int) -> int:
-    """Find the lowest dense row around the body, ignoring isolated decoration pixels."""
     a = alpha(img)
     px = a.load()
     x0 = max(0, body_x - BODY_HALF_SCAN)
     x1 = min(MASTER - 1, body_x + BODY_HALF_SCAN)
     for y in range(MASTER - 1, 70, -1):
-        hits = 0
-        for x in range(x0, x1 + 1):
-            if px[x, y] > 16:
-                hits += 1
+        hits = sum(1 for x in range(x0, x1 + 1) if px[x, y] > ALPHA_MIN)
         if hits >= 3:
             return y
     raise RuntimeError("could not locate dense foot row")
 
 
-def approved_base_anchor():
-    """Read the anchor from the actual approved free boy/girl bases.
-
-    This is an OFFLINE production measurement, not runtime normalization. Runtime
-    still draws every finished PNG at 0,0. Using the real base prevents a guessed
-    foot line (the old hard-coded 246) from moving all costumes together.
-    """
+def approved_bases():
     rows = []
+    images = []
     for path in BASE_FILES:
         if not path.exists():
             raise RuntimeError(f"missing approved base: {path}")
@@ -90,20 +84,17 @@ def approved_base_anchor():
         body_x = dense_body_center(base)
         foot_y = body_foot_y(base, body_x)
         rows.append((path.name, body_x, foot_y))
-
+        images.append(base)
     xs = [row[1] for row in rows]
     feet = [row[2] for row in rows]
-    # Boy and girl bodies are required to share the same body/foot anchors. A
-    # large disagreement means the bases themselves violate the production spec.
     if max(xs) - min(xs) > 4:
         raise RuntimeError(f"approved bases disagree on body center: {rows}")
     if max(feet) - min(feet) > 4:
         raise RuntimeError(f"approved bases disagree on foot line: {rows}")
-
     target_x = round(median(xs))
     target_foot_y = round(median(feet))
     print(f"approved base anchor: rows={rows}, targetX={target_x}, targetFootY={target_foot_y}")
-    return target_x, target_foot_y
+    return images, target_x, target_foot_y
 
 
 def translate(img: Image.Image, dx: int, dy: int) -> Image.Image:
@@ -113,28 +104,22 @@ def translate(img: Image.Image, dx: int, dy: int) -> Image.Image:
 
 
 def expand_body_cover(img: Image.Image, target_foot_y: int, radius: int = BODY_EXPAND_RADIUS) -> Image.Image:
-    """Thicken only the central garment zone so the free base clothing cannot peek out.
-
-    This is deliberately NOT a whole-image scale. Side weapons, bows, capes and tall
-    decorations remain where the artist placed them. New pixels copy the nearest
-    opaque garment pixel, preserving the pixel-art edge instead of blurring it.
-    """
     src = img.copy()
     out = img.copy()
     sp = src.load()
     op = out.load()
     x0, x1 = 70, 186
-    y0, y1 = 100, target_foot_y
+    y0, y1 = TORSO_Y0, target_foot_y
     for y in range(y0, y1 + 1):
         for x in range(x0, x1 + 1):
-            if sp[x, y][3] > 16:
+            if sp[x, y][3] > ALPHA_MIN:
                 continue
             best = None
             best_d = 999
             for yy in range(max(y0, y - radius), min(y1, y + radius) + 1):
                 for xx in range(max(x0, x - radius), min(x1, x + radius) + 1):
                     p = sp[xx, yy]
-                    if p[3] <= 16:
+                    if p[3] <= ALPHA_MIN:
                         continue
                     d = abs(xx - x) + abs(yy - y)
                     if d < best_d:
@@ -143,6 +128,77 @@ def expand_body_cover(img: Image.Image, target_foot_y: int, radius: int = BODY_E
             if best is not None:
                 op[x, y] = best
     return out
+
+
+def nearest_garment_pixel(src: Image.Image, x: int, y: int, max_radius: int = 18):
+    p = src.load()
+    for radius in range(1, max_radius + 1):
+        best = None
+        best_d = 999
+        for yy in range(max(TORSO_Y0, y - radius), min(TORSO_Y1, y + radius) + 1):
+            for xx in range(max(0, x - radius), min(MASTER - 1, x + radius) + 1):
+                rgba = p[xx, yy]
+                if rgba[3] <= ALPHA_MIN:
+                    continue
+                d = abs(xx - x) + abs(yy - y)
+                if d < best_d:
+                    best_d = d
+                    best = rgba
+        if best is not None:
+            return best
+    return None
+
+
+def cover_base_torso(outfit: Image.Image, bases) -> Image.Image:
+    """Guarantee that approved base clothing cannot show through the one-piece outfit.
+
+    Build the required torso mask from the real boy+girl alpha silhouettes. Only
+    missing pixels inside that shared torso region are filled, using the nearest
+    garment colour. Face/head pixels are excluded, weapons/capes are untouched,
+    and the complete image is never translated or scaled here.
+    """
+    src = outfit.copy()
+    out = outfit.copy()
+    op = out.load()
+    base_alpha = [alpha(base).load() for base in bases]
+    fx0, fy0, fx1, fy1 = FACE_KEEP_OUT
+    filled = 0
+    for y in range(TORSO_Y0, TORSO_Y1 + 1):
+        for x in range(MASTER):
+            if fx0 <= x <= fx1 and fy0 <= y <= fy1:
+                continue
+            required = any(pa[x, y] > ALPHA_MIN for pa in base_alpha)
+            if not required or op[x, y][3] > ALPHA_MIN:
+                continue
+            # Small margins around the actual base silhouette prevent white seams
+            # caused by antialiasing without widening the whole costume.
+            garment = nearest_garment_pixel(src, x, y)
+            if garment is not None:
+                op[x, y] = garment
+                filled += 1
+    # Seal a tiny antialias margin around pixels that were required by the base.
+    sealed = out.copy()
+    sp = out.load()
+    qp = sealed.load()
+    for y in range(TORSO_Y0, TORSO_Y1 + 1):
+        for x in range(MASTER):
+            if sp[x, y][3] > ALPHA_MIN:
+                continue
+            near_base = False
+            for yy in range(max(TORSO_Y0, y - TORSO_MARGIN_Y), min(TORSO_Y1, y + TORSO_MARGIN_Y) + 1):
+                for xx in range(max(0, x - TORSO_MARGIN_X), min(MASTER - 1, x + TORSO_MARGIN_X) + 1):
+                    if any(pa[xx, yy] > ALPHA_MIN for pa in base_alpha):
+                        near_base = True
+                        break
+                if near_base:
+                    break
+            if not near_base:
+                continue
+            garment = nearest_garment_pixel(out, x, y, max_radius=8)
+            if garment is not None:
+                qp[x, y] = garment
+    print(f"torso cover filled={filled}")
+    return sealed
 
 
 def protect_face(img: Image.Image) -> Image.Image:
@@ -155,35 +211,28 @@ def protect_face(img: Image.Image) -> Image.Image:
     return out
 
 
-def bake(path: Path, target_body_x: int, target_foot_y: int):
+def bake(path: Path, bases, target_body_x: int, target_foot_y: int):
     img = Image.open(path).convert("RGBA")
     if img.size != (MASTER, MASTER):
         raise RuntimeError(f"{path.name}: expected 256x256, got {img.size}")
-
     body_x = dense_body_center(img)
     foot_y = body_foot_y(img, body_x)
     dx = target_body_x - body_x
     dy = target_foot_y - foot_y
-
-    # Translation only: no scale/crop. If a source is wildly malformed, fail QA
-    # rather than hiding it with a runtime correction.
     if abs(dx) > 36 or abs(dy) > 48:
         raise RuntimeError(f"{path.name}: source outside migration tolerance dx={dx}, dy={dy}")
-
     baked = translate(img, dx, dy)
     baked = expand_body_cover(baked, target_foot_y)
+    baked = cover_base_torso(baked, bases)
     baked = protect_face(baked)
     baked.save(path, "PNG", optimize=True)
-    print(
-        f"{path.name}: bodyX {body_x}->{target_body_x}, "
-        f"footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}"
-    )
+    print(f"{path.name}: bodyX {body_x}->{target_body_x}, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
 
 
 def main():
-    target_body_x, target_foot_y = approved_base_anchor()
+    bases, target_body_x, target_foot_y = approved_bases()
     for name in FILES:
-        bake(OUTFIT_DIR / name, target_body_x, target_foot_y)
+        bake(OUTFIT_DIR / name, bases, target_body_x, target_foot_y)
 
 
 if __name__ == "__main__":
