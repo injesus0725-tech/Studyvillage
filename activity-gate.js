@@ -1,8 +1,12 @@
 /* v1.9 student activity gate.
    Teacher open/close state and configured attempt limits are checked before an activity starts.
    Existing checkpoints are preserved; repeated gate input is suppressed.
-   This file loads immediately before game.js, so required dialogue controls are created here first. */
+   This file loads immediately before game.js, so required startup controls are created here first. */
 (()=>{
+  const title=document.querySelector('#title-screen'),game=document.querySelector('#game-screen'),start=document.querySelector('#start-button'),name=document.querySelector('#player-name'),password=document.querySelector('#player-password');
+  const exposeLogin=()=>{if(!title||!start)return;if(!game?.classList.contains('active'))title.classList.add('active');start.hidden=false;start.style.pointerEvents='auto';start.removeAttribute('aria-disabled');if(start.textContent==='마을 입장')start.disabled=false;if(name)name.disabled=false;if(password)password.disabled=false};
+  exposeLogin();window.addEventListener('pageshow',()=>{if(!game?.classList.contains('active'))exposeLogin()});setTimeout(()=>{if(title?.classList.contains('active')&&start?.textContent==='마을 입장')exposeLogin()},1200);
+
   const dialogue=document.querySelector('#dialogue');
   if(dialogue&&!document.querySelector('#dialogue-next'))dialogue.innerHTML='<div class="dialogue-avatar">👩‍🏫</div><div class="dialogue-body"><strong id="dialogue-name">도우미 선생님</strong><p id="dialogue-text"></p></div><button id="dialogue-next" type="button">다음 ▶</button>';
 
