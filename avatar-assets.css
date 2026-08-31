@@ -14,6 +14,9 @@
    student-shop.js explicitly marks the base layer as shop-preview-head-only for outfits.
    Both head and outfit remain on exact 0,0 master coordinates. The base body is clipped
    before compositing, so it cannot leak behind transparent garment edges as a ghost. */
-.shop-preview-head-only{clip-path:inset(0 0 62.1% 0)!important;-webkit-clip-path:inset(0 0 62.1% 0)!important;overflow:hidden!important;transform:none!important}
+.shop-preview-head-only{clip-path:inset(0 0 65.3% 0)!important;-webkit-clip-path:inset(0 0 65.3% 0)!important;overflow:hidden!important;transform:none!important}
 .shop-wearable-preview .shop-preview-outfit{transform:none!important}
 .shop-preview-composite{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
+
+/* One shared 256x256 head/neck mask for every production one-piece renderer. */
+.sv-avatar-one-piece>.player-icon,.sv-avatar-one-piece>.preview-base,.sv-avatar-one-piece>.sv-rank-base,.sv-avatar-one-piece>.sv-profile-base,.sv-avatar-one-piece>.sv-exp2-base,.sv-avatar-one-piece>.shop-preview-base{clip-path:inset(0 0 65.3% 0)!important;-webkit-clip-path:inset(0 0 65.3% 0)!important;overflow:hidden!important}

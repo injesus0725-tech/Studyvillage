@@ -25,7 +25,7 @@ for(const id of ['character-boy-02','character-boy-03','character-boy-04','chara
 }
 for(const retiredHair of ['hair-short','hair-bob','hair-ponytail','hair-blue'])assert.ok(!catalog.includes(`'${retiredHair}'`),`standalone hair product must be retired: ${retiredHair}`);
 assert.ok(whole.includes("id:'student-boy'")&&whole.includes("id:'student-girl'"),'the two free basic bodies must remain');
-assert.ok(index.includes('avatar-renderer.js?v=20260831rpg13'),'avatar renderer cache version must be refreshed');
+assert.ok(index.includes('avatar-renderer.js?v=20260901rpg14'),'avatar renderer cache version must be refreshed');
 assert.ok(index.includes('avatar-base-variants-v1.js')&&index.includes('avatar-production-contract-v2.css'),'base production gate and production contract assets must load');
 assert.ok(!index.includes('avatar-auto-normalize-v1.js'),'runtime pixel scanning normalizer must stay disabled for classroom performance');
 assert.ok(contract.includes('transform:none!important'),'production contract must remove manual wearable transform corrections');
@@ -40,9 +40,9 @@ for(const rel of expected){const full=path.join(root,'assets/avatar-runtime',rel
 for(const name of ['silver-knight.png','star-mage.png','school-scientist.png','forest-archer.png','pirate-captain.png','moon-priest.png']){
   const rel=`production/shop-previews/${name}`,full=path.join(root,'assets/avatar-runtime',rel);
   assert.ok(fs.existsSync(full)&&fs.statSync(full).size>3000,`missing baked one-layer shop preview: ${rel}`);
-  assert.ok(renderer.includes(rel),`renderer missing baked one-layer shop preview: ${rel}`);
 }
-assert.ok(studentShop.includes("item.slot==='outfit'&&asset.previewSrc"),'production outfits must use one-layer shop previews');
+assert.ok(renderer.includes('onePiece:true'),'production outfits must use the shared one-piece head/neck mask');
+assert.ok(studentShop.includes("shop-preview-base shop-preview-head-only"),'student shop must use the shared head/neck mask');
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');
 assert.ok(!catalog.includes('avatarShopPackV4')&&!catalog.includes('avatarShopPackV5'),'production catalog must not merge temporary packs');
 assert.ok(studentShop.includes("item.slot==='character'"),'student shop must retain future base-character product support');
