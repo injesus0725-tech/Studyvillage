@@ -1,8 +1,11 @@
 from pathlib import Path
+from statistics import median
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTFIT_DIR = ROOT / "assets" / "avatar-runtime" / "production" / "outfits"
+RUNTIME_DIR = ROOT / "assets" / "avatar-runtime"
+OUTFIT_DIR = RUNTIME_DIR / "production" / "outfits"
+BASE_FILES = [RUNTIME_DIR / "base-boy-v2.png", RUNTIME_DIR / "base-girl-v2.png"]
 FILES = [
     "forest-archer.png",
     "moon-priest.png",
@@ -13,17 +16,24 @@ FILES = [
 ]
 
 MASTER = 256
-TARGET_BODY_X = 128
-TARGET_FOOT_Y = 246
 BODY_SCAN_Y0 = 108
 BODY_SCAN_Y1 = 242
 BODY_HALF_SCAN = 76
 BODY_EXPAND_RADIUS = 2
-FACE_KEEP_OUT = (104, 48, 153, 104)  # x0, y0, x1, y1; actual face remains visible
+# Keep only the actual face area transparent. The lower edge must stay above the
+# shared neckline; the outfit itself owns the torso from the neckline downward.
+FACE_KEEP_OUT = (104, 48, 153, 104)  # x0, y0, x1, y1
 
 
 def alpha(img: Image.Image):
     return img.getchannel("A")
+
+
+def to_master(img: Image.Image) -> Image.Image:
+    """Map any approved base source to the exact runtime 256x256 coordinate space."""
+    if img.size == (MASTER, MASTER):
+        return img.convert("RGBA")
+    return img.convert("RGBA").resize((MASTER, MASTER), Image.Resampling.NEAREST)
 
 
 def dense_body_center(img: Image.Image) -> int:
@@ -39,17 +49,18 @@ def dense_body_center(img: Image.Image) -> int:
         weights.append(c * c)
     total = sum(weights)
     if total <= 0:
-        return TARGET_BODY_X
+        return MASTER // 2
     acc = 0
     half = total / 2
     for x, w in enumerate(weights):
         acc += w
         if acc >= half:
             return x
-    return TARGET_BODY_X
+    return MASTER // 2
 
 
 def body_foot_y(img: Image.Image, body_x: int) -> int:
+    """Find the lowest dense row around the body, ignoring isolated decoration pixels."""
     a = alpha(img)
     px = a.load()
     x0 = max(0, body_x - BODY_HALF_SCAN)
@@ -61,7 +72,38 @@ def body_foot_y(img: Image.Image, body_x: int) -> int:
                 hits += 1
         if hits >= 3:
             return y
-    return TARGET_FOOT_Y
+    raise RuntimeError("could not locate dense foot row")
+
+
+def approved_base_anchor():
+    """Read the anchor from the actual approved free boy/girl bases.
+
+    This is an OFFLINE production measurement, not runtime normalization. Runtime
+    still draws every finished PNG at 0,0. Using the real base prevents a guessed
+    foot line (the old hard-coded 246) from moving all costumes together.
+    """
+    rows = []
+    for path in BASE_FILES:
+        if not path.exists():
+            raise RuntimeError(f"missing approved base: {path}")
+        base = to_master(Image.open(path))
+        body_x = dense_body_center(base)
+        foot_y = body_foot_y(base, body_x)
+        rows.append((path.name, body_x, foot_y))
+
+    xs = [row[1] for row in rows]
+    feet = [row[2] for row in rows]
+    # Boy and girl bodies are required to share the same body/foot anchors. A
+    # large disagreement means the bases themselves violate the production spec.
+    if max(xs) - min(xs) > 4:
+        raise RuntimeError(f"approved bases disagree on body center: {rows}")
+    if max(feet) - min(feet) > 4:
+        raise RuntimeError(f"approved bases disagree on foot line: {rows}")
+
+    target_x = round(median(xs))
+    target_foot_y = round(median(feet))
+    print(f"approved base anchor: rows={rows}, targetX={target_x}, targetFootY={target_foot_y}")
+    return target_x, target_foot_y
 
 
 def translate(img: Image.Image, dx: int, dy: int) -> Image.Image:
@@ -70,7 +112,7 @@ def translate(img: Image.Image, dx: int, dy: int) -> Image.Image:
     return out
 
 
-def expand_body_cover(img: Image.Image, radius: int = BODY_EXPAND_RADIUS) -> Image.Image:
+def expand_body_cover(img: Image.Image, target_foot_y: int, radius: int = BODY_EXPAND_RADIUS) -> Image.Image:
     """Thicken only the central garment zone so the free base clothing cannot peek out.
 
     This is deliberately NOT a whole-image scale. Side weapons, bows, capes and tall
@@ -82,7 +124,7 @@ def expand_body_cover(img: Image.Image, radius: int = BODY_EXPAND_RADIUS) -> Ima
     sp = src.load()
     op = out.load()
     x0, x1 = 70, 186
-    y0, y1 = 100, TARGET_FOOT_Y
+    y0, y1 = 100, target_foot_y
     for y in range(y0, y1 + 1):
         for x in range(x0, x1 + 1):
             if sp[x, y][3] > 16:
@@ -113,31 +155,35 @@ def protect_face(img: Image.Image) -> Image.Image:
     return out
 
 
-def bake(path: Path):
+def bake(path: Path, target_body_x: int, target_foot_y: int):
     img = Image.open(path).convert("RGBA")
     if img.size != (MASTER, MASTER):
         raise RuntimeError(f"{path.name}: expected 256x256, got {img.size}")
 
     body_x = dense_body_center(img)
     foot_y = body_foot_y(img, body_x)
-    dx = TARGET_BODY_X - body_x
-    dy = TARGET_FOOT_Y - foot_y
+    dx = target_body_x - body_x
+    dy = target_foot_y - foot_y
 
-    # Clamp migration correction. If an old source is wildly malformed, fail QA
-    # instead of silently shrinking/scaling the complete image.
-    if abs(dx) > 28 or abs(dy) > 32:
+    # Translation only: no scale/crop. If a source is wildly malformed, fail QA
+    # rather than hiding it with a runtime correction.
+    if abs(dx) > 36 or abs(dy) > 48:
         raise RuntimeError(f"{path.name}: source outside migration tolerance dx={dx}, dy={dy}")
 
     baked = translate(img, dx, dy)
-    baked = expand_body_cover(baked)
+    baked = expand_body_cover(baked, target_foot_y)
     baked = protect_face(baked)
     baked.save(path, "PNG", optimize=True)
-    print(f"{path.name}: bodyX {body_x}->{TARGET_BODY_X}, footY {foot_y}->{TARGET_FOOT_Y}, dx={dx}, dy={dy}")
+    print(
+        f"{path.name}: bodyX {body_x}->{target_body_x}, "
+        f"footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}"
+    )
 
 
 def main():
+    target_body_x, target_foot_y = approved_base_anchor()
     for name in FILES:
-        bake(OUTFIT_DIR / name)
+        bake(OUTFIT_DIR / name, target_body_x, target_foot_y)
 
 
 if __name__ == "__main__":
