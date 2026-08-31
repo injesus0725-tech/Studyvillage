@@ -1,33 +1,23 @@
-/* Full wardrobe alignment pass for the tiny 96x144 avatar canvas. */
-/* Hair was previously hidden by the temporary RPG unification layer. Show owned/equipped hair again. */
-.avatar-hair[data-avatar-item]:not([data-avatar-item=""]),.preview-hair[data-avatar-item]:not([data-avatar-item=""]),.shop-preview-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-profile-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-exp2-hair[data-avatar-item]:not([data-avatar-item=""]),.sv-rank-hair[data-avatar-item]:not([data-avatar-item=""]){display:block!important}
-[data-avatar-item^="hair-"] img,[data-avatar-item^="hair-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-1%) scale(1.02,.94)!important;transform-origin:center top!important}
-[data-avatar-item="hair-bob"] img,[data-avatar-item="hair-long"] img,[data-avatar-item="hair-shoulder-wave"] svg,[data-avatar-item="hair-lavender-bob"] svg{transform:translateY(1%) scale(1.01,.97)!important}
-[data-avatar-item="hair-ponytail"] img,[data-avatar-item="hair-braid"] svg,[data-avatar-item="hair-twintail"] svg{transform:translateY(-1%) scale(1.01,.96)!important}
-[data-avatar-item="hair-mohawk"] svg,[data-avatar-item="hair-spiky-brown"] svg,[data-avatar-item="hair-flame-red"] svg{transform:translateY(0) scale(.98,.95)!important}
-[data-avatar-item="hair-blue"] img,[data-avatar-item="hair-silver"] img,[data-avatar-item="hair-green"] svg{transform:translateY(0) scale(1.01,.95)!important}
-/* Bottoms now meet the torso around y=102 and finish before the shoe layer. */
-[data-avatar-item^="bottom-"] img,[data-avatar-item^="bottom-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-2%) scale(1,.98)!important;transform-origin:center bottom!important}
-[data-avatar-item="bottom-shorts"] img,[data-avatar-item="bottom-shorts-sport"] svg,[data-avatar-item="bottom-skirt"] svg,[data-avatar-item="bottom-skirt-navy"] svg{transform:translateY(-1%) scale(1,.98)!important}
-[data-avatar-item="bottom-cargo-khaki"] img,[data-avatar-item="bottom-jogger-gray"] svg,[data-avatar-item="bottom-adventure-brown"] svg{transform:translateY(-2.5%) scale(1.01,.99)!important}
-[data-avatar-item="bottom-leggings-black"] svg,[data-avatar-item="bottom-pants-black"] svg,[data-avatar-item="bottom-jeans"] svg{transform:translateY(-2%) scale(.99,1)!important}
-/* Shoes sit on the common foot line; remove the old -5% lift that caused ankle overlap. */
-[data-avatar-item^="shoes-"] img,[data-avatar-item^="shoes-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:translateY(-.5%) scale(1,.99)!important;transform-origin:center bottom!important}
-[data-avatar-item="shoes-boots"] img,[data-avatar-item="shoes-hightop-blue"] img,[data-avatar-item="shoes-trail-orange"] svg{transform:translateY(-1%) scale(1,.99)!important}
-[data-avatar-item="shoes-wing"] img{transform:translateY(-.5%) scale(.98,.98)!important}
-[data-avatar-item="shoes-slipon-yellow"] svg,[data-avatar-item="shoes-sneakers"] svg,[data-avatar-item="shoes-sneakers-red"] svg,[data-avatar-item="shoes-sneakers-black"] svg,[data-avatar-item="shoes-sneakers-green"] svg,[data-avatar-item="shoes-runners-purple"] svg{transform:translateY(0) scale(1,.98)!important}
-/* Uniform, wizard and guardian are not torso skins anymore. They are real full-body costumes.
-   Suppress separately equipped bottoms/shoes anywhere the avatar is rendered so the costume remains intact. */
-[data-avatar-item="outfit-uniform"] svg,[data-avatar-item="outfit-wizard"] svg,[data-avatar-item="outfit-armor"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
-#player:has(#player-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #player-bottom,
-#player:has(#player-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #player-shoes,
-.avatar-preview:has(#preview-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #preview-bottom,
-.avatar-preview:has(#preview-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) #preview-shoes,
-.sv-rank-avatar:has(.sv-rank-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) .sv-rank-bottom,
-.sv-rank-avatar:has(.sv-rank-outfit:is([data-avatar-item="outfit-uniform"],[data-avatar-item="outfit-wizard"],[data-avatar-item="outfit-armor"])) .sv-rank-shoes{display:none!important}
-/* Ranking thumbnails use the exact same full-body canvas instead of browser-default SVG sizes. */
+/*
+ * RETIRED 2026-08-31
+ *
+ * Production avatars are authored on the shared 256x256 master canvas and are
+ * rendered as exact 0,0 overlays. Per-item translate/scale corrections are
+ * forbidden because they make shop, wardrobe, village and ranking disagree.
+ * Keep only structural stacking rules needed by legacy containers.
+ */
+
+/* Separate hair is retired in the production model. */
+.avatar-hair,.preview-hair,.shop-preview-hair,.sv-profile-hair,.sv-exp2-hair,.sv-rank-hair{display:none!important}
+
+/* Ranking thumbnails use the same full canvas; no artwork transforms. */
 .sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;line-height:0!important}
-.sv-rank-avatar>span>img,.sv-rank-avatar>span>svg{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important}
-.sv-rank-base{z-index:1!important}.sv-rank-outfit{z-index:2!important}.sv-rank-bottom{z-index:3!important}.sv-rank-shoes{z-index:4!important}.sv-rank-hair{z-index:5!important}.sv-rank-bag{z-index:6!important}.sv-rank-hand{z-index:7!important}.sv-rank-pet{z-index:8!important}.sv-rank-hat{z-index:9!important}.sv-rank-glasses{z-index:10!important}
-/* Special complete characters use the same anatomical canvas and must not inherit wearable transforms. */
-[data-avatar-base^="character-boy-"] svg,[data-avatar-base^="character-girl-"] svg{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
+.sv-rank-avatar>span>img,.sv-rank-avatar>span>svg{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important;transform:none!important}
+.sv-rank-base{z-index:1!important}.sv-rank-outfit{z-index:2!important}.sv-rank-bottom{z-index:3!important}.sv-rank-shoes{z-index:4!important}.sv-rank-bag{z-index:6!important}.sv-rank-hand{z-index:7!important}.sv-rank-pet{z-index:8!important}
+
+/* Full-body production outfits and base variants are exact-canvas overlays. */
+[data-avatar-item^="outfit-"] img,[data-avatar-item^="outfit-"] svg,
+[data-avatar-base^="character-boy-"] img,[data-avatar-base^="character-boy-"] svg,
+[data-avatar-base^="character-girl-"] img,[data-avatar-base^="character-girl-"] svg{
+  width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important
+}
