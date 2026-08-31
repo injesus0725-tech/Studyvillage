@@ -1,5 +1,4 @@
 from pathlib import Path
-from statistics import median
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +15,8 @@ FILES = [
 ]
 
 MASTER = 256
-BODY_SCAN_Y0 = 108
-BODY_SCAN_Y1 = 242
-BODY_HALF_SCAN = 76
-ALPHA_MIN = 16
+TARGET_BODY_X = 128
+TARGET_FOOT_Y = 237
 # Production outfits own the body; the approved base owns the face/head opening.
 FACE_KEEP_OUT = (104, 48, 153, 96)
 
@@ -34,38 +31,11 @@ def to_master(img: Image.Image) -> Image.Image:
     return img.convert("RGBA").resize((MASTER, MASTER), Image.Resampling.NEAREST)
 
 
-def dense_body_center(img: Image.Image) -> int:
-    a = alpha(img)
-    px = a.load()
-    weights = []
-    for x in range(MASTER):
-        c = 0
-        for y in range(BODY_SCAN_Y0, BODY_SCAN_Y1 + 1):
-            if px[x, y] > ALPHA_MIN:
-                c += 1
-        weights.append(c * c)
-    total = sum(weights)
-    if total <= 0:
-        return MASTER // 2
-    acc = 0
-    half = total / 2
-    for x, w in enumerate(weights):
-        acc += w
-        if acc >= half:
-            return x
-    return MASTER // 2
-
-
-def body_foot_y(img: Image.Image, body_x: int) -> int:
-    a = alpha(img)
-    px = a.load()
-    x0 = max(0, body_x - BODY_HALF_SCAN)
-    x1 = min(MASTER - 1, body_x + BODY_HALF_SCAN)
-    for y in range(MASTER - 1, 70, -1):
-        hits = sum(1 for x in range(x0, x1 + 1) if px[x, y] > ALPHA_MIN)
-        if hits >= 3:
-            return y
-    raise RuntimeError("could not locate dense foot row")
+def visible_foot_y(img: Image.Image) -> int:
+    bbox = alpha(img).getbbox()
+    if not bbox:
+        raise RuntimeError("could not locate visible outfit pixels")
+    return bbox[3] - 1
 
 
 def approved_bases():
@@ -74,19 +44,15 @@ def approved_bases():
         if not path.exists():
             raise RuntimeError(f"missing approved base: {path}")
         base = to_master(Image.open(path))
-        body_x = dense_body_center(base)
-        foot_y = body_foot_y(base, body_x)
-        rows.append((path.name, body_x, foot_y))
-    xs = [row[1] for row in rows]
-    feet = [row[2] for row in rows]
-    if max(xs) - min(xs) > 4:
-        raise RuntimeError(f"approved bases disagree on body center: {rows}")
+        foot_y = visible_foot_y(base)
+        rows.append((path.name, foot_y))
+    feet = [row[1] for row in rows]
     if max(feet) - min(feet) > 4:
         raise RuntimeError(f"approved bases disagree on foot line: {rows}")
-    target_x = round(median(xs))
-    target_foot_y = round(median(feet))
-    print(f"approved base anchor: rows={rows}, targetX={target_x}, targetFootY={target_foot_y}")
-    return target_x, target_foot_y
+    if any(abs(foot - TARGET_FOOT_Y) > 1 for foot in feet):
+        raise RuntimeError(f"approved bases disagree with foot anchor {TARGET_FOOT_Y}: {rows}")
+    print(f"approved base anchor: rows={rows}, targetX={TARGET_BODY_X}, targetFootY={TARGET_FOOT_Y}")
+    return TARGET_FOOT_Y
 
 
 def translate(img: Image.Image, dx: int, dy: int) -> Image.Image:
@@ -105,7 +71,7 @@ def protect_face(img: Image.Image) -> Image.Image:
     return out
 
 
-def bake(path: Path, target_body_x: int, target_foot_y: int):
+def bake(path: Path, target_foot_y: int):
     """Anchor authored artwork only; never synthesize garment pixels.
 
     The previous migration pass copied nearest outfit colours into transparent
@@ -118,22 +84,24 @@ def bake(path: Path, target_body_x: int, target_foot_y: int):
     img = Image.open(path).convert("RGBA")
     if img.size != (MASTER, MASTER):
         raise RuntimeError(f"{path.name}: expected 256x256, got {img.size}")
-    body_x = dense_body_center(img)
-    foot_y = body_foot_y(img, body_x)
-    dx = target_body_x - body_x
+    foot_y = visible_foot_y(img)
+    # The approved source art is already authored around body X=128.  Swords,
+    # staffs, bows and capes are deliberately asymmetric, so alpha-derived X
+    # centering would move the body differently for every outfit.
+    dx = 0
     dy = target_foot_y - foot_y
     if abs(dx) > 36 or abs(dy) > 48:
         raise RuntimeError(f"{path.name}: source outside migration tolerance dx={dx}, dy={dy}")
     baked = translate(img, dx, dy)
     baked = protect_face(baked)
     baked.save(path, "PNG", optimize=True)
-    print(f"{path.name}: bodyX {body_x}->{target_body_x}, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
+    print(f"{path.name}: bodyX 128->128, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
 
 
 def main():
-    target_body_x, target_foot_y = approved_bases()
+    target_foot_y = approved_bases()
     for name in FILES:
-        bake(OUTFIT_DIR / name, target_body_x, target_foot_y)
+        bake(OUTFIT_DIR / name, target_foot_y)
 
 
 if __name__ == "__main__":

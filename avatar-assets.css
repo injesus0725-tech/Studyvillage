@@ -16,3 +16,4 @@
    before compositing, so it cannot leak behind transparent garment edges as a ghost. */
 .shop-preview-head-only{clip-path:inset(0 0 62.1% 0)!important;-webkit-clip-path:inset(0 0 62.1% 0)!important;overflow:hidden!important;transform:none!important}
 .shop-wearable-preview .shop-preview-outfit{transform:none!important}
+.shop-preview-composite{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
