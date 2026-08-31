@@ -9,16 +9,10 @@
 .sv-rank-avatar{width:72px!important;height:72px!important;border-radius:18px!important}.sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;line-height:0!important}.sv-rank-bag{z-index:1!important}.sv-rank-base{z-index:2}.sv-rank-face,.sv-rank-hair{z-index:3!important}.sv-rank-outfit,.sv-rank-bottom,.sv-rank-shoes{z-index:4!important}.sv-rank-expression{z-index:5!important}.sv-rank-hat,.sv-rank-glasses,.sv-rank-hand,.sv-rank-pet{z-index:6!important}
 .base-choice-preview,.item-part-preview{display:block!important;width:88px!important;height:88px!important;line-height:0!important}.base-choice-preview svg,.base-choice-preview img,.item-part-preview svg,.item-part-preview img{display:block;width:100%;height:100%;object-fit:contain}.player-label{top:80px!important}
 .shop-wearable-preview{position:relative!important;display:block!important;width:88px!important;height:88px!important;line-height:0!important}.shop-wearable-preview>i,.item-part-preview>i{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important}.shop-wearable-preview svg,.shop-wearable-preview img,.item-part-preview svg,.item-part-preview img{display:block;width:100%;height:100%;object-fit:contain}.shop-preview-base{z-index:1}.shop-preview-hair{z-index:2}.shop-preview-part{z-index:3}
-/* Production-shop composite contract, 2026-08-31.
-   One-piece outfit PNGs own the body from y=97 downward on the shared 256 master canvas.
-   The approved base is needed only for hair/face/head. Rendering the complete base under
-   the outfit exposes its old body around transparent outfit edges and looks like a grey
-   duplicate/ghost, especially after any layer translation. Therefore:
-   - never translate the outfit at runtime;
-   - keep both layers on exact 0,0 master coordinates;
-   - show only the head portion of the base in outfit shop previews.
-   97 / 256 = 37.89%, so clipping everything below 37.9% preserves the approved head
-   while preventing the base torso/legs from ever leaking around the outfit silhouette. */
-.shop-wearable-preview:has(.shop-preview-outfit){transform:none!important}
-.shop-wearable-preview:has(.shop-preview-outfit) .shop-preview-base{clip-path:inset(0 0 62.1% 0)!important}
+/* Production one-piece preview contract, 2026-08-31.
+   Do not rely on :has(): the classroom Samsung browser must receive the same result.
+   student-shop.js explicitly marks the base layer as shop-preview-head-only for outfits.
+   Both head and outfit remain on exact 0,0 master coordinates. The base body is clipped
+   before compositing, so it cannot leak behind transparent garment edges as a ghost. */
+.shop-preview-head-only{clip-path:inset(0 0 62.1% 0)!important;-webkit-clip-path:inset(0 0 62.1% 0)!important;overflow:hidden!important;transform:none!important}
 .shop-wearable-preview .shop-preview-outfit{transform:none!important}
