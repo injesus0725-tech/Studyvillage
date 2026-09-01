@@ -10,9 +10,12 @@ assert.equal(activityXpReward('vocabulary',100),335);
 assert.equal(activityXpReward('riddle',800),324);
 assert.equal(activityXpReward('riddle',1000),335);
 assert.equal(activityXpReward('vocabulary',80)*SEMESTER_REWARD_TARGET.activeDays*SEMESTER_REWARD_TARGET.averageActivitiesPerDay,131220);
+assert.equal(standardActivityStars('math-arithmetic',40),0);
 assert.equal(standardActivityStars('math-arithmetic',60),1);
-assert.equal(standardActivityStars('math-arithmetic',80),2);
+assert.equal(standardActivityStars('math-arithmetic',80),1);
 assert.equal(standardActivityStars('vocabulary',100),2);
-assert.equal(standardActivityStars('exploration-forest-riddle',100),0);
+assert.equal(standardActivityStars('exploration-forest-riddle',40),0);
+assert.equal(standardActivityStars('exploration-forest-riddle',60),1);
+assert.equal(standardActivityStars('exploration-forest-riddle',100),2);
 
 console.log('90-day Lv.70 semester reward economy contract self-test passed');
