@@ -47,8 +47,10 @@ assert.ok(renderer.includes('onePiece:true'),'production outfits must use the sh
 assert.ok(studentShop.includes("shop-preview-base shop-preview-head-only"),'student shop must use the shared head/neck mask');
 assert.ok(outfitBake.includes('FACE_KEEP_OUT = (104, 48, 153, 88)'),'outfit bake must preserve authored necklines from Y=89');
 assert.ok(previewBake.includes('HEAD_BOTTOM = 89'),'shop preview head mask must meet the authored neckline at Y=89');
-assert.ok(outfitBake.includes('SOURCE_X_ADJUST = {"silver-knight.png": -2}'),'silver knight source must align to the scientist X=128 visual baseline');
-assert.ok(outfitBake.includes('NECKLINE_RAISE = {"pirate-captain.png": 3}'),'pirate collar must match the scientist neck-length baseline');
+assert.ok(outfitBake.includes('TARGET_BODY_CENTROID = 128.0'),'mass-production outfits must share the scientist visual center');
+assert.ok(outfitBake.includes('def body_center_x'),'mass-production bake must measure the shared torso window');
+assert.ok(outfitBake.includes('step = round(TARGET_BODY_CENTROID - current_x)'),'mass-production bake must normalize X automatically');
+for(const itemSpecific of ['SOURCE_X_ADJUST','NECKLINE_RAISE'])assert.ok(!outfitBake.includes(itemSpecific),`item-specific correction must not remain: ${itemSpecific}`);
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');
 assert.ok(!catalog.includes('avatarShopPackV4')&&!catalog.includes('avatarShopPackV5'),'production catalog must not merge temporary packs');
 assert.ok(studentShop.includes("item.slot==='character'"),'student shop must retain future base-character product support');
