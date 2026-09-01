@@ -15,7 +15,8 @@ FILES = [
     "silver-knight.png",
     "star-mage.png",
 ]
-HEAD_BOTTOM = 97
+# The outfit owns the neckline from Y=89. Keep the base head above it only.
+HEAD_BOTTOM = 89
 
 
 def main() -> None:

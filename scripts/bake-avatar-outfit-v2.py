@@ -17,8 +17,10 @@ FILES = [
 MASTER = 256
 TARGET_BODY_X = 128
 TARGET_FOOT_Y = 237
-# Production outfits own the body; the approved base owns the face/head opening.
-FACE_KEEP_OUT = (104, 48, 153, 96)
+# Production outfits own the body and neckline; the approved base owns only
+# the face/head opening.  Clearing through Y=96 erased eight rows of authored
+# collars after the fixed -8 anchor translation and created a visible gap.
+FACE_KEEP_OUT = (104, 48, 153, 88)
 
 
 def alpha(img: Image.Image):

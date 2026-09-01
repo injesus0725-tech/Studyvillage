@@ -13,6 +13,8 @@ const whole=fs.readFileSync(path.join(root,'server/whole-character-catalog.js'),
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const contract=fs.readFileSync(path.join(root,'assets/avatar-production-contract-v2.css'),'utf8');
 const variants=fs.readFileSync(path.join(root,'assets/avatar-base-variants-v1.js'),'utf8');
+const outfitBake=fs.readFileSync(path.join(root,'scripts/bake-avatar-outfit-v2.py'),'utf8');
+const previewBake=fs.readFileSync(path.join(root,'scripts/build-avatar-shop-previews.py'),'utf8');
 
 for(const phrase of ['기본 캐릭터 변형 → 한벌 의상 → 효과 → 펫','체육관 / 보건실 / 3-1반 교실 / 급식실','마을 전체 그래픽 리디자인'])assert.ok(direction.includes(phrase),`production direction missing: ${phrase}`);
 for(const phrase of ['별도의 `hair` 상품은 더 이상 만들지 않는다','몸체 크기, 목·어깨 위치, 발 중앙, 캔버스 기준점을 완전히 동일하게 유지'])assert.ok(direction.includes(phrase),`base variant direction missing: ${phrase}`);
@@ -43,6 +45,8 @@ for(const name of ['silver-knight.png','star-mage.png','school-scientist.png','f
 }
 assert.ok(renderer.includes('onePiece:true'),'production outfits must use the shared one-piece head/neck mask');
 assert.ok(studentShop.includes("shop-preview-base shop-preview-head-only"),'student shop must use the shared head/neck mask');
+assert.ok(outfitBake.includes('FACE_KEEP_OUT = (104, 48, 153, 88)'),'outfit bake must preserve authored necklines from Y=89');
+assert.ok(previewBake.includes('HEAD_BOTTOM = 89'),'shop preview head mask must meet the authored neckline at Y=89');
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');
 assert.ok(!catalog.includes('avatarShopPackV4')&&!catalog.includes('avatarShopPackV5'),'production catalog must not merge temporary packs');
 assert.ok(studentShop.includes("item.slot==='character'"),'student shop must retain future base-character product support');
