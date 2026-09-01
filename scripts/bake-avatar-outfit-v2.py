@@ -5,6 +5,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_DIR = ROOT / "assets" / "avatar-runtime"
 OUTFIT_DIR = RUNTIME_DIR / "production" / "outfits"
+SOURCE_OUTFIT_DIR = RUNTIME_DIR / "production" / "sources" / "outfits"
 BASE_FILES = [RUNTIME_DIR / "base-boy-v2.png", RUNTIME_DIR / "base-girl-v2.png"]
 FILES = [
     "forest-archer.png",
@@ -110,29 +111,32 @@ def anatomical_top_y(img: Image.Image) -> int:
     return int(median(rows))
 
 
-def normalize_vertical_landmarks(img: Image.Image) -> Image.Image:
-    """Align collar/shoulders to Y=89 while keeping decoration top and feet fixed."""
-    source_y = anatomical_top_y(img)
-    if source_y <= TARGET_NECKLINE_Y:
+def normalize_uniform_body_scale(img: Image.Image) -> Image.Image:
+    """Fit neckline and feet with one uniform transform anchored at the feet.
+
+    Uniform scaling preserves the finished drawing. Unlike the retired split
+    warp, it cannot create a horizontal join through collars, capes, or armor.
+    """
+    source_neckline = anatomical_top_y(img)
+    if source_neckline <= TARGET_NECKLINE_Y + 1:
         return img
-    out = Image.new("RGBA", (MASTER, MASTER), (0, 0, 0, 0))
-    out.alpha_composite(img.crop((0, 0, MASTER, FIXED_DECORATION_TOP_Y)), (0, 0))
-    upper = img.crop((0, FIXED_DECORATION_TOP_Y, MASTER, source_y))
-    upper = upper.resize(
-        (MASTER, TARGET_NECKLINE_Y - FIXED_DECORATION_TOP_Y),
-        Image.Resampling.LANCZOS,
+    source_height = TARGET_FOOT_Y - source_neckline
+    target_height = TARGET_FOOT_Y - TARGET_NECKLINE_Y
+    scale = target_height / source_height
+    if not 0.90 <= scale <= 1.15:
+        raise RuntimeError(f"authored body scale outside template tolerance: {scale:.3f}")
+    inverse = 1.0 / scale
+    cx = TARGET_BODY_X
+    cy = TARGET_FOOT_Y
+    return img.transform(
+        (MASTER, MASTER),
+        Image.Transform.AFFINE,
+        (inverse, 0, cx - cx * inverse, 0, inverse, cy - cy * inverse),
+        Image.Resampling.BICUBIC,
     )
-    out.alpha_composite(upper, (0, FIXED_DECORATION_TOP_Y))
-    body = img.crop((0, source_y, MASTER, TARGET_FOOT_Y + 1))
-    body = body.resize(
-        (MASTER, TARGET_FOOT_Y - TARGET_NECKLINE_Y + 1),
-        Image.Resampling.LANCZOS,
-    )
-    out.alpha_composite(body, (0, TARGET_NECKLINE_Y))
-    return out
 
 
-def bake(path: Path, target_foot_y: int):
+def bake(source_path: Path, output_path: Path, target_foot_y: int):
     """Anchor authored artwork only; never synthesize garment pixels.
 
     The previous migration pass copied nearest outfit colours into transparent
@@ -142,9 +146,9 @@ def bake(path: Path, target_foot_y: int):
     clear only the face opening. No dilation, nearest-colour fill, or base-mask
     sealing is permitted here.
     """
-    img = Image.open(path).convert("RGBA")
+    img = Image.open(source_path).convert("RGBA")
     if img.size != (MASTER, MASTER):
-        raise RuntimeError(f"{path.name}: expected 256x256, got {img.size}")
+        raise RuntimeError(f"{source_path.name}: expected 256x256, got {img.size}")
     foot_y = visible_foot_y(img)
     # The approved source art is already authored around body X=128.  Swords,
     # staffs, bows and capes are deliberately asymmetric, so alpha-derived X
@@ -152,8 +156,10 @@ def bake(path: Path, target_foot_y: int):
     dy = target_foot_y - foot_y
     vertical = translate(img, 0, dy)
     vertical = protect_face(vertical)
-    vertical = normalize_vertical_landmarks(vertical)
+    vertical = normalize_uniform_body_scale(vertical)
     vertical = protect_face(vertical)
+    # Never split or non-uniformly warp a finished outfit. Production artwork
+    # gets at most one uniform, foot-anchored fit from its immutable source.
     measured_x = body_center_x(vertical)
     baked = vertical
     dx = 0
@@ -167,21 +173,22 @@ def bake(path: Path, target_foot_y: int):
         baked = protect_face(translate(baked, step, 0))
         dx += step
     if abs(dx) > 36 or abs(dy) > 48:
-        raise RuntimeError(f"{path.name}: source outside migration tolerance dx={dx}, dy={dy}")
+        raise RuntimeError(f"{source_path.name}: source outside migration tolerance dx={dx}, dy={dy}")
     final_x = body_center_x(baked)
     if abs(final_x - TARGET_BODY_CENTROID) > 0.75:
-        raise RuntimeError(f"{path.name}: body center failed standard template: {final_x:.2f}")
+        raise RuntimeError(f"{source_path.name}: body center failed standard template: {final_x:.2f}")
     final_top = anatomical_top_y(baked)
     if final_top > TARGET_NECKLINE_Y + 1:
-        raise RuntimeError(f"{path.name}: neckline/shoulder failed standard template: {final_top}")
-    baked.save(path, "PNG", optimize=True)
-    print(f"{path.name}: bodyCenter {measured_x:.2f}->{final_x:.2f}, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
+        raise RuntimeError(f"{source_path.name}: authored neckline misses template: {final_top}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    baked.save(output_path, "PNG", optimize=True)
+    print(f"{source_path.name}: bodyCenter {measured_x:.2f}->{final_x:.2f}, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
 
 
 def main():
     target_foot_y = approved_bases()
     for name in FILES:
-        bake(OUTFIT_DIR / name, target_foot_y)
+        bake(SOURCE_OUTFIT_DIR / name, OUTFIT_DIR / name, target_foot_y)
 
 
 if __name__ == "__main__":
