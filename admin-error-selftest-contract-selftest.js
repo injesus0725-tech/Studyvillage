@@ -1,0 +1,12 @@
+const fs=require('fs');
+const assert=require('assert');
+const src=fs.readFileSync('admin-error-selftest.js','utf8');
+const html=fs.readFileSync('admin.html','utf8');
+assert.ok(html.includes('<script src="admin-error-selftest.js"></script>'),'admin error self-test must load in admin UI');
+assert.ok(src.includes("request('/api/login'"),'self-test must create a temporary student session');
+assert.ok(src.includes("request('/api/error-report'"),'self-test must submit a real student error report');
+assert.ok(src.includes("request('/api/admin/errors'"),'self-test must verify the report through the admin API');
+assert.ok(src.includes("method:'DELETE'"),'self-test must remove its temporary student and error data');
+assert.ok(src.includes('reportId===reportId')&&src.includes("row.kind==='self-test'"),'self-test must verify the exact synthetic report');
+assert.ok(!src.includes('localStorage.setItem'),'self-test must not fake server persistence locally');
+console.log('admin error reporting self-test contract passed');
