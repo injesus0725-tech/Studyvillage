@@ -2,6 +2,8 @@ const fs=require('fs');
 const assert=require('assert');
 
 const html=fs.readFileSync('admin.html','utf8');
+assert.ok(html.includes('admin-shop-production.js?v=20260901production1')&&!html.includes('src="admin-shop.js'), '관리자 상점은 이전 파일 캐시를 우회하는 새 production 진입점을 사용해야 합니다.');
+assert.ok(JSON.parse(fs.readFileSync('package.json','utf8')).build.files.includes('admin-shop-production.js'),'휴대용 EXE에 새 관리자 상점 진입점을 포함해야 합니다.');
 const adminFiles=[...html.matchAll(/<script\s+src="([^"]+\.js)(?:\?[^"]*)?"/g)].map(m=>m[1]);
 const duplicates=adminFiles.filter((file,index)=>adminFiles.indexOf(file)!==index);
 assert.deepStrictEqual(duplicates,[],'admin.html must not load the same script more than once');

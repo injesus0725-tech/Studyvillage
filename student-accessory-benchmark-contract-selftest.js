@@ -16,8 +16,8 @@ const outfits=['outfit-silver-knight','outfit-star-mage-production','outfit-scho
 const pets=['pet-maltese-production','pet-toy-poodle-production','pet-corgi-production','pet-cheese-cat-production','pet-lop-rabbit-production','pet-baby-dragon-production'];
 
 for(const id of characters){
-  assert.ok(!catalog.includes(`'${id}'`),`unfinished base character must not be sold ${id}`);
-  assert.ok(!variants.includes(`'${id}'`),`unfinished base character must not be registered ${id}`);
+  assert.ok(catalog.includes(`'${id}'`),`approved complete-head character must be sold ${id}`);
+  assert.ok(variants.includes(`'${id}'`),`approved complete-head character must be registered ${id}`);
 }
 for(const id of outfits){
   assert.ok(catalog.includes(`'${id}'`),`production outfit catalog missing ${id}`);
@@ -32,7 +32,7 @@ for(const retired of ['leaf-cap','scholar-cap','explorer-goggles','star-monocle'
   assert.ok(!client.includes(`'${retired}'`),`retired accessory must not return to student shop: ${retired}`);
 }
 
-assert.ok(client.includes('data-shop-slot="character"'),'student shop must retain the future base character category');
+assert.ok(client.includes('data-shop-slot="character"'),'student shop must expose the production base character category');
 assert.ok(client.includes('data-shop-slot="outfit"'),'student shop must expose one-piece outfit category');
 assert.ok(client.includes('data-shop-slot="pet"'),'student shop must expose pet category');
 
