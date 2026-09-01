@@ -30,7 +30,7 @@ jobs:
       - name: Install Pillow
         run: python -m pip install --disable-pip-version-check pillow==11.3.0
 
-      - name: Bake six outfits to fixed neck-foot canvas
+      - name: Bake nine outfits to fixed neck-foot canvas
         run: python scripts/bake-avatar-outfit-v2.py
 
       - name: Confirm runtime normalizer is not loaded
@@ -41,15 +41,15 @@ jobs:
             exit 1
           fi
 
-      - name: Commit baked PNG test set
+      - name: Confirm or commit deterministic baked PNG set
         shell: bash
         run: |
           if git diff --quiet -- assets/avatar-runtime/production/outfits; then
-            echo "No PNG changes produced"
-            exit 1
+            echo "Baked PNGs already match the committed deterministic outputs"
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/avatar-runtime/production/outfits/*.png
-          git commit -m "Bake six outfits to fixed anchor spec"
+          git commit -m "Bake nine outfits to fixed anchor spec"
           git push origin HEAD:stabilize-touch-buildings-20260820
