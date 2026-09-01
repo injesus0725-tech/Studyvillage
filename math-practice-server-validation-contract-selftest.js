@@ -4,11 +4,13 @@ const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readF
 assert.ok(server.includes("ACTIVITY_ID='math-arithmetic'"),'math practice needs a stable activity id');
 assert.ok(server.includes('problems:problems.map((problem,index)=>({id:index+1,prompt:problem.prompt}))'),'server must never send answers with issued problems');
 assert.ok(server.includes('Number(answers[index])===problem.answer'),'server, not the student browser, must score answers');
+assert.ok(server.includes('Number.isFinite(Number(value))'),'server must accept bounded finite decimal answers');
 assert.ok(server.includes('row.authorizedScore=score'),'only a server-scored session may authorize record saving');
 assert.ok(activity.includes('validateActivityCompletion({name,activityId,score,submissionId})'),'shared activity saving must verify protected completion tokens');
 assert.ok(activity.includes('finalizeActivityCompletion({name,activityId,score,submissionId})'),'successful activity saving must consume the completion authorization');
 assert.ok(server.includes('!row.finalized'),'a finalized math session cannot authorize a second activity save');
-assert.ok(client.includes('inputmode="numeric"'),'tablet math answers should open a numeric keyboard');
+assert.ok(client.includes('inputmode="decimal"')&&client.includes('step="any"'),'tablet math answers must support decimal input');
+assert.ok(client.includes('Number.isFinite(value)')&&client.includes("alert('숫자를 입력해 주세요.')"),'student validation must accept finite decimals instead of requiring integers');
 assert.ok(client.includes('checkpoint().save(player(),ID,{sessionId,problems,index,answers})'),'math progress must preserve the issued route and typed answers');
 assert.ok(client.includes("activity-attempt-status/'+ID"),'math practice must check teacher attempt limits before starting');
 assert.ok(building.includes("action:'math'"),'the school interior must open math practice');
