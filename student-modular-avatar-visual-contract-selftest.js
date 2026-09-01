@@ -10,7 +10,7 @@ for(const slot of ['outfit','pet']){
 }
 assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png")&&renderer.includes("function defaultHair(){return''}"),'existing default male/female faces and hair must remain part of the base body art');
 assert.ok(!variants.includes('character-boy-02')&&!variants.includes('character-girl-02'),'unfinished purchasable base variants must not be registered');
-assert.ok(shop.includes('paintProductPreview(b,item)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact applied wearable item');
+assert.ok(shop.includes('paintProductPreview(b,item,data.baseCharacter)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact wearable on the equipped male/female base');
 for(const slot of ['character','outfit','effect','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 생산 분류가 보여야 합니다.`);
 for(const retired of ['hair','hat','glasses','bottom','shoes','bag','hand'])assert.ok(!shop.includes(`data-shop-slot="${retired}"`),`폐기된 ${retired} 분류를 상점에 다시 보여주면 안 됩니다.`);
 assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("const slots=['outfit','effect','pet']"),'base character must be selected separately and only outfit/effect/pet may remain as wearable production slots');
