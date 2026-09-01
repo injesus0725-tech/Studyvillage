@@ -9,8 +9,8 @@ SOURCE_DIR = RUNTIME / "sources" / "pets"
 OUTPUT_DIR = RUNTIME / "pets"
 FILES = ["maltese.png", "toy-poodle.png", "corgi.png", "cheese-cat.png", "lop-rabbit.png", "baby-dragon.png"]
 MASTER = 256
-SCALE = 1.25
-RIGHT_MARGIN = 0
+SCALE = 1.50
+RIGHT_MARGIN = 16
 BOTTOM_MARGIN = 8
 
 

@@ -16,8 +16,10 @@ assert.equal(activityXpReward('exploration-forest-riddle',0),4);
 assert.equal(activityXpReward('exploration-forest-riddle',100),16);
 assert.ok(activityXpReward('vocabulary',20)<activityXpReward('vocabulary',100),'low accuracy must still award clearly less XP than a perfect result');
 assert.equal(standardActivityStars('math-arithmetic',60),1);
-assert.equal(standardActivityStars('math-arithmetic',80),2);
+assert.equal(standardActivityStars('math-arithmetic',80),1);
+assert.equal(standardActivityStars('math-arithmetic',40),0);
 assert.equal(standardActivityStars('vocabulary',100),2);
+assert.equal(standardActivityStars('curriculum-integrated',100),2);
 assert.equal(standardActivityStars('exploration-forest-riddle',100),0);
 
 console.log('90-day Lv.70 semester reward economy contract self-test passed');

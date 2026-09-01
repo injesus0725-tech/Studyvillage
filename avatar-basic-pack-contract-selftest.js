@@ -66,7 +66,7 @@ assert.ok(outfitBake.includes('Never split or non-uniformly warp a finished outf
 assert.ok(outfitBake.includes('def normalize_uniform_body_scale'),'production bake must use one seam-free uniform template fit');
 assert.ok(!outfitBake.includes("img.crop((0, source_y"),'production bake must not split completed outfit artwork at the neckline');
 assert.ok(outfitBake.includes('SOURCE_OUTFIT_DIR'),'production bake must always rebuild from immutable source art');
-assert.ok(petBake.includes('SOURCE_DIR')&&petBake.includes('SCALE = 1.25'),'production pets must rebuild from preserved originals at the approved larger scale');
+assert.ok(petBake.includes('SOURCE_DIR')&&petBake.includes('SCALE = 1.50')&&petBake.includes('RIGHT_MARGIN = 16'),'production pets must rebuild from preserved originals at the approved larger scale and closer character anchor');
 assert.ok(outfitBake.includes('step = round(TARGET_BODY_CENTROID - current_x)'),'mass-production bake must normalize X automatically');
 for(const itemSpecific of ['SOURCE_X_ADJUST','NECKLINE_RAISE'])assert.ok(!outfitBake.includes(itemSpecific),`item-specific correction must not remain: ${itemSpecific}`);
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');

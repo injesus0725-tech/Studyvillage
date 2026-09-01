@@ -18,6 +18,6 @@ export function activityXpReward(activityId,score){
 export function standardActivityStars(activityId,score){
   const id=String(activityId||'');if(!['math-arithmetic','vocabulary'].includes(id)&&!id.startsWith('curriculum-'))return 0;
   const rate=activityScorePercent(activityId,score);
-  if(rate<=0)return 0;
-  return rate>=0.8?2:1;
+  if(rate>=1)return 2;
+  return rate>=0.6?1:0;
 }

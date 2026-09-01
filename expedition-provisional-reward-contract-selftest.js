@@ -14,7 +14,9 @@ assert.ok(client.includes('탐험 기록을 아직 저장하지 못했어요'), 
 assert.ok(activity.includes('validExpeditionScore(activityId,score)'), '서버는 탐험별 가능한 완료 점수만 받아야 합니다.');
 assert.ok(activity.includes("activityId.startsWith('exploration-')&&!submissionId"), '탐험 완료에는 재시도 식별자가 필수여야 합니다.');
 assert.ok(activity.includes('commitExpeditionReward(db,{name,activityId,score,submissionId,now,starDelta:explore.starDelta})'), '활동 기록과 NPC 별 효과 확정을 같은 DB 트랜잭션 안에서 실행해야 합니다.');
-assert.ok(stars.includes("kind=EXPEDITION_REWARD_IDS.has(activityId)?'expedition-completion':'learning-completion'"), '활동 종류에 맞는 원장 구분을 서버가 결정해야 합니다.');
+assert.ok(stars.includes("kind=expedition?'expedition-completion':'learning-completion'"), '활동 종류에 맞는 원장 구분을 서버가 결정해야 합니다.');
+assert.ok(stars.includes("activityId.startsWith('exploration-')")&&stars.includes("value>=100?2:value>=60?1:0"), '모든 탐험은 만점 2별, 60% 이상 1별, 60% 미만 0별이어야 합니다.');
+assert.ok(stars.includes("activityId.startsWith('curriculum-')"), '새 통합·추가 교과도 고정 목록 누락 없이 별 지급 대상이어야 합니다.');
 assert.ok(stars.includes('WHERE player_name=? AND kind=? AND reference_id=?'), '완료 식별자로 이미 확정된 보상을 검사해야 합니다.');
 assert.ok(stars.includes('stars,kind,submissionId'), '탐험·학습 별 장부에 완료 식별자를 기록해야 합니다.');
 assert.ok(stars.includes('if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true}'), '같은 완료 요청을 다시 보내도 별을 중복 지급하면 안 됩니다.');
