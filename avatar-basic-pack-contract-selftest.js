@@ -17,6 +17,7 @@ const outfitBake=fs.readFileSync(path.join(root,'scripts/bake-avatar-outfit-v2.p
 const previewBake=fs.readFileSync(path.join(root,'scripts/build-avatar-shop-previews.py'),'utf8');
 const baseBake=fs.readFileSync(path.join(root,'scripts/build-avatar-base-heads.py'),'utf8');
 const variantBake=fs.readFileSync(path.join(root,'scripts/build-avatar-character-variants.py'),'utf8');
+const petBake=fs.readFileSync(path.join(root,'scripts/build-avatar-production-pets.py'),'utf8');
 
 for(const phrase of ['기본 캐릭터 변형 → 한벌 의상 → 효과 → 펫','체육관 / 보건실 / 3-1반 교실 / 급식실','마을 전체 그래픽 리디자인'])assert.ok(direction.includes(phrase),`production direction missing: ${phrase}`);
 for(const phrase of ['별도의 `hair` 상품은 더 이상 만들지 않는다','몸체 크기, 목·어깨 위치, 발 중앙, 캔버스 기준점을 완전히 동일하게 유지'])assert.ok(direction.includes(phrase),`base variant direction missing: ${phrase}`);
@@ -32,7 +33,7 @@ for(const id of ['character-boy-02','character-boy-03','character-boy-04','chara
 }
 for(const retiredHair of ['hair-short','hair-bob','hair-ponytail','hair-blue'])assert.ok(!catalog.includes(`'${retiredHair}'`),`standalone hair product must be retired: ${retiredHair}`);
 assert.ok(whole.includes("id:'student-boy'")&&whole.includes("id:'student-girl'"),'the two free basic bodies must remain');
-assert.ok(index.includes('avatar-renderer.js?v=20260901heads1'),'avatar renderer cache version must be refreshed');
+assert.ok(index.includes('avatar-renderer.js?v=20260902outfits1'),'avatar renderer cache version must include the final feminine outfits and larger pets');
 assert.ok(index.includes('avatar-base-variants-v1.js')&&index.includes('avatar-production-contract-v2.css'),'base production gate and production contract assets must load');
 assert.ok(!index.includes('avatar-auto-normalize-v1.js'),'runtime pixel scanning normalizer must stay disabled for classroom performance');
 assert.ok(contract.includes('transform:none!important'),'production contract must remove manual wearable transform corrections');
@@ -40,11 +41,12 @@ assert.ok(contract.includes('Runtime never scans pixels'),'production runtime mu
 const expected=[
   'production/outfits/silver-knight.png','production/outfits/star-mage.png','production/outfits/school-scientist.png',
   'production/outfits/forest-archer.png','production/outfits/pirate-captain.png','production/outfits/moon-priest.png',
+  'production/outfits/starlight-dress.png','production/outfits/flower-fairy-dress.png','production/outfits/ribbon-magical-girl.png',
   'production/pets/maltese.png','production/pets/toy-poodle.png','production/pets/corgi.png',
   'production/pets/cheese-cat.png','production/pets/lop-rabbit.png','production/pets/baby-dragon.png'
 ];
 for(const rel of expected){const full=path.join(root,'assets/avatar-runtime',rel);assert.ok(fs.existsSync(full),`missing production raster: ${rel}`);assert.ok(fs.statSync(full).size>3000,`production raster is unexpectedly small: ${rel}`);assert.ok(renderer.includes(rel),`renderer missing production raster: ${rel}`)}
-for(const name of ['silver-knight.png','star-mage.png','school-scientist.png','forest-archer.png','pirate-captain.png','moon-priest.png']){
+for(const name of ['silver-knight.png','star-mage.png','school-scientist.png','forest-archer.png','pirate-captain.png','moon-priest.png','starlight-dress.png','flower-fairy-dress.png','ribbon-magical-girl.png']){
   const rel=`production/shop-previews/${name}`,full=path.join(root,'assets/avatar-runtime',rel);
   assert.ok(fs.existsSync(full)&&fs.statSync(full).size>3000,`missing baked one-layer shop preview: ${rel}`);
 }
@@ -64,6 +66,7 @@ assert.ok(outfitBake.includes('Never split or non-uniformly warp a finished outf
 assert.ok(outfitBake.includes('def normalize_uniform_body_scale'),'production bake must use one seam-free uniform template fit');
 assert.ok(!outfitBake.includes("img.crop((0, source_y"),'production bake must not split completed outfit artwork at the neckline');
 assert.ok(outfitBake.includes('SOURCE_OUTFIT_DIR'),'production bake must always rebuild from immutable source art');
+assert.ok(petBake.includes('SOURCE_DIR')&&petBake.includes('SCALE = 1.25'),'production pets must rebuild from preserved originals at the approved larger scale');
 assert.ok(outfitBake.includes('step = round(TARGET_BODY_CENTROID - current_x)'),'mass-production bake must normalize X automatically');
 for(const itemSpecific of ['SOURCE_X_ADJUST','NECKLINE_RAISE'])assert.ok(!outfitBake.includes(itemSpecific),`item-specific correction must not remain: ${itemSpecific}`);
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');
@@ -73,6 +76,6 @@ assert.ok(shop.includes("SELECT level,stars,base_character"),'shop state must ex
 assert.ok(shop.includes('baseCharacter'),'shop state must return the equipped base character');
 assert.ok(studentShop.includes('paintProductPreview(b,item,data.baseCharacter)'),'outfit previews must use the student\'s equipped male/female head');
 assert.ok(studentShop.includes("renderer.BASES?.[baseCharacter]?baseCharacter:'student-boy'"),'shop preview must safely normalize its base character');
-assert.ok(index.includes('student-shop.js?v=20260901r7'),'female outfit preview change must bypass classroom cache');
+assert.ok(index.includes('student-shop.js?v=20260902r1'),'female outfit preview and new catalog icons must bypass classroom cache');
 assert.ok(customize.includes("info.slot==='character'"),'wardrobe must retain future base-character immediate equip support');
 console.log('production avatar lightweight runtime contract passed');

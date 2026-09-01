@@ -18,6 +18,8 @@ assert.ok(server.includes('몫과 나머지는?')&&server.includes("answerFormat
 for(const token of ["44, 1","나머지\\s+","answerFormat==='quotient-remainder'",'gradeProblem(problem,value)'])assert.ok(server.includes(token),`remainder normalization contract missing ${token}`);
 assert.ok(!server.includes('44.333'),'decimal quotient must not become the remainder answer convention');
 assert.ok(client.includes("problem?.answerFormat==='quotient-remainder'")&&client.includes('몫과 나머지를 입력해 주세요. 예) 44, 1'),'math playground must switch to quotient/remainder input guidance');
+assert.ok(client.includes("problem?.type==='choice'||problem?.answerFormat==='choice'")&&client.includes("problem.options||[]"),'choice math problems must render their server-issued answer options');
+assert.ok(client.includes("답을 하나 골라 주세요.")&&client.includes("answers[index]=choiceIndex"),'choice math answers must save a selected option index instead of requiring an integer text answer');
 assert.ok(client.includes('내 답: ${row.studentAnswer}')&&client.includes('정답: ${row.answer}'),'wrong-answer review must use server review values for both student and correct answers');
 assert.ok(explore.includes("q.answerFormat==='quotient-remainder'")&&explore.includes('body:JSON.stringify({index,answer})'),'exploration intermediate math check must pass the same raw remainder answer to the server');
 assert.ok(explore.includes("q.type==='choice'")&&server.includes('withExplorationRiddle')&&server.includes('Math.random()>=.1'),'math exploration riddles must be issued and scored by the server at a low probability');

@@ -8,12 +8,15 @@ OUTFIT_DIR = RUNTIME_DIR / "production" / "outfits"
 SOURCE_OUTFIT_DIR = RUNTIME_DIR / "production" / "sources" / "outfits"
 BASE_FILES = [RUNTIME_DIR / "base-boy-v2.png", RUNTIME_DIR / "base-girl-v2.png"]
 FILES = [
+    "flower-fairy-dress.png",
     "forest-archer.png",
     "moon-priest.png",
     "pirate-captain.png",
     "school-scientist.png",
     "silver-knight.png",
     "star-mage.png",
+    "starlight-dress.png",
+    "ribbon-magical-girl.png",
 ]
 
 MASTER = 256

@@ -8,12 +8,15 @@ RUNTIME = ROOT / "assets" / "avatar-runtime"
 OUTFIT_DIR = RUNTIME / "production" / "outfits"
 PREVIEW_DIR = RUNTIME / "production" / "shop-previews"
 FILES = [
+    "flower-fairy-dress.png",
     "forest-archer.png",
     "moon-priest.png",
     "pirate-captain.png",
     "school-scientist.png",
     "silver-knight.png",
     "star-mage.png",
+    "starlight-dress.png",
+    "ribbon-magical-girl.png",
 ]
 # The outfit owns the neckline from Y=89. Keep the base head above it only.
 HEAD_BOTTOM = 89
