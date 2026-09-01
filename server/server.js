@@ -14,6 +14,7 @@ import { removeExtraAttemptStudentData } from './activity-attempt-exceptions.js'
 import { CURRENT_BACKUP_VERSION } from './backup-migrator.js';
 import { customTitleKey, customTitleView, normalizeCustomTitle, readCustomTitle, writeCustomTitle } from './custom-title.js';
 import { wholeCharacterCatalog,wholeCharacterIds } from './whole-character-catalog.js';
+import { installRankingV2Routes } from './ranking-v2.js';
 
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename),rootDir=path.resolve(__dirname,'..');
 const dataDir=process.env.STUDYVILLAGE_DATA_DIR||__dirname;fs.mkdirSync(dataDir,{recursive:true});
@@ -90,6 +91,7 @@ function ensureAdminPassword(){if(getSetting('admin_hash')&&getSetting('admin_sa
 installActivityStateRoutes(app,{getSetting,setSetting,requireAdmin});
 installQuestionReviewRoutes(app,{getSetting,setSetting,requireAdmin});
 installStarLedgerRoutes(app,{requireSession,requireAdmin,publishLiveEvent});
+installRankingV2Routes(app,{db,requireSession,playerView:safePlayer});
 app.get('/api/player/me/checkpoints',requireSession,(req,res)=>res.json({ok:true,checkpoints:readServerCheckpoints(req.session.name)}));
 app.put('/api/player/me/checkpoints/:activityId',requireSession,(req,res)=>{const result=saveServerCheckpoint(req.session.name,req.params.activityId,req.body?.progress);if(!result.ok)return res.status(400).json(result);res.json(result)});
 app.delete('/api/player/me/checkpoints/:activityId',requireSession,(req,res)=>{if(!clearServerCheckpoint(req.session.name,req.params.activityId))return res.status(400).json({ok:false,code:'invalid-checkpoint'});res.json({ok:true})});
