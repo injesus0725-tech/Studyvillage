@@ -1,4 +1,4 @@
-/* v1.9 classroom QR address ranking contract. */
+/* v2.0 classroom QR address ranking contract. */
 import fs from 'node:fs';
 
 const server=fs.readFileSync(new URL('./server/network-access.js',import.meta.url),'utf8');
@@ -11,6 +11,12 @@ for(const token of ['VIRTUAL_HINTS','PHYSICAL_HINTS','isPrivateIpv4','recommende
 if(/continue;[^\n]*VIRTUAL_HINTS/.test(server)||/filter\([^\n]*VIRTUAL_HINTS/.test(server))throw new Error('network-access.js: virtual adapters must be ranked, not discarded');
 if(!server.includes("app.get('/api/network'"))throw new Error('network-access.js: /api/network route missing');
 if(!server.includes("WIRELESS_HINTS.test(name))score+=25"))throw new Error('network-access.js: classroom Wi-Fi must outrank stale wired addresses');
+for(const token of ['activeRouteAddresses','ROUTE_PROBES','routeAddresses.has(address)','selectionBasis']){
+  if(!server.includes(token))throw new Error(`network-access.js: active-route selection missing ${token}`);
+}
+if(!/routeAddresses\.has\(address\)\)score\+=200/.test(server))throw new Error('network-access.js: OS active route must outrank adapter-name guessing');
+if(!server.includes('active-default-route'))throw new Error('network-access.js: recommendation basis missing');
+if(!server.includes('Windows가 현재 실제 통신에 사용하는 주소'))throw new Error('network-access.js: active route explanation missing');
 if(!installer.includes('installNetworkAccessRoute'))throw new Error('question-review.js: ranked network route is not installed');
 if(!connect.includes('⭐ 학생용 추천 QR')||!connect.includes('recommendedUrl'))throw new Error('connect.html: recommended classroom QR is not surfaced');
 if(!connect.includes('다른 QR도 시도'))throw new Error('connect.html: fallback QR guidance missing');
