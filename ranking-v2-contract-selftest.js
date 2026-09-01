@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const server=fs.readFileSync('server/ranking-v2.js','utf8'),main=fs.readFileSync('server/server.js','utf8'),data=fs.readFileSync('data-service.js','utf8');
-for(const phrase of ['weekly_ranking_snapshots',"scope='player'","field='total_score'",'Asia/Seoul','hallOfFame'])assert.ok(server.includes(phrase),`ranking v2 missing ${phrase}`);
+for(const phrase of ['weekly_ranking_snapshots',"scope IN ('player','activity')","field='total_score'",'Asia/Seoul','hallOfFame'])assert.ok(server.includes(phrase),`ranking v2 missing ${phrase}`);
 assert.ok(server.includes("app.get('/api/ranking/v2',requireSession"),'ranking v2 must require a student session');
 assert.ok(main.includes('installRankingV2Routes(app,{db,requireSession,playerView:safePlayer})'),'ranking v2 route must be installed without replacing activity saves');
 assert.ok(data.includes("timedFetch('/api/ranking/v2'"),'student data service must read ranking v2');
+assert.ok(main.includes('aggregatePlayerRecord(r)'),'player profile and cumulative ranking must include saved activity records');
 assert.ok(!server.includes('UPDATE players')&&!server.includes('INSERT INTO score_ledger')&&!server.includes('INSERT INTO star_ledger'),'ranking v2 must not mutate player rewards or ledgers');
 console.log('ranking v2 read-only ledger and hall-of-fame contract self-test passed');
