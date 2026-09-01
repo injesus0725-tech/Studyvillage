@@ -11,7 +11,9 @@ assert.ok(activity.includes('validateActivityCompletion({name,activityId,score,s
 assert.ok(activity.includes('finalizeActivityCompletion({name,activityId,score,submissionId})'),'successful activity saving must consume the completion authorization');
 assert.ok(server.includes('!row.finalized'),'a finalized math session cannot authorize a second activity save');
 for(const token of ["CATALOG_KEY='question-catalog:settings-v1'","mathUnitKey=unit=>`unit:수학|3|1|${unit}`",'unitEnabled(row.unit,settings)','generatorsFor(mode,settings)',"code:'no-math-playground-unit-enabled'"])assert.ok(server.includes(token),`math playground teacher-unit link missing ${token}`);
-for(const token of ["unit:'2단원 평면도형'","semester:2,unit:'3단원 원'","semester:2,unit:'6단원 그림그래프'",'function planeShape()','function circle()','function pictograph()'])assert.ok(server.includes(token),`safe auto-generatable math unit missing ${token}`);
+for(const token of ["'2단원 평면도형'","'3단원 원'","'6단원 그림그래프'",'function planeShape()','function circle()','function pictograph()'])assert.ok(server.includes(token),`safe auto-generatable math unit missing ${token}`);
+for(const token of ['makeProblemSet','recentFamilies','RECENT_FAMILY_LIMIT','additionBlank','subtractionBlank','decimalCompare','fractionGap','division2Story','pictographMissing'])assert.ok(server.includes(token),`expanded non-repeating math family missing ${token}`);
+assert.ok(!server.includes('소수 첫째 자리 숫자는 무엇인가요?'),'trivial decimal-place prompt must stay retired');
 assert.ok(server.includes('몫과 나머지는?')&&server.includes("answerFormat:'quotient-remainder'")&&server.includes("inputHint:`예) ${q}, ${r}`"),'remainder division must explicitly ask for quotient and remainder with a matching hint');
 for(const token of ["44, 1","나머지\\s+","answerFormat==='quotient-remainder'",'gradeProblem(problem,value)'])assert.ok(server.includes(token),`remainder normalization contract missing ${token}`);
 assert.ok(!server.includes('44.333'),'decimal quotient must not become the remainder answer convention');

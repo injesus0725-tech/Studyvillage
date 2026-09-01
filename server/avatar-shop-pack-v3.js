@@ -1,12 +1,4 @@
 const productionItems={
-  'character-boy-02':{name:'밤색 숏컷 남자',slot:'character',price:24},
-  'character-boy-03':{name:'밤색 단발 남자',slot:'character',price:26},
-  'character-boy-04':{name:'밤색 포니테일 남자',slot:'character',price:30},
-  'character-boy-05':{name:'초록 숏컷 남자',slot:'character',price:28},
-  'character-girl-02':{name:'밤색 숏컷 여자',slot:'character',price:24},
-  'character-girl-03':{name:'밤색 단발 여자',slot:'character',price:26},
-  'character-girl-04':{name:'밤색 포니테일 여자',slot:'character',price:30},
-  'character-girl-05':{name:'초록 숏컷 여자',slot:'character',price:28},
   'outfit-silver-knight':{name:'은빛 수호 기사 세트',slot:'outfit',price:65},
   'outfit-star-mage-production':{name:'별자리 마법사 세트',slot:'outfit',price:58},
   'outfit-school-scientist':{name:'푸른빛 과학자 세트',slot:'outfit',price:42},

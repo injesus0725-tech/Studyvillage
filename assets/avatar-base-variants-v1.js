@@ -11,6 +11,6 @@
     headSocketY: 89,
     centerX: 128,
     footY: 237,
-    approved: Object.freeze(['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05']),
+    approved: Object.freeze([]),
   });
 })();

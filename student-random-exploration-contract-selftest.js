@@ -18,7 +18,7 @@ assert.match(hub,/riddles=eligible\.filter\(q=>q\.subject==='창의적 사고'\)
 assert.match(hub,/Math\.random\(\)<\.1/,'catalog exploration riddle chance must be about ten percent');
 assert.match(hub,/picked\[Math\.floor\(Math\.random\(\)\*picked\.length\)\]=shuffle\(riddles\)\[0\]/,'a rare riddle must replace one subject question so the total stays five');
 assert.ok(!/\.\.\.riddles/.test(hub),'riddles must not be mixed into every catalog exploration by default');
-assert.match(mathServer,/withExplorationRiddle\(Array\.from\(\{length:5\}/,'math explorations must decide riddle insertion before the server session is issued');
+assert.match(mathServer,/withExplorationRiddle\(makeProblemSet\(req\.session\.name,mode,settings,5\)/,'math explorations must decide riddle insertion after a non-repeating server problem set is issued');
 assert.match(mathServer,/Math\.random\(\)>=\.1/,'math exploration riddle chance must stay low');
 assert.match(mathServer,/slot=rand\(0,next\.length-1\)/,'math riddle must replace at most one of the five server-owned questions');
 assert.match(hub,/questions=d\.problems\|\|\[\]/,'math exploration UI must render the exact server-issued question sequence');

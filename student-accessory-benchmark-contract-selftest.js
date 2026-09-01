@@ -16,8 +16,8 @@ const outfits=['outfit-silver-knight','outfit-star-mage-production','outfit-scho
 const pets=['pet-maltese-production','pet-toy-poodle-production','pet-corgi-production','pet-cheese-cat-production','pet-lop-rabbit-production','pet-baby-dragon-production'];
 
 for(const id of characters){
-  assert.ok(catalog.includes(`'${id}'`),`approved complete-head character must be sold ${id}`);
-  assert.ok(variants.includes(`'${id}'`),`approved complete-head character must be registered ${id}`);
+  assert.ok(!catalog.includes(`'${id}'`),`rejected prototype character must not be sold ${id}`);
+  assert.ok(!variants.includes(`'${id}'`),`rejected prototype character must not be registered ${id}`);
 }
 for(const id of outfits){
   assert.ok(catalog.includes(`'${id}'`),`production outfit catalog missing ${id}`);

@@ -23,12 +23,12 @@ for(const phrase of ['별도의 `hair` 상품은 더 이상 만들지 않는다'
 for(const legacy of ['bottom','shoes','bag','hand'])assert.ok(shop.includes(`'${legacy}'`),`legacy slot must remain explicitly retired: ${legacy}`);
 assert.ok(shop.includes("ACTIVE_ITEM_IDS=Object.freeze([...Object.keys(avatarShopPackV3),'candy','stationery'])"),'only production avatar items may be active');
 for(const id of ['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05']){
-  assert.ok(catalog.includes(`'${id}'`),`approved complete-head variant must be sold: ${id}`);
-  assert.ok(whole.includes(`id:'${id}'`),`approved complete-head variant must be exposed by server: ${id}`);
-  assert.ok(variants.includes(`'${id}'`),`approved complete-head variant must be registered: ${id}`);
+  assert.ok(!catalog.includes(`'${id}'`),`rejected prototype must not be sold: ${id}`);
+  assert.ok(!whole.includes(`id:'${id}'`),`rejected prototype must not be exposed by server: ${id}`);
+  assert.ok(!variants.includes(`'${id}'`),`rejected prototype must not be approved: ${id}`);
   const rel=`production/bases/${id}.png`,full=path.join(root,'assets/avatar-runtime',rel);
   assert.ok(fs.existsSync(full)&&fs.statSync(full).size>3000,`missing baked complete-head base: ${rel}`);
-  assert.ok(renderer.includes(rel),`renderer missing baked complete-head base: ${rel}`);
+  assert.ok(renderer.includes(rel),`archived prototype renderer source missing: ${rel}`);
 }
 for(const retiredHair of ['hair-short','hair-bob','hair-ponytail','hair-blue'])assert.ok(!catalog.includes(`'${retiredHair}'`),`standalone hair product must be retired: ${retiredHair}`);
 assert.ok(whole.includes("id:'student-boy'")&&whole.includes("id:'student-girl'"),'the two free basic bodies must remain');

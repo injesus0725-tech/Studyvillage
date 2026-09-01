@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=path.dirname(__filename);
-const TTL_MS=30*60*1000,MAX_SESSIONS=1000,sessions=new Map(),ACTIVITY_ID='math-arithmetic',EXPLORATION_ACTIVITY_ID='exploration-math',CATALOG_KEY='question-catalog:settings-v1';
+const TTL_MS=30*60*1000,MAX_SESSIONS=1000,sessions=new Map(),recentFamilies=new Map(),RECENT_FAMILY_LIMIT=12,ACTIVITY_ID='math-arithmetic',EXPLORATION_ACTIVITY_ID='exploration-math',CATALOG_KEY='question-catalog:settings-v1';
 const clean=(value,n=100)=>String(value??'').trim().slice(0,n),rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min,pick=a=>a[rand(0,a.length-1)];
 function prune(now=Date.now()){for(const[id,row]of sessions)if(now-row.createdAt>TTL_MS)sessions.delete(id);while(sessions.size>MAX_SESSIONS)sessions.delete(sessions.keys().next().value)}
 function addition(){const a=rand(101,899),b=rand(101,999-a);return{prompt:`${a} + ${b} = ?`,answer:a+b,unit:'1단원 덧셈과 뺄셈'}}
@@ -17,7 +17,6 @@ function length(){if(Math.random()<.5){const cm=rand(1,30),mm=rand(1,9);return{p
 function time(){const h=rand(1,11),m=rand(0,9)*5,elapsed=rand(1,9)*5,total=h*60+m+elapsed;return{prompt:`${h}시 ${m}분부터 ${elapsed}분 후는 몇 시 몇 분인가요? 정답은 시각을 분으로 바꾼 값(예: 2시 10분 → 130)을 입력하세요.`,answer:total,unit:'5단원 길이와 시간'}}
 function fraction(){const d=rand(2,10),a=rand(1,d-1),mode=rand(0,2);if(mode===0)return{prompt:`분수 ${a}/${d}에서 분자는 얼마인가요?`,answer:a,unit:'6단원 분수와 소수'};if(mode===1)return{prompt:`분수 ${a}/${d}에서 분모는 얼마인가요?`,answer:d,unit:'6단원 분수와 소수'};let b=rand(1,d-1);while(b===a)b=rand(1,d-1);return{prompt:`${a}/${d}와 ${b}/${d} 중 더 큰 분수의 분자를 입력하세요.`,answer:Math.max(a,b),unit:'6단원 분수와 소수'}}
 function unitFraction(){let a=rand(2,10),b=rand(2,10);while(a===b)b=rand(2,10);return{prompt:`1/${a}와 1/${b} 중 더 큰 분수의 분모를 입력하세요.`,answer:Math.min(a,b),unit:'6단원 분수와 소수'}}
-function decimal(){const whole=rand(0,9),tenth=rand(1,9);return{prompt:`${whole}.${tenth}에서 소수 첫째 자리 숫자는 무엇인가요?`,answer:tenth,unit:'6단원 분수와 소수'}}
 function multiplication2(){const a=rand(101,299),b=rand(2,4);return{prompt:`${a} × ${b} = ?`,answer:a*b,unit:'1단원 곱셈'}}
 function multiplicationTens(){const a=rand(11,49),b=rand(2,9)*10;return{prompt:`${a} × ${b} = ?`,answer:a*b,unit:'1단원 곱셈'}}
 function division2(){const d=rand(2,9),q=rand(10,49),r=rand(0,d-1),dividend=d*q+r;if(r===0)return{prompt:`${dividend} ÷ ${d}의 몫은?`,answer:q,answerFormat:'integer',unit:'2단원 나눗셈'};return{prompt:`${dividend} ÷ ${d}의 몫과 나머지는?`,answer:{q,r},answerFormat:'quotient-remainder',inputHint:`예) ${q}, ${r}`,unit:'2단원 나눗셈'}}
@@ -26,6 +25,35 @@ function fraction2(){const d=rand(2,9),whole=rand(1,4),n=rand(1,d-1);return Math
 function capacity(){const l=rand(1,8),ml=rand(1,9)*100;return{prompt:`${l} L ${ml} mL는 모두 몇 mL인가요?`,answer:l*1000+ml,unit:'5단원 들이와 무게'}}
 function weight(){const kg=rand(1,8),g=rand(1,9)*100;return{prompt:`${kg} kg ${g} g은 모두 몇 g인가요?`,answer:kg*1000+g,unit:'5단원 들이와 무게'}}
 function pictograph(){const each=pick([2,5,10]),icons=rand(2,9);return{prompt:`그림그래프에서 그림 하나가 ${each}개를 나타냅니다. 그림이 ${icons}개라면 모두 몇 개인가요?`,answer:each*icons,unit:'6단원 그림그래프'}}
+function additionBlank(){const a=rand(120,620),b=rand(80,360);return{prompt:`□ + ${b} = ${a+b}입니다. □에 알맞은 수는?`,answer:a,unit:'1단원 덧셈과 뺄셈'}}
+function subtractionBlank(){const b=rand(80,390),answer=rand(100,580);return{prompt:`${b+answer} - □ = ${answer}입니다. □에 알맞은 수는?`,answer:b,unit:'1단원 덧셈과 뺄셈'}}
+function addStory(){const a=rand(125,470),b=rand(80,420);return{prompt:`도서관에 책이 ${a}권 있었고 ${b}권이 새로 들어왔습니다. 지금 책은 모두 몇 권인가요?`,answer:a+b,unit:'1단원 덧셈과 뺄셈'}}
+function additionThree(){const a=rand(100,300),b=rand(80,240),c=rand(20,160);return{prompt:`${a} + ${b} + ${c} = ?`,answer:a+b+c,unit:'1단원 덧셈과 뺄셈'}}
+function additionCompare(){const a=rand(200,600),b=rand(100,300);let c=rand(100,300);while(c===b)c=rand(100,300);const left=a+b,right=a+c;return{prompt:`${a}+${b}와 ${a}+${c} 중 더 큰 계산 결과는?`,type:'choice',answerFormat:'choice',options:[String(Math.max(left,right)),String(Math.min(left,right)),'두 결과는 같다','계산할 수 없다'],answer:0,unit:'1단원 덧셈과 뺄셈',explanation:'같은 수에 더할 때에는 나머지 더하는 수가 큰 쪽의 합이 더 커요.'}}
+function subtractStory(){const a=rand(420,950),b=rand(120,a-100);return{prompt:`색종이 ${a}장 중 ${b}장을 사용했습니다. 남은 색종이는 몇 장인가요?`,answer:a-b,unit:'1단원 덧셈과 뺄셈'}}
+function subtractionTwoStep(){const a=rand(600,950),b=rand(100,250),c=rand(50,Math.min(200,a-b-10));return{prompt:`${a}에서 ${b}를 빼고 다시 ${c}를 빼면?`,answer:a-b-c,unit:'1단원 덧셈과 뺄셈'}}
+function subtractionCheck(){const answer=rand(120,450),b=rand(80,260);return{prompt:`어떤 수에서 ${b}를 빼면 ${answer}입니다. 어떤 수는?`,answer:answer+b,unit:'1단원 덧셈과 뺄셈'}}
+function shapePerimeter(){const a=rand(3,15),b=rand(2,12);return{prompt:`가로 ${a} cm, 세로 ${b} cm인 직사각형의 네 변 길이의 합은 몇 cm인가요?`,answer:2*(a+b),unit:'2단원 평면도형'}}
+function divisionStory(){const groups=rand(2,9),each=rand(2,9);return{prompt:`사탕 ${groups*each}개를 ${groups}명에게 똑같이 나누면 한 명이 몇 개씩 받나요?`,answer:each,unit:'3단원 나눗셈'}}
+function divisionBlank(){const d=rand(2,9),q=rand(2,9);return{prompt:`□ ÷ ${d} = ${q}입니다. □에 알맞은 수는?`,answer:d*q,unit:'3단원 나눗셈'}}
+function multiplicationStory(){const a=rand(12,48),b=rand(2,9);return{prompt:`한 상자에 연필이 ${a}자루씩 들어 있습니다. ${b}상자에는 모두 몇 자루가 있나요?`,answer:a*b,unit:'4단원 곱셈'}}
+function multiplicationBlank(){const a=rand(11,49),b=rand(2,9);return{prompt:`${a} × □ = ${a*b}입니다. □에 알맞은 수는?`,answer:b,unit:'4단원 곱셈'}}
+function multiplicationSplit(){const tens=rand(2,8)*10,ones=rand(1,9),b=rand(2,9);return{prompt:`(${tens} × ${b}) + (${ones} × ${b}) = ?`,answer:(tens+ones)*b,unit:'4단원 곱셈'}}
+function multiplicationInverse(){const a=rand(12,49),b=rand(2,9);return{prompt:`어떤 수에 ${b}를 곱했더니 ${a*b}가 되었습니다. 어떤 수는?`,answer:a,unit:'4단원 곱셈'}}
+function divisionCompare(){const d=rand(2,9),a=rand(3,8)*d,b=rand(1,2)*d;return{prompt:`${a} ÷ ${d}와 ${b} ÷ ${d}의 몫의 차이는?`,answer:(a-b)/d,unit:'3단원 나눗셈'}}
+function divisionTwice(){const d=rand(2,9),q=rand(2,8);return{prompt:`${d*q*2}개를 ${d}개씩 묶은 뒤, 그 묶음을 2곳에 똑같이 나누면 한 곳에 몇 묶음인가요?`,answer:q,unit:'3단원 나눗셈'}}
+function lengthDifference(){const a=rand(30,90),b=rand(10,a-5);return{prompt:`긴 끈은 ${a} cm, 짧은 끈은 ${b} cm입니다. 두 끈의 길이 차이는 몇 mm인가요?`,answer:(a-b)*10,unit:'5단원 길이와 시간'}}
+function startTime(){const start=rand(8,10)*60+rand(0,5)*10,elapsed=pick([20,30,40,50]),end=start+elapsed;return{prompt:`수업이 ${Math.floor(end/60)}시 ${end%60}분에 끝났고 ${elapsed}분 동안 했습니다. 시작 시각을 분으로 바꾼 값은?`,answer:start,unit:'5단원 길이와 시간'}}
+function fractionStory(){const d=pick([4,5,6,8,10]),used=rand(1,d-1);return{prompt:`전체를 똑같이 ${d}조각으로 나눈 뒤 ${used}조각을 먹었습니다. 남은 부분을 나타내는 분수의 분자는?`,answer:d-used,unit:'6단원 분수와 소수'}}
+function fractionGap(){const d=pick([5,6,7,8,9,10]),a=rand(1,d-2),b=rand(a+1,d-1);return{prompt:`${a}/${d}에서 ${b}/${d}가 되려면 ${d}등분한 조각을 몇 개 더 색칠해야 하나요?`,answer:b-a,unit:'6단원 분수와 소수'}}
+function decimalCompare(){let a=rand(1,18),b=rand(1,18);while(a===b)b=rand(1,18);const av=(a/10).toFixed(1),bv=(b/10).toFixed(1),larger=a>b?av:bv,smaller=a>b?bv:av;return{prompt:`${av}와 ${bv} 중 더 큰 수는 무엇인가요?`,type:'choice',answerFormat:'choice',options:[larger,smaller,'두 수는 같다','비교할 수 없다'],answer:0,unit:'6단원 분수와 소수',explanation:'자연수 부분을 먼저 보고, 같으면 소수 첫째 자리 수를 비교해요.'}}
+function decimalCompose(){const whole=rand(0,8),tenths=rand(2,9),extra=rand(1,9);return{prompt:`${whole}.${tenths}은 0.1이 ${whole*10+tenths}개인 수입니다. 여기에 0.1을 ${extra}개 더하면 0.1은 모두 몇 개인가요?`,answer:whole*10+tenths+extra,unit:'6단원 분수와 소수'}}
+function multiplicationEstimate(){const a=pick([20,30,40,50,60,70,80,90]),b=rand(2,9);return{prompt:`${a} × ${b}를 계산하면?`,answer:a*b,unit:'1단원 곱셈'}}
+function division2Story(){const d=rand(3,9),q=rand(10,35),r=rand(1,d-1);return{prompt:`공책 ${d*q+r}권을 한 묶음에 ${d}권씩 묶습니다. 묶음 수와 남는 공책 수를 차례로 쓰세요.`,answer:{q,r},answerFormat:'quotient-remainder',inputHint:`예) ${q}, ${r}`,unit:'2단원 나눗셈'}}
+function fraction2Gap(){const d=rand(3,9),whole=rand(1,4),n=rand(1,d-1);return{prompt:`${whole*d+n}/${d}은 ${whole}와 몇/${d}을 합한 수인가요? 분자를 쓰세요.`,answer:n,unit:'4단원 분수'}}
+function capacityDifference(){const a=rand(4,8)*1000+rand(1,8)*100,b=rand(1,3)*1000+rand(1,8)*100;return{prompt:`두 물통의 들이는 각각 ${a} mL와 ${b} mL입니다. 차이는 몇 mL인가요?`,answer:a-b,unit:'5단원 들이와 무게'}}
+function weightStory(){const each=rand(2,8)*100,count=rand(2,6);return{prompt:`같은 과일 ${count}개의 무게가 모두 ${each*count} g입니다. 한 개의 무게는 몇 g인가요?`,answer:each,unit:'5단원 들이와 무게'}}
+function pictographMissing(){const each=pick([2,5,10]),icons=rand(3,9);return{prompt:`그림 하나가 ${each}명을 나타내는 그림그래프에서 ${each*icons}명을 나타내려면 그림이 몇 개 필요한가요?`,answer:icons,unit:'6단원 그림그래프'}}
 const EXPLORATION_RIDDLES=Object.freeze([
  {prompt:'먹을수록 커지고, 물을 마시면 죽는 것은?',options:['불','구름','나무','그림자'],answer:0,explanation:'불은 연료를 먹으며 커지고 물을 만나면 꺼져요.'},
  {prompt:'항상 내 앞에 있지만 볼 수 없는 것은?',options:['뒤통수','미래','거울','발자국'],answer:1,explanation:'미래는 늘 앞에 있지만 아직 볼 수 없어요.'},
@@ -35,25 +63,18 @@ const EXPLORATION_RIDDLES=Object.freeze([
  {prompt:'눈은 있는데 볼 수 없는 것은?',options:['감자','사람','독수리','고양이'],answer:0,explanation:'감자의 싹이 나는 부분을 눈이라고 해요.'},
  {prompt:'깨뜨려야만 사용할 수 있는 것은?',options:['달걀','유리컵','의자','연필'],answer:0,explanation:'달걀은 껍데기를 깨야 요리에 쓸 수 있어요.'}
 ].map(row=>Object.freeze({...row,type:'choice',answerFormat:'choice',unit:'깜짝 수수께끼'})));
+const row=(family,unit,modes,make,semester)=>({family,unit,modes,make,...(semester?{semester}:{})});
 const GENERATOR_ROWS=Object.freeze([
- {unit:'1단원 덧셈과 뺄셈',modes:['mixed','addition'],make:addition},
- {unit:'1단원 덧셈과 뺄셈',modes:['mixed','subtraction'],make:subtraction},
- {unit:'2단원 평면도형',modes:['mixed'],make:planeShape},
- {unit:'3단원 나눗셈',modes:['mixed','division'],make:division},
- {unit:'4단원 곱셈',modes:['mixed','multiplication'],make:multiplication},
- {unit:'5단원 길이와 시간',modes:['mixed'],make:length},
- {unit:'5단원 길이와 시간',modes:['mixed'],make:time},
- {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:fraction},
- {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:unitFraction},
- {unit:'6단원 분수와 소수',modes:['mixed','fraction'],make:decimal},
- {semester:2,unit:'1단원 곱셈',modes:['mixed','multiplication'],make:multiplication2},
- {semester:2,unit:'1단원 곱셈',modes:['mixed','multiplication'],make:multiplicationTens},
- {semester:2,unit:'2단원 나눗셈',modes:['mixed','division'],make:division2},
- {semester:2,unit:'3단원 원',modes:['mixed'],make:circle},
- {semester:2,unit:'4단원 분수',modes:['mixed','fraction'],make:fraction2},
- {semester:2,unit:'5단원 들이와 무게',modes:['mixed'],make:capacity},
- {semester:2,unit:'5단원 들이와 무게',modes:['mixed'],make:weight},
- {semester:2,unit:'6단원 그림그래프',modes:['mixed'],make:pictograph}
+ row('add-calc','1단원 덧셈과 뺄셈',['mixed','addition'],addition),row('add-blank','1단원 덧셈과 뺄셈',['mixed','addition'],additionBlank),row('add-story','1단원 덧셈과 뺄셈',['mixed','addition'],addStory),row('add-three','1단원 덧셈과 뺄셈',['mixed','addition'],additionThree),row('add-compare','1단원 덧셈과 뺄셈',['mixed','addition'],additionCompare),
+ row('sub-calc','1단원 덧셈과 뺄셈',['mixed','subtraction'],subtraction),row('sub-blank','1단원 덧셈과 뺄셈',['mixed','subtraction'],subtractionBlank),row('sub-story','1단원 덧셈과 뺄셈',['mixed','subtraction'],subtractStory),row('sub-two-step','1단원 덧셈과 뺄셈',['mixed','subtraction'],subtractionTwoStep),row('sub-check','1단원 덧셈과 뺄셈',['mixed','subtraction'],subtractionCheck),
+ row('shape-property','2단원 평면도형',['mixed'],planeShape),row('shape-perimeter','2단원 평면도형',['mixed'],shapePerimeter),
+ row('division-calc','3단원 나눗셈',['mixed','division'],division),row('division-story','3단원 나눗셈',['mixed','division'],divisionStory),row('division-blank','3단원 나눗셈',['mixed','division'],divisionBlank),row('division-compare','3단원 나눗셈',['mixed','division'],divisionCompare),row('division-twice','3단원 나눗셈',['mixed','division'],divisionTwice),
+ row('multiply-calc','4단원 곱셈',['mixed','multiplication'],multiplication),row('multiply-story','4단원 곱셈',['mixed','multiplication'],multiplicationStory),row('multiply-blank','4단원 곱셈',['mixed','multiplication'],multiplicationBlank),row('multiply-split','4단원 곱셈',['mixed','multiplication'],multiplicationSplit),row('multiply-inverse','4단원 곱셈',['mixed','multiplication'],multiplicationInverse),
+ row('length-convert','5단원 길이와 시간',['mixed'],length),row('time-forward','5단원 길이와 시간',['mixed'],time),row('length-difference','5단원 길이와 시간',['mixed'],lengthDifference),row('time-backward','5단원 길이와 시간',['mixed'],startTime),
+ row('fraction-parts','6단원 분수와 소수',['mixed','fraction'],fraction),row('unit-fraction','6단원 분수와 소수',['mixed','fraction'],unitFraction),row('fraction-story','6단원 분수와 소수',['mixed','fraction'],fractionStory),row('fraction-gap','6단원 분수와 소수',['mixed','fraction'],fractionGap),row('decimal-compare','6단원 분수와 소수',['mixed','fraction'],decimalCompare),row('decimal-compose','6단원 분수와 소수',['mixed','fraction'],decimalCompose),
+ row('multiply-3x1','1단원 곱셈',['mixed','multiplication'],multiplication2,2),row('multiply-tens','1단원 곱셈',['mixed','multiplication'],multiplicationTens,2),row('multiply-property','1단원 곱셈',['mixed','multiplication'],multiplicationEstimate,2),
+ row('division-remainder','2단원 나눗셈',['mixed','division'],division2,2),row('division-remainder-story','2단원 나눗셈',['mixed','division'],division2Story,2),row('circle-radius','3단원 원',['mixed'],circle,2),
+ row('mixed-fraction','4단원 분수',['mixed','fraction'],fraction2,2),row('mixed-fraction-gap','4단원 분수',['mixed','fraction'],fraction2Gap,2),row('capacity-convert','5단원 들이와 무게',['mixed'],capacity,2),row('weight-convert','5단원 들이와 무게',['mixed'],weight,2),row('capacity-difference','5단원 들이와 무게',['mixed'],capacityDifference,2),row('weight-story','5단원 들이와 무게',['mixed'],weightStory,2),row('pictograph-total','6단원 그림그래프',['mixed'],pictograph,2),row('pictograph-missing','6단원 그림그래프',['mixed'],pictographMissing,2)
 ]);
 const VALID_MODES=new Set(['mixed','addition','subtraction','multiplication','division','fraction']);
 function normalizeMode(value){const mode=clean(value,30).toLowerCase();return VALID_MODES.has(mode)?mode:'mixed'}
@@ -62,7 +83,7 @@ const mathUnitKey=unit=>`unit:수학|3|1|${unit}`;
 function unitEnabled(unit,settings){return settings[mathUnitKey(unit)]?.enabled!==false}
 const mathUnitKey2=unit=>`unit:수학|3|2|${unit}`;
 function generatorsFor(mode,settings){const normalized=normalizeMode(mode);return GENERATOR_ROWS.filter(row=>row.modes.includes(normalized)&&(row.semester===2?settings[mathUnitKey2(row.unit)]?.enabled!==false:unitEnabled(row.unit,settings)))}
-function makeProblem(mode='mixed',settings={}){const rows=generatorsFor(mode,settings);return rows.length?pick(rows).make():null}
+function makeProblemSet(name,mode='mixed',settings={},count=5){const rows=generatorsFor(mode,settings),key=`${name}|${mode}`,recent=recentFamilies.get(key)||[],fresh=rows.filter(candidate=>!recent.includes(candidate.family)),pool=fresh.length>=Math.min(count,rows.length)?fresh:rows,chosen=[];while(chosen.length<count){const candidates=pool.filter(candidate=>!chosen.some(value=>value.family===candidate.family)),fallback=rows.filter(candidate=>!chosen.some(value=>value.family===candidate.family)),source=candidates.length?candidates:fallback.length?fallback:rows;if(!source.length)break;chosen.push(pick(source))}recentFamilies.set(key,[...chosen.map(candidate=>candidate.family),...recent].slice(0,RECENT_FAMILY_LIMIT));return chosen.map(candidate=>({...candidate.make(),family:candidate.family}))}
 function withExplorationRiddle(problems,exploration){if(!exploration||Math.random()>=.1||!EXPLORATION_RIDDLES.length)return problems;const next=[...problems],slot=rand(0,next.length-1),source=pick(EXPLORATION_RIDDLES),options=[...source.options];next[slot]={...source,options};return next}
 function qrValue(value){const text=clean(value,80).replace(/\s+/g,' ').trim(),match=text.match(/^(-?\d+)\s*(?:,\s*|\s+나머지\s+|\s+)(-?\d+)$/);if(!match)return null;const q=Number(match[1]),r=Number(match[2]);return Number.isInteger(q)&&Number.isInteger(r)&&Math.abs(q)<=1000000&&Math.abs(r)<=1000000?{q,r}:null}
 function gradeProblem(problem,value){if(problem.answerFormat==='quotient-remainder'){const parsed=qrValue(value);return{valid:!!parsed,correct:!!parsed&&parsed.q===problem.answer.q&&parsed.r===problem.answer.r,student:parsed?`${parsed.q}, ${parsed.r}`:clean(value,80)}}if(problem.answerFormat==='choice'||problem.type==='choice'){const answer=Number(value);return{valid:Number.isInteger(answer)&&answer>=0&&answer<(problem.options?.length||0),correct:Number.isInteger(answer)&&answer===problem.answer,student:Number.isInteger(answer)?String(problem.options?.[answer]??answer):clean(value,80)}}const answer=Number(value);return{valid:Number.isInteger(answer)&&Math.abs(answer)<=1000000,correct:Number.isInteger(answer)&&answer===problem.answer,student:Number.isInteger(answer)?String(answer):clean(value,80)}}
@@ -70,7 +91,7 @@ function answerText(problem){if(problem.answerFormat==='quotient-remainder')retu
 function publicProblem(problem,index){return{id:index+1,prompt:problem.prompt,unit:problem.unit,type:problem.type||'input',answerFormat:problem.answerFormat||'integer',inputHint:problem.answerFormat==='quotient-remainder'?(problem.inputHint||'예) 44, 1'):'',options:Array.isArray(problem.options)?problem.options:undefined}}
 function explain(problem){const p=problem.prompt,a=answerText(problem);if(problem.type==='choice')return problem.explanation||`정답은 ${a}입니다.`;if(problem.answerFormat==='quotient-remainder')return`나누어지는 수 = 나누는 수 × 몫 + 나머지입니다. 정답은 ${a}입니다.`;if(p.includes(' + '))return`각 자리의 수를 더하면 정답은 ${a}입니다.`;if(p.includes(' - '))return`각 자리에서 빼기를 계산하면 정답은 ${a}입니다.`;if(p.includes(' × '))return`앞의 수를 뒤의 수만큼 곱하면 ${a}입니다.`;if(p.includes(' ÷ '))return`나누는 수와 ${a}를 곱하면 나누어지는 수가 됩니다.`;if(p.includes('몇 mm'))return`1 cm는 10 mm이므로 단위를 mm로 바꾸어 더하면 ${a}입니다.`;if(p.includes('몇 m'))return`1 km는 1000 m이므로 단위를 m로 바꾸어 더하면 ${a}입니다.`;if(p.includes('분 후'))return`시각을 분으로 바꾸고 지난 시간을 더하면 ${a}분입니다.`;if(p.includes('원의 지름'))return`지름은 반지름의 2배이므로 정답은 ${a}입니다.`;if(p.includes('원의 반지름'))return`반지름은 지름의 절반이므로 정답은 ${a}입니다.`;if(p.includes('그림그래프'))return`그림 하나가 나타내는 수와 그림 수를 곱하면 ${a}입니다.`;if(p.includes('분자'))return`분수에서 가로선 위의 수가 분자이므로 정답은 ${a}입니다.`;if(p.includes('분모'))return`분수에서 가로선 아래의 수가 분모이므로 정답은 ${a}입니다.`;if(p.includes('직각')||p.includes('변은 몇'))return`도형의 기본 성질을 떠올리면 정답은 ${a}입니다.`;return`문제의 수와 단위를 차례로 확인하면 정답은 ${a}입니다.`}
 export function installMathPracticeRoutes(app,{requireSession}){
-  app.post('/api/player/me/math-practice/start',requireSession,(req,res)=>{prune();const mode=normalizeMode(req.body?.mode),exploration=req.body?.exploration===true,activityId=exploration?EXPLORATION_ACTIVITY_ID:ACTIVITY_ID,settings=readCatalogSettings(),available=generatorsFor(mode,settings);if(!available.length)return res.status(409).json({ok:false,code:'no-math-playground-unit-enabled',message:'선생님이 체크한 수학 단원 중 수학 놀이터에서 자동으로 만들 수 있는 문제가 없어요.'});const id=crypto.randomUUID(),problems=withExplorationRiddle(Array.from({length:5},()=>makeProblem(mode,settings)),exploration);sessions.set(id,{id,name:req.session.name,mode,activityId,problems,createdAt:Date.now(),authorizedScore:null,finalized:false});res.json({ok:true,activityId,mode,sessionId:id,problems:problems.map(publicProblem)})});
+  app.post('/api/player/me/math-practice/start',requireSession,(req,res)=>{prune();const mode=normalizeMode(req.body?.mode),exploration=req.body?.exploration===true,activityId=exploration?EXPLORATION_ACTIVITY_ID:ACTIVITY_ID,settings=readCatalogSettings(),available=generatorsFor(mode,settings);if(!available.length)return res.status(409).json({ok:false,code:'no-math-playground-unit-enabled',message:'선생님이 체크한 수학 단원 중 수학 놀이터에서 자동으로 만들 수 있는 문제가 없어요.'});const id=crypto.randomUUID(),problems=withExplorationRiddle(makeProblemSet(req.session.name,mode,settings,5),exploration);sessions.set(id,{id,name:req.session.name,mode,activityId,problems,createdAt:Date.now(),authorizedScore:null,finalized:false});res.json({ok:true,activityId,mode,sessionId:id,problems:problems.map(publicProblem)})});
   app.post('/api/player/me/math-practice/:sessionId/check',requireSession,(req,res)=>{prune();const id=clean(req.params?.sessionId),row=sessions.get(id),index=Number(req.body?.index);if(!row||row.name!==req.session.name)return res.status(404).json({ok:false,code:'math-session-not-found'});if(!Number.isInteger(index)||index<0||index>=row.problems.length)return res.status(400).json({ok:false,code:'invalid-math-answer'});const graded=gradeProblem(row.problems[index],req.body?.answer);if(!graded.valid)return res.status(400).json({ok:false,code:'invalid-math-answer'});res.json({ok:true,sessionId:id,index,correct:graded.correct})});
   app.post('/api/player/me/math-practice/:sessionId/answers',requireSession,(req,res)=>{prune();const id=clean(req.params?.sessionId),row=sessions.get(id);if(!row||row.name!==req.session.name)return res.status(404).json({ok:false,code:'math-session-not-found'});const answers=req.body?.answers;if(!Array.isArray(answers)||answers.length!==row.problems.length)return res.status(400).json({ok:false,code:'invalid-math-answers'});const graded=answers.map((value,index)=>gradeProblem(row.problems[index],value));if(graded.some(result=>!result.valid))return res.status(400).json({ok:false,code:'invalid-math-answers'});const correct=graded.filter(result=>result.correct).length,score=correct*20;row.authorizedScore=score;res.json({ok:true,activityId:row.activityId,sessionId:id,submissionId:id,correct,total:row.problems.length,score,solutions:row.problems.map(answerText),review:row.problems.map((problem,index)=>({number:index+1,prompt:problem.prompt,unit:problem.unit,studentAnswer:graded[index].student,answer:answerText(problem),correct:graded[index].correct,explanation:explain(problem)}))})})
 }
