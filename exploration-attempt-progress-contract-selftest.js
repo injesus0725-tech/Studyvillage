@@ -3,8 +3,9 @@ const fs=require('fs');
 const server=fs.readFileSync('server/activity-attempt-student.js','utf8'),admin=fs.readFileSync('admin-attempt-policy.js','utf8'),client=fs.readFileSync('village-layout.js','utf8');
 
 assert.match(server,/app\.get\('\/api\/player\/me\/activity-attempt-status\/:activityId',requireSession/,'attempt status must require a student session');
-assert.match(server,/evaluateWithExtra\(policy,record,extra\)/,'status must include teacher-granted extra attempts');
+assert.match(server,/attemptRecord=policyRecord\(db,name,activityId,policy,record\),extra=readExtraAttempts[\s\S]*?decision=evaluateWithExtra\(policy,attemptRecord,extra\)/,'status must include teacher-granted extra attempts using the authoritative period-aware attempt record');
 assert.match(server,/allowed:decision\.allowed,remaining:decision\.remaining/,'status must expose the authoritative allowance');
+assert.match(server,/periodAttempts:Number\(attemptRecord\.attempts\)\|\|0/,'status must expose the current period attempt count');
 for(const id of ['exploration-forest-riddle','exploration-mountain-riddle'])assert(admin.includes(`'${id}'`),`${id} must appear in teacher attempt settings`);
 assert.match(client,/await attemptStatus\(region\.id\)/,'the map must verify allowance before starting questions');
 assert.match(client,/if\(!status\.allowed\)/,'an exhausted expedition must be blocked before play');
