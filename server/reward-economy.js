@@ -10,7 +10,10 @@ export function activityXpReward(activityId,score){
   return 280+Math.round(activityScorePercent(activityId,score)*55);
 }
 
+/* Universal learning-star rule: perfect=2, at least 60%=1, below 60%=0. */
 export function standardActivityStars(activityId,score){
-  if(!['math-arithmetic','vocabulary'].includes(String(activityId||'')))return 0;
-  return activityScorePercent(activityId,score)>=0.8?2:1;
+  const percent=activityScorePercent(activityId,score);
+  if(percent>=1)return 2;
+  if(percent>=0.6)return 1;
+  return 0;
 }
