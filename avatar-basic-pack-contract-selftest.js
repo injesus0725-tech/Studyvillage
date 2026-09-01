@@ -48,7 +48,11 @@ assert.ok(studentShop.includes("shop-preview-base shop-preview-head-only"),'stud
 assert.ok(outfitBake.includes('FACE_KEEP_OUT = (104, 48, 153, 88)'),'outfit bake must preserve authored necklines from Y=89');
 assert.ok(previewBake.includes('HEAD_BOTTOM = 89'),'shop preview head mask must meet the authored neckline at Y=89');
 assert.ok(outfitBake.includes('TARGET_BODY_CENTROID = 128.0'),'mass-production outfits must share the scientist visual center');
+assert.ok(outfitBake.includes('TARGET_NECKLINE_Y = 89'),'mass-production outfits must share the scientist neckline/shoulder anchor');
+assert.ok(outfitBake.includes('FIXED_DECORATION_TOP_Y = 58'),'vertical normalization must preserve the shared decoration top');
 assert.ok(outfitBake.includes('def body_center_x'),'mass-production bake must measure the shared torso window');
+assert.ok(outfitBake.includes('def anatomical_top_y'),'mass-production bake must measure collar and both shoulders');
+assert.ok(outfitBake.includes('def normalize_vertical_landmarks'),'mass-production bake must normalize upper-body proportions while feet stay fixed');
 assert.ok(outfitBake.includes('step = round(TARGET_BODY_CENTROID - current_x)'),'mass-production bake must normalize X automatically');
 for(const itemSpecific of ['SOURCE_X_ADJUST','NECKLINE_RAISE'])assert.ok(!outfitBake.includes(itemSpecific),`item-specific correction must not remain: ${itemSpecific}`);
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');

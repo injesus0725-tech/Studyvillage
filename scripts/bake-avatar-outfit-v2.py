@@ -1,4 +1,5 @@
 from pathlib import Path
+from statistics import median
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,8 @@ MASTER = 256
 TARGET_BODY_X = 128
 TARGET_BODY_CENTROID = 128.0
 TARGET_FOOT_Y = 237
+TARGET_NECKLINE_Y = 89
+FIXED_DECORATION_TOP_Y = 58
 # Production outfits own the body and neckline; the approved base owns only
 # the face/head opening.  Clearing through Y=96 erased eight rows of authored
 # collars after the fixed -8 anchor translation and created a visible gap.
@@ -89,6 +92,46 @@ def body_center_x(img: Image.Image) -> float:
     return weighted_x / total_alpha
 
 
+def first_solid_row(img: Image.Image, x0: int, x1: int) -> int:
+    a = alpha(img)
+    for y in range(TARGET_NECKLINE_Y, 121):
+        if sum(a.getpixel((x, y)) > 80 for x in range(x0, x1)) >= 3:
+            return y
+    raise RuntimeError(f"could not locate neckline/shoulder in X={x0}:{x1}")
+
+
+def anatomical_top_y(img: Image.Image) -> int:
+    """Scientist baseline: center collar plus both shoulder starts."""
+    rows = [
+        first_solid_row(img, 120, 137),
+        first_solid_row(img, 95, 113),
+        first_solid_row(img, 143, 161),
+    ]
+    return int(median(rows))
+
+
+def normalize_vertical_landmarks(img: Image.Image) -> Image.Image:
+    """Align collar/shoulders to Y=89 while keeping decoration top and feet fixed."""
+    source_y = anatomical_top_y(img)
+    if source_y <= TARGET_NECKLINE_Y:
+        return img
+    out = Image.new("RGBA", (MASTER, MASTER), (0, 0, 0, 0))
+    out.alpha_composite(img.crop((0, 0, MASTER, FIXED_DECORATION_TOP_Y)), (0, 0))
+    upper = img.crop((0, FIXED_DECORATION_TOP_Y, MASTER, source_y))
+    upper = upper.resize(
+        (MASTER, TARGET_NECKLINE_Y - FIXED_DECORATION_TOP_Y),
+        Image.Resampling.LANCZOS,
+    )
+    out.alpha_composite(upper, (0, FIXED_DECORATION_TOP_Y))
+    body = img.crop((0, source_y, MASTER, TARGET_FOOT_Y + 1))
+    body = body.resize(
+        (MASTER, TARGET_FOOT_Y - TARGET_NECKLINE_Y + 1),
+        Image.Resampling.LANCZOS,
+    )
+    out.alpha_composite(body, (0, TARGET_NECKLINE_Y))
+    return out
+
+
 def bake(path: Path, target_foot_y: int):
     """Anchor authored artwork only; never synthesize garment pixels.
 
@@ -109,6 +152,8 @@ def bake(path: Path, target_foot_y: int):
     dy = target_foot_y - foot_y
     vertical = translate(img, 0, dy)
     vertical = protect_face(vertical)
+    vertical = normalize_vertical_landmarks(vertical)
+    vertical = protect_face(vertical)
     measured_x = body_center_x(vertical)
     baked = vertical
     dx = 0
@@ -126,6 +171,9 @@ def bake(path: Path, target_foot_y: int):
     final_x = body_center_x(baked)
     if abs(final_x - TARGET_BODY_CENTROID) > 0.75:
         raise RuntimeError(f"{path.name}: body center failed standard template: {final_x:.2f}")
+    final_top = anatomical_top_y(baked)
+    if final_top > TARGET_NECKLINE_Y + 1:
+        raise RuntimeError(f"{path.name}: neckline/shoulder failed standard template: {final_top}")
     baked.save(path, "PNG", optimize=True)
     print(f"{path.name}: bodyCenter {measured_x:.2f}->{final_x:.2f}, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
 
