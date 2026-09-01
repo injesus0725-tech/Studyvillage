@@ -9,5 +9,5 @@
 #player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:studyvillage-walk-bob .34s steps(2,end) infinite alternate}#player.facing-left .player-icon,#player.facing-left .avatar-layer{transform:scaleX(-1)!important}#player.facing-right .player-icon,#player.facing-right .avatar-layer{transform:scaleX(1)!important}#player.is-idle .player-icon,#player.is-idle .avatar-layer{animation:none}@keyframes studyvillage-walk-bob{from{translate:0 0}to{translate:0 -3px}}
 .base-choice-preview,.item-part-preview{position:relative;display:block!important;width:64px!important;height:96px!important;line-height:0!important}.base-choice-preview>svg,.base-choice-preview>img,.base-choice-preview .base-default-hair svg,.item-part-preview svg,.item-part-preview img{display:block;width:100%;height:100%;object-fit:contain}.player-label{top:104px!important}
 .item-part-preview>i{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important}.shop-preview-base{z-index:1}.shop-preview-hair{z-index:2}.shop-preview-part{z-index:3}
-/* Pets are intentionally drawn larger and a little closer to the body for the tiny classroom avatar. */
-.avatar-pet svg,.preview-pet svg{transform:translateX(-3px) scale(1.08);transform-origin:78px 120px}
+/* Pets stay readable at the tiny classroom size: clearly larger and tucked closer to the avatar. */
+.avatar-pet svg,.preview-pet svg{transform:translateX(-6px) scale(1.18);transform-origin:78px 120px}
