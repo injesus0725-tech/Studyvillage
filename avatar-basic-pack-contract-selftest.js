@@ -15,6 +15,7 @@ const contract=fs.readFileSync(path.join(root,'assets/avatar-production-contract
 const variants=fs.readFileSync(path.join(root,'assets/avatar-base-variants-v1.js'),'utf8');
 const outfitBake=fs.readFileSync(path.join(root,'scripts/bake-avatar-outfit-v2.py'),'utf8');
 const previewBake=fs.readFileSync(path.join(root,'scripts/build-avatar-shop-previews.py'),'utf8');
+const baseBake=fs.readFileSync(path.join(root,'scripts/build-avatar-base-heads.py'),'utf8');
 
 for(const phrase of ['기본 캐릭터 변형 → 한벌 의상 → 효과 → 펫','체육관 / 보건실 / 3-1반 교실 / 급식실','마을 전체 그래픽 리디자인'])assert.ok(direction.includes(phrase),`production direction missing: ${phrase}`);
 for(const phrase of ['별도의 `hair` 상품은 더 이상 만들지 않는다','몸체 크기, 목·어깨 위치, 발 중앙, 캔버스 기준점을 완전히 동일하게 유지'])assert.ok(direction.includes(phrase),`base variant direction missing: ${phrase}`);
@@ -27,7 +28,7 @@ for(const id of ['character-boy-02','character-boy-03','character-boy-04','chara
 }
 for(const retiredHair of ['hair-short','hair-bob','hair-ponytail','hair-blue'])assert.ok(!catalog.includes(`'${retiredHair}'`),`standalone hair product must be retired: ${retiredHair}`);
 assert.ok(whole.includes("id:'student-boy'")&&whole.includes("id:'student-girl'"),'the two free basic bodies must remain');
-assert.ok(index.includes('avatar-renderer.js?v=20260901rpg14'),'avatar renderer cache version must be refreshed');
+assert.ok(index.includes('avatar-renderer.js?v=20260901rpg15'),'avatar renderer cache version must be refreshed');
 assert.ok(index.includes('avatar-base-variants-v1.js')&&index.includes('avatar-production-contract-v2.css'),'base production gate and production contract assets must load');
 assert.ok(!index.includes('avatar-auto-normalize-v1.js'),'runtime pixel scanning normalizer must stay disabled for classroom performance');
 assert.ok(contract.includes('transform:none!important'),'production contract must remove manual wearable transform corrections');
@@ -44,6 +45,8 @@ for(const name of ['silver-knight.png','star-mage.png','school-scientist.png','f
   assert.ok(fs.existsSync(full)&&fs.statSync(full).size>3000,`missing baked one-layer shop preview: ${rel}`);
 }
 assert.ok(renderer.includes('onePiece:true'),'production outfits must use the shared one-piece head/neck mask');
+assert.ok(renderer.includes('base-boy-v2.png?v=20260901neck1')&&renderer.includes('base-girl-v2.png?v=20260901neck1'),'both base genders must load the corrected neck color without stale cache');
+assert.ok(baseBake.includes('def soften_neck_shadow')&&baseBake.includes('face_skin_reference'),'male/female neck color must derive from each face instead of a hard-coded skin color');
 assert.ok(studentShop.includes("shop-preview-base shop-preview-head-only"),'student shop must use the shared head/neck mask');
 assert.ok(outfitBake.includes('FACE_KEEP_OUT = (104, 48, 153, 88)'),'outfit bake must preserve authored necklines from Y=89');
 assert.ok(previewBake.includes('HEAD_BOTTOM = 89'),'shop preview head mask must meet the authored neckline at Y=89');
