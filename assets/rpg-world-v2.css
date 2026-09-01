@@ -1,12 +1,13 @@
 /* Lightweight RPG presentation layer. Visual-only: no auth, activity, or save behavior. */
 :root{--rpg-ink:#24392d;--rpg-green:#4f8c5b;--rpg-green-dark:#315a3c;--rpg-gold:#f1bd45;--rpg-paper:#fffaf0;--rpg-line:#e1c98c}
-#title-screen{background:radial-gradient(circle at 50% 18%,#eaffd9 0 12%,transparent 34%),linear-gradient(#8dd8ee 0 42%,#74b85d 42% 68%,#b98955 68%)}
-#title-screen .title-card{border:5px solid #fff6d8;outline:3px solid var(--rpg-green-dark);border-radius:26px;background:linear-gradient(155deg,#fffdf4,#f1f5df);box-shadow:0 16px 0 #315a3c33,0 24px 55px #16362255}
+#title-screen{background-color:#78bd62;background-image:linear-gradient(#315a3c33,#315a3c33),url('world/village-square-v1.webp');background-position:center;background-size:cover;image-rendering:auto}
+#title-screen .title-card{border:6px solid #fff6d8;outline:4px solid var(--rpg-green-dark);border-radius:24px;background:linear-gradient(155deg,#fffdf4f5,#eef5dcf5);box-shadow:0 12px 0 #203d29aa,0 24px 55px #16362277;backdrop-filter:blur(3px)}
+#title-screen #start-button{border:3px solid #fff2b7;outline:3px solid #8b641b;background:linear-gradient(#ffe277,#ffc83e);box-shadow:0 7px 0 #9c6d12}
 #title-screen .tree{filter:drop-shadow(0 6px 0 #315a3c33)}
 .hud{border-bottom:4px solid #f5d46d;background:linear-gradient(180deg,#fffdf7,#edf5dc);box-shadow:0 5px 0 #315a3c33}
 .hud button,.sv-quick-button,.record-button{border:2px solid #fff!important;outline:2px solid #315a3c22;box-shadow:0 4px 0 #315a3c33!important;transition:transform .12s ease,filter .12s ease}
 .hud button:active,.sv-quick-button:active,.record-button:active{transform:translateY(3px);box-shadow:0 1px 0 #315a3c33!important}
-#world{background-color:#78bd62;background-image:linear-gradient(45deg,#ffffff0c 25%,transparent 25% 75%,#ffffff0c 75%),linear-gradient(45deg,#315a3c0c 25%,transparent 25% 75%,#315a3c0c 75%);background-position:0 0,8px 8px;background-size:16px 16px}
+#world{background:#4e9a47}.world-map{background-color:#78bd62!important;background-image:url('world/village-square-v1.webp')!important;background-position:center!important;background-size:100% 100%!important;image-rendering:auto}.world-map:before,.world-map:after{display:none!important}.village-road{opacity:0!important}.village-plaza{border:0!important;background:transparent!important;box-shadow:none!important}.village-plaza:after{top:58%!important;border:3px solid #fff6d8!important;background:#315a3ce6!important;color:#fff!important;box-shadow:0 5px 0 #203d2988!important}
 .building{filter:drop-shadow(0 7px 1px #24412b55);transition:transform .15s ease,filter .15s ease}.building:hover{transform:translateY(-3px);filter:drop-shadow(0 10px 2px #24412b66) saturate(1.08)}
 .sv-hub-card,.sv2-hub,.sv2-shell,.record-panel,.quiz-panel{border-color:#fff6d8!important;outline:3px solid #315a3c55;background-color:var(--rpg-paper)!important;box-shadow:0 18px 0 #315a3c22,0 28px 65px #17382255!important}
 .sv2-head,.sv-hub-head,.record-header,.quiz-header{background:linear-gradient(180deg,#fffef8,#eef5dd)!important;border-bottom:3px solid var(--rpg-line)}

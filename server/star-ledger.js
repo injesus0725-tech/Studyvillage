@@ -130,10 +130,10 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
 }
 
 const EXPLORATION_REWARDS=Object.freeze({chest:{stars:3,detail:'보물상자 발견'},tree:{stars:1,detail:'반짝 나무 관찰'},flower:{stars:2,detail:'숨은 꽃 피우기'}});
-const COLLECTION_NPCS=new Set(['wizard','ghost','dragon','fox','robot','owl']),COLLECTION_EVENTS=new Set(Object.keys(EXPLORATION_REWARDS));
+const COLLECTION_NPCS=new Set(['wizard','ghost','dragon','fox','robot','owl']),COLLECTION_EVENTS=new Set(Object.keys(EXPLORATION_REWARDS)),COLLECTION_LOCATIONS=new Set(['gymnasium','nurse-office','cafeteria','wee-class','class-3-1','teachers-office','playground','multipurpose-room','english-room']);
 const collectionKey=name=>`exploration-collection:${encodeURIComponent(clean(name,12))}`;
-function readCollection(db,name){const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(collectionKey(name))?.value;try{const value=JSON.parse(raw||'{}');return{npcs:[...new Set((Array.isArray(value.npcs)?value.npcs:[]).filter(id=>COLLECTION_NPCS.has(id)))],events:[...new Set((Array.isArray(value.events)?value.events:[]).filter(id=>COLLECTION_EVENTS.has(id)))]}}catch{return{npcs:[],events:[]}}}
-function addCollection(db,name,kind,id){const allowed=kind==='npc'?COLLECTION_NPCS:kind==='event'?COLLECTION_EVENTS:null;if(!allowed?.has(id))return{ok:false,code:'invalid-collection-entry'};const current=readCollection(db,name),key=kind==='npc'?'npcs':'events',isNew=!current[key].includes(id);if(isNew)current[key].push(id);db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(collectionKey(name),JSON.stringify(current));return{ok:true,isNew,collection:current}}
+function readCollection(db,name){const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(collectionKey(name))?.value;try{const value=JSON.parse(raw||'{}');return{npcs:[...new Set((Array.isArray(value.npcs)?value.npcs:[]).filter(id=>COLLECTION_NPCS.has(id)))],events:[...new Set((Array.isArray(value.events)?value.events:[]).filter(id=>COLLECTION_EVENTS.has(id)))],locations:[...new Set((Array.isArray(value.locations)?value.locations:[]).filter(id=>COLLECTION_LOCATIONS.has(id)))]}}catch{return{npcs:[],events:[],locations:[]}}}
+function addCollection(db,name,kind,id){const allowed=kind==='npc'?COLLECTION_NPCS:kind==='event'?COLLECTION_EVENTS:kind==='location'?COLLECTION_LOCATIONS:null;if(!allowed?.has(id))return{ok:false,code:'invalid-collection-entry'};const current=readCollection(db,name),key=kind==='npc'?'npcs':kind==='event'?'events':'locations',isNew=!current[key].includes(id);if(isNew)current[key].push(id);db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(collectionKey(name),JSON.stringify(current));return{ok:true,isNew,collection:current}}
 export function explorationCollectionFor(playerName){const name=clean(playerName,12);if(!name)return null;let db;try{db=openLiveDb();const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return null;return{ok:true,...readCollection(db,name),balance:player.stars}}finally{try{db?.close()}catch{}}}
 export function recordExplorationCollection(playerName,kind,id){const name=clean(playerName,12),safeKind=clean(kind,12),safeId=clean(id,30);if(!name)return{ok:false,code:'invalid-player'};let db;try{db=openLiveDb();if(!db.prepare('SELECT 1 FROM players WHERE name=?').get(name))return{ok:false,code:'player-not-found'};return addCollection(db,name,safeKind,safeId)}finally{try{db?.close()}catch{}}}
 export function classroomExplorationCollections(){let db;try{db=openLiveDb();return db.prepare('SELECT name FROM players ORDER BY name COLLATE NOCASE').all().map(({name})=>({name,...readCollection(db,name)}))}finally{try{db?.close()}catch{}}}
@@ -143,7 +143,7 @@ const DAILY_MISSIONS=Object.freeze([
   {id:'math',activityIds:['math-arithmetic'],icon:'➕',title:'수학 놀이터 완료',detail:'수학 놀이터에서 랜덤 복습을 1회 완료해요.'},
   {id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random'],icon:'🗺️',title:'탐험 완료',detail:'탐험 동굴에서 원하는 탐험을 1회 완료해요.'}
 ]);
-const DAILY_REWARD=3;
+const DAILY_REWARD=2;
 const classroomDay=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
 function kstDay(value){const date=new Date(value);return Number.isNaN(date.getTime())?'':date.toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})}
 function missionProgress(db,name,day){
