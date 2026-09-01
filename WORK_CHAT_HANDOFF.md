@@ -1,6 +1,6 @@
 # StudyVillage Work ↔ Chat Handoff Checkpoint
 
-> Work와 일반 Chat을 오갈 때 작업이 끊기지 않게 하는 최우선 인계 문서. 새 대화에서는 추측하지 말고 **브랜치 최신 HEAD → `V1_COMPLETION_PLAN.md` → 이 파일** 순서로 읽고 이어간다.
+> Work와 일반 Chat을 오갈 때 작업이 끊기지 않게 하는 인계 문서. 2026-09-01 이후 새 대화에서는 추측하지 말고 **브랜치 최신 HEAD → `V1_FINAL_COMPLETION_SCOPE.md` → `V1_COMPLETION_PLAN.md` → 이 파일** 순서로 읽고 이어간다.
 
 ## 저장소 / 브랜치
 - Repository: `injesus0725-tech/Studyvillage`
@@ -17,7 +17,7 @@
 7. 기능 구조 완료 후 최종 통합에서 **로그인 즉시 멈춤**을 최우선 해결한다.
 
 ## 현재 큰 단계
-**공통 문제 런타임 구조는 코드상 완료. 다음 핵심은 지도안/지도서 실제 문제 대량 입력이다.**
+**V1 최종 완성 묶음은 `V1_FINAL_COMPLETION_SCOPE.md`를 기준으로 한다. 전체 경량 픽셀 RPG 디자인, 학교 탐험 장소 9곳과 도감, 랭킹 5종, 수학 랜덤 문제 유형 확대를 기존 로그인·관리자·저장 구조를 깨뜨리지 않고 완료한다.**
 
 ## 확정된 출제 규칙
 ### 국어
