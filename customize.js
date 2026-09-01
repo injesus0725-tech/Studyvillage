@@ -1,7 +1,7 @@
 (()=>{
   const $=s=>document.querySelector(s),button=$('#customize-button'),panel=$('#customize-panel'),close=$('#customize-close'),save=$('#customize-save'),list=$('#inventory-list'),baseList=$('#base-character-list'),message=$('#customize-message'),game=$('#game-screen');
   if(!button||!panel||!save)return;
-  const slots=['hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'],slotNames={hair:'머리카락',hat:'모자',glasses:'안경',outfit:'상의',bottom:'하의',shoes:'신발',bag:'가방',hand:'손 아이템',pet:'친구'},icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊'},REQUEST_TIMEOUT_MS=6000;
+  const slots=['hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'],slotNames={hair:'머리카락',hat:'모자',glasses:'안경',outfit:'상의',bottom:'하의',shoes:'신발',bag:'가방',hand:'손 아이템',pet:'친구'},icons={'cap-blue':'🧢','crown-gold':'👑','glasses-round':'👓','backpack':'🎒','pet-chick':'🐣','pet-cat':'🐱','leaf-cap':'🍃','scholar-cap':'🎓','explorer-goggles':'🥽','star-monocle':'🔭','field-satchel':'🧰','book-pack':'📚','pet-owl':'🦉','pet-fox':'🦊'},REQUEST_TIMEOUT_MS=5000;
   let playerData=null,shopData={ownedItems:[],equipment:{},items:[]},draft={hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null},draftBase='student-boy',loading=false;
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   async function timedFetch(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
