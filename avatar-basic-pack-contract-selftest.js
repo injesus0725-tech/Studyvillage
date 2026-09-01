@@ -61,5 +61,10 @@ for(const itemSpecific of ['SOURCE_X_ADJUST','NECKLINE_RAISE'])assert.ok(!outfit
 assert.ok(!fs.existsSync(path.join(root,'server/avatar-shop-pack-v5.js')),'temporary v5 catalog must be removed');
 assert.ok(!catalog.includes('avatarShopPackV4')&&!catalog.includes('avatarShopPackV5'),'production catalog must not merge temporary packs');
 assert.ok(studentShop.includes("item.slot==='character'"),'student shop must retain future base-character product support');
+assert.ok(shop.includes("SELECT level,stars,base_character"),'shop state must expose the equipped male/female base');
+assert.ok(shop.includes('baseCharacter'),'shop state must return the equipped base character');
+assert.ok(studentShop.includes('paintProductPreview(b,item,data.baseCharacter)'),'outfit previews must use the student\'s equipped male/female head');
+assert.ok(studentShop.includes("renderer.BASES?.[baseCharacter]?baseCharacter:'student-boy'"),'shop preview must safely normalize its base character');
+assert.ok(index.includes('student-shop.js?v=20260901r7'),'female outfit preview change must bypass classroom cache');
 assert.ok(customize.includes("info.slot==='character'"),'wardrobe must retain future base-character immediate equip support');
 console.log('production avatar lightweight runtime contract passed');
