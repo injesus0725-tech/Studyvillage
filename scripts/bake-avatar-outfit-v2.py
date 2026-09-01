@@ -13,6 +13,8 @@ FILES = [
     "silver-knight.png",
     "star-mage.png",
 ]
+SOURCE_X_ADJUST = {"silver-knight.png": -2}
+NECKLINE_RAISE = {"pirate-captain.png": 3}
 
 MASTER = 256
 TARGET_BODY_X = 128
@@ -73,6 +75,16 @@ def protect_face(img: Image.Image) -> Image.Image:
     return out
 
 
+def raise_authored_neckline(img: Image.Image, pixels: int) -> Image.Image:
+    """Extend only the existing central collar upward; keep feet/body anchors."""
+    if pixels <= 0:
+        return img
+    out = img.copy()
+    collar = img.crop((104, 89, 154, 106))
+    out.alpha_composite(collar, (104, 89 - pixels))
+    return out
+
+
 def bake(path: Path, target_foot_y: int):
     """Anchor authored artwork only; never synthesize garment pixels.
 
@@ -90,12 +102,15 @@ def bake(path: Path, target_foot_y: int):
     # The approved source art is already authored around body X=128.  Swords,
     # staffs, bows and capes are deliberately asymmetric, so alpha-derived X
     # centering would move the body differently for every outfit.
-    dx = 0
+    source_migration = foot_y != target_foot_y
+    dx = SOURCE_X_ADJUST.get(path.name, 0) if source_migration else 0
     dy = target_foot_y - foot_y
     if abs(dx) > 36 or abs(dy) > 48:
         raise RuntimeError(f"{path.name}: source outside migration tolerance dx={dx}, dy={dy}")
     baked = translate(img, dx, dy)
     baked = protect_face(baked)
+    if source_migration:
+        baked = raise_authored_neckline(baked, NECKLINE_RAISE.get(path.name, 0))
     baked.save(path, "PNG", optimize=True)
     print(f"{path.name}: bodyX 128->128, footY {foot_y}->{target_foot_y}, dx={dx}, dy={dy}")
 
