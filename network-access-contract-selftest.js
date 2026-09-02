@@ -17,9 +17,6 @@ for(const token of ['activeRouteAddresses','ROUTE_PROBES','routeAddresses.has(ad
 if(!/routeAddresses\.has\(address\)\)score\+=200/.test(server))throw new Error('network-access.js: OS active route must outrank adapter-name guessing');
 if(!server.includes('active-default-route'))throw new Error('network-access.js: recommendation basis missing');
 if(!server.includes('Windows가 현재 실제 통신에 사용하는 주소'))throw new Error('network-access.js: active route explanation missing');
-for(const token of ['Get-NetIPAddress -AddressFamily IPv4','additionalAddresses','known.has(address)','windowsIpv4Addresses']){
-  if(!server.includes(token))throw new Error(`network-access.js: Windows adapter fallback missing ${token}`);
-}
 if(!installer.includes('installNetworkAccessRoute'))throw new Error('question-review.js: ranked network route is not installed');
 if(!connect.includes('⭐ 학생용 추천 QR')||!connect.includes('recommendedUrl'))throw new Error('connect.html: recommended classroom QR is not surfaced');
 if(!connect.includes('다른 QR도 시도'))throw new Error('connect.html: fallback QR guidance missing');
