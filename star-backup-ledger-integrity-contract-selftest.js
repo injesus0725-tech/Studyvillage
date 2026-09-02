@@ -3,6 +3,7 @@ const assert=require('assert');
 const star=fs.readFileSync('server/star-backup-validator.js','utf8');
 const combined=fs.readFileSync('server/backup-validator-with-stars.js','utf8');
 for(const token of [
+  "import { avatarShopPackV3 } from './avatar-shop-pack-v3.js'",
   'entries.length>MAX_MIRROR_ENTRIES',
   'after-before!==delta',
   'previous&&previous.after!==before',

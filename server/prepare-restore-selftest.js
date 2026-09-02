@@ -64,4 +64,10 @@ assert.equal(repairedOrphan.backup.scoreLedger.length,0);
 assert.equal(repairedOrphan.backup.scoreAlertReviews.length,0);
 assert.equal(repairedOrphan.backup.scoreCorrections.length,0);
 
+const productionPurchase=structuredClone(base);
+productionPurchase.players[0].stars=10;
+productionPurchase.players[0].owned_items_json=JSON.stringify(['pet-maltese-production']);
+productionPurchase.settings[0].value=JSON.stringify({balance:10,entries:[{beforeValue:45,afterValue:10,delta:-35,kind:'item-purchase',referenceId:'pet-maltese-production',detail:'정식 펫 구매',createdAt:'2026-08-11T00:00:00.000Z'}]});
+assert.equal(prepareStudyvillageRestore(productionPurchase).ok,true,'production shop purchase history must restore');
+
 console.log('[Studyvillage] restore preparation selftest passed');
