@@ -1,0 +1,22 @@
+/*
+ * RETIRED 2026-08-31
+ *
+ * The production avatar contract uses one shared 256x256 master canvas.
+ * Base character, one-piece outfit, effect and pet are rendered at 0,0 with no
+ * runtime translate/scale correction. This legacy file previously applied
+ * percentage transforms to outfit/bottom/shoes/etc. and conflicted with the
+ * production contract. It intentionally performs no visual transforms now.
+ */
+
+/* Separate legacy face/hair/accessory layers stay retired. */
+.avatar-face,.preview-face,.avatar-expression,.preview-expression,
+.avatar-hair,.preview-hair,.avatar-hat,.preview-hat,.avatar-glasses,.preview-glasses,
+.sv-profile-face,.sv-profile-expression,.sv-profile-hair,.sv-profile-hat,.sv-profile-glasses,
+.sv-exp2-face,.sv-exp2-expression,.sv-exp2-hair,.sv-exp2-hat,.sv-exp2-glasses,
+.shop-preview-face,.shop-preview-expression,.shop-preview-hair,.shop-preview-hat,.shop-preview-glasses,
+.rpg-expression-picker{display:none!important}
+
+/* Movement animation may move the complete rendered stack, never individual artwork. */
+#player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:studyvillage-rpg-walk-soft .28s ease-in-out infinite alternate!important}
+@keyframes studyvillage-rpg-walk-soft{from{translate:0 0}to{translate:0 -1px}}
+@media(prefers-reduced-motion:reduce){#player.is-walking .player-icon,#player.is-walking .avatar-layer{animation:none!important}}

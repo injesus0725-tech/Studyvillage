@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - stabilize-touch-buildings-20260820
     tags:
       - 'v*'
 
@@ -45,7 +46,7 @@ jobs:
       - name: Upload Windows classroom package
         uses: actions/upload-artifact@v4
         with:
-          name: Studyvillage-Windows-latest
+          name: Studyvillage-Windows-stabilized
           path: |
             dist/*.exe
             dist/CLASSROOM-QUICKSTART.txt

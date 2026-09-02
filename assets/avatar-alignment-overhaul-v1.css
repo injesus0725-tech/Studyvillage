@@ -1,0 +1,23 @@
+/*
+ * RETIRED 2026-08-31
+ *
+ * Production avatars are authored on the shared 256x256 master canvas and are
+ * rendered as exact 0,0 overlays. Per-item translate/scale corrections are
+ * forbidden because they make shop, wardrobe, village and ranking disagree.
+ * Keep only structural stacking rules needed by legacy containers.
+ */
+
+/* New-art hair is an exact-canvas full head layer; legacy hair products stay outside the active catalog. */
+
+/* Ranking thumbnails use the same full canvas; no artwork transforms. */
+.sv-rank-avatar>span{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;line-height:0!important}
+.sv-rank-avatar>span>img,.sv-rank-avatar>span>svg{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important;transform:none!important}
+.sv-rank-base{z-index:1!important}.sv-rank-hair{z-index:2!important}.sv-rank-outfit{z-index:3!important}.sv-rank-bottom{z-index:4!important}.sv-rank-shoes{z-index:5!important}.sv-rank-bag{z-index:6!important}.sv-rank-hand{z-index:7!important}.sv-rank-pet{z-index:8!important}
+
+/* Full-body production outfits and base variants are exact-canvas overlays. */
+[data-avatar-item^="hair-"] img,[data-avatar-item^="hair-"] svg,
+[data-avatar-item^="outfit-"] img,[data-avatar-item^="outfit-"] svg,
+[data-avatar-base^="character-boy-"] img,[data-avatar-base^="character-boy-"] svg,
+[data-avatar-base^="character-girl-"] img,[data-avatar-base^="character-girl-"] svg{
+  width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important
+}

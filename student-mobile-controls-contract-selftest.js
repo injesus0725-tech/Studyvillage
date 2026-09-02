@@ -1,15 +1,13 @@
 const assert=require('assert');
 const fs=require('fs');
-const css=fs.readFileSync('style.css','utf8');
+const html=fs.readFileSync('index.html','utf8');
+const onboarding=fs.readFileSync('onboarding.js','utf8');
 
-assert.ok(css.includes('@media(max-width:700px),(pointer:coarse)'),'touch devices must show mobile controls even on wide tablets');
-assert.ok(css.includes('grid-template-columns:156px minmax(112px,1fr)'),'mobile controls must place the direction pad and interaction button side by side');
-assert.ok(css.includes('.mobile-controls .talk-button{grid-column:2;grid-row:1/3;width:100%;height:88px'),'interaction must remain visible beside both direction rows');
-assert.ok(css.includes('env(safe-area-inset-bottom)'),'mobile controls must stay above the device safe area');
-assert.ok(css.includes('touch-action:none'),'direction presses must not turn into browser gestures');
-assert.ok(css.includes('-webkit-user-select:none;user-select:none;-webkit-touch-callout:none'),'long-press selection and touch callouts must be disabled on controls');
-const game=fs.readFileSync('game.js','utf8');
-assert.ok(game.includes("b.addEventListener('contextmenu',blockNative)"),'direction buttons must suppress native long-press menus');
-assert.ok(game.includes("b.addEventListener('selectstart',blockNative)"),'direction buttons must suppress text selection starts');
-assert.ok(game.includes('b.draggable=false'),'direction buttons must not become draggable browser content');
-console.log('student mobile controls contract selftest passed');
+assert.ok(!html.includes('data-key="ArrowUp"')&&!html.includes('data-key="ArrowDown"')&&!html.includes('data-key="ArrowLeft"')&&!html.includes('data-key="ArrowRight"'),'tablet student UI must not expose the legacy direction pad');
+assert.ok(html.includes('id="talk-button"'),'the direct interaction button must remain available');
+assert.ok(onboarding.includes("if(!world.contains(e.target))return"),'tap movement must be scoped to the world instead of globally intercepting the page');
+assert.ok(onboarding.includes("e.target.closest?.('.building,.npc,#player,button,a,input,select,textarea,[role=\"button\"],[role=\"dialog\"]')"),'native controls and world interaction targets must be excluded from tap movement routing');
+assert.ok(!onboarding.includes('function routeTouch('),'legacy global touch hit routing must stay removed');
+assert.ok(!onboarding.includes("document.addEventListener('touchend'"),'pointer and touch fallback handlers must not double-fire student controls');
+assert.ok(onboarding.includes('visibleBlockingPanel()'),'tap movement must stop while a foreground activity or modal is open');
+console.log('student touch movement and native control contract selftest passed');

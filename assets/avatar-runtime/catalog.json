@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "canvas": {"width": 256, "height": 256},
+  "productionDirection": "AVATAR_PRODUCTION_DIRECTION.md",
+  "newArtV2": {
+    "bases": ["v2/bases/study-boy-v2.png", "v2/bases/study-girl-v2.png"],
+    "hair": ["v2/hair/natural-wavy-v1.png"],
+    "outfits": ["v2/outfits/camp-explorer-v1.png", "v2/outfits/detective-v1.png", "v2/outfits/firefighter-v1.png", "v2/outfits/forest-fairy-v1.png"],
+    "pets": ["v2/pets/cream-pup-v1.png"],
+    "effect": "effect-starlight-v2 (inline lightweight SVG)"
+  },
+  "baseCharacters": ["base-boy-v2.png", "base-girl-v2.png"],
+  "hair": [
+    "hair-short-rpg-v3.png",
+    "hair-bob-rpg-v3.png",
+    "hair-ponytail-rpg-v4.png",
+    "hair-blue-rpg-v4.png"
+  ],
+  "outfits": [
+    "production/outfits/silver-knight.png",
+    "production/outfits/star-mage.png",
+    "production/outfits/school-scientist.png",
+    "production/outfits/forest-archer.png",
+    "production/outfits/pirate-captain.png",
+    "production/outfits/moon-priest.png",
+    "production/outfits/starlight-dress.png",
+    "production/outfits/flower-fairy-dress.png",
+    "production/outfits/ribbon-magical-girl.png"
+  ],
+  "pets": [
+    "production/pets/maltese.png",
+    "production/pets/toy-poodle.png",
+    "production/pets/corgi.png",
+    "production/pets/cheese-cat.png",
+    "production/pets/lop-rabbit.png",
+    "production/pets/baby-dragon.png"
+  ]
+}

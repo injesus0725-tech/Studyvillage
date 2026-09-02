@@ -1,0 +1,16 @@
+const fs=require('fs'),assert=require('assert');
+const loader=fs.readFileSync('assets/student-question-overrides.js','utf8');
+const guard=fs.readFileSync('assets/student-activity-save-recovery.js','utf8');
+const curriculum=fs.readFileSync('assets/student-curriculum-learning.js','utf8');
+const library=fs.readFileSync('library-game.js','utf8');
+const math=fs.readFileSync('math-practice.js','utf8');
+const exploration=fs.readFileSync('assets/student-exploration-v2.js','utf8');
+const riddle=fs.readFileSync('assets/student-riddle-completion-guard.js','utf8');
+assert.ok(loader.includes('student-activity-save-recovery.js'),'shared save recovery guard must load in student runtime');
+for(const token of ['결과를 저장하지 못했어요.','data-save-recovery-back','마을로 돌아가기 🏡','StudyVillageCurriculumLearning?.close'])assert.ok(guard.includes(token),`curriculum save recovery missing ${token}`);
+assert.ok(curriculum.includes('결과를 저장하지 못했어요.')&&curriculum.includes('다시 저장하기'),'curriculum must preserve retry action');
+for(const token of ['결과 다시 저장하기 ↻','returnVillage'])assert.ok(library.includes(token),`Bookmaru save recovery missing ${token}`);
+for(const token of ['채점 다시 시도','returnVillage'])assert.ok(math.includes(token),`math save recovery missing ${token}`);
+for(const token of ['data-retry','다시 저장하기 ↻','data-back','마을로 돌아가기 🏡'])assert.ok(exploration.includes(token),`exploration save recovery missing ${token}`);
+for(const token of ['safeReturn','cleanupVillage','마을로 돌아가기'])assert.ok(riddle.includes(token),`riddle save/return recovery missing ${token}`);
+console.log('student save recovery contract selftest: ok');

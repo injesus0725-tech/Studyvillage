@@ -1,8 +1,6 @@
-/* v1.15 star currency foundation.
-   Creates a separate spendable star balance and immutable ledger.
-   Star state is mirrored into settings so existing backups preserve it without changing the backup format.
-   On read/change after restore, the live star column/table is reconciled from that backed-up mirror.
-   Item shop student and teacher routes are installed here with their matching auth guards. */
+/* v1.16 star currency foundation.
+   Preserves balance integrity and optimistic concurrency guards while supporting
+   exploration discovery records and the three-part daily mission. */
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,27 +75,27 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
-const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary']);
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle','exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts']);
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
-  if(activityId==='exploration-forest-riddle')return Math.min(3,Math.ceil(value/40));
-  if(activityId==='exploration-mountain-riddle')return value===100?5:Math.min(4,Math.ceil(value/25));
+  if(activityId.startsWith('exploration-'))return value>=100?2:value>=60?1:0;
   return 0;
 }
-function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
-  if(!EXPEDITION_REWARD_IDS.has(activityId)&&!STANDARD_REWARD_IDS.has(activityId))return{stars:0,balance:null};
+function commitExpeditionReward(db,{name,activityId,score,submissionId,now,starDelta=0}){
+  const expedition=EXPEDITION_REWARD_IDS.has(activityId)||activityId.startsWith('exploration-'),standard=STANDARD_REWARD_IDS.has(activityId)||activityId.startsWith('curriculum-');
+  if(!expedition&&!standard)return{stars:0,balance:null};
   if(!/^[A-Za-z0-9._:-]{8,100}$/.test(submissionId||''))throw Object.assign(new Error('invalid-expedition-submission'),{code:'invalid-expedition-submission'});
   ensureSchema(db);
-  const kind=EXPEDITION_REWARD_IDS.has(activityId)?'expedition-completion':'learning-completion',prior=db.prepare('SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind=? AND reference_id=? LIMIT 1').get(name,kind,submissionId);
+  const kind=expedition?'expedition-completion':'learning-completion',prior=db.prepare('SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind=? AND reference_id=? LIMIT 1').get(name,kind,submissionId);
   if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
   const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)throw Object.assign(new Error('player-not-found'),{code:'player-not-found'});
   if(!validStarBalance(player.stars))throw Object.assign(new Error('corrupt-star-balance'),{code:'corrupt-star-balance'});
-  const stars=EXPEDITION_REWARD_IDS.has(activityId)?expeditionStarsFor(activityId,score):standardActivityStars(activityId,score),before=player.stars,after=before+stars;
+  const baseStars=expedition?expeditionStarsFor(activityId,score):standardActivityStars(activityId,score),npcDelta=Math.max(-5,Math.min(8,Math.trunc(Number(starDelta)||0))),before=player.stars,stars=npcDelta<0?-Math.min(before,Math.abs(npcDelta)):baseStars+npcDelta,after=before+stars;
   if(after>MAX_STARS)throw Object.assign(new Error('star-limit-exceeded'),{code:'star-limit-exceeded'});
   if(stars){const updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)throw Object.assign(new Error('star-balance-changed'),{code:'star-balance-changed'});db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,stars,kind,submissionId,`${activityId} 정상 완료 · ${Math.round(Number(score)||0)}점`,now);writeMirror(db,name)}
   return{stars,balance:after,alreadyClaimed:false};
 }
-function riddleStarsFor(score){const value=Math.max(0,Math.min(1000,Math.round(Number(score)||0)));return value>=1000?3:value>=700?2:value>0?1:0}
+function riddleStarsFor(score){const value=Math.max(0,Math.min(1000,Math.round(Number(score)||0)));return value>=1000?2:value>=600?1:0}
 function commitRiddleReward(db,{name,attempt,score,now}){
   ensureSchema(db);const referenceId=`riddle-demo:${Math.max(1,Number(attempt)||1)}`,prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='riddle-completion' AND reference_id=? LIMIT 1").get(name,referenceId);
   if(prior)return{stars:0,balance:prior.balance,alreadyClaimed:true};
@@ -130,36 +128,66 @@ export function changeStars(playerName,delta,{kind='teacher-adjustment',referenc
     return tx();
   }finally{try{db?.close()}catch{}}
 }
+
 const EXPLORATION_REWARDS=Object.freeze({chest:{stars:3,detail:'보물상자 발견'},tree:{stars:1,detail:'반짝 나무 관찰'},flower:{stars:2,detail:'숨은 꽃 피우기'}});
-const COLLECTION_NPCS=new Set(['wizard','ghost','dragon','fox','robot','owl']),COLLECTION_EVENTS=new Set(Object.keys(EXPLORATION_REWARDS));
-const COLLECTION_MILESTONES=Object.freeze({
-  'npc-three':{title:'마을 친구 3명 만나기',stars:3,complete:collection=>collection.npcs.length>=3},
-  'event-all':{title:'탐험 발견물 3종 모으기',stars:5,complete:collection=>collection.events.length>=3},
-  'collection-complete':{title:'탐험 도감 전체 완성',stars:10,complete:collection=>collection.npcs.length>=6&&collection.events.length>=3}
-});
+const COLLECTION_NPCS=new Set(['wizard','ghost','dragon','fox','robot','owl']),COLLECTION_EVENTS=new Set(Object.keys(EXPLORATION_REWARDS)),COLLECTION_LOCATIONS=new Set(['gymnasium','nurse-office','cafeteria','wee-class','class-3-1','teachers-office','playground','multipurpose-room','english-room']);
 const collectionKey=name=>`exploration-collection:${encodeURIComponent(clean(name,12))}`;
-function readCollection(db,name){const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(collectionKey(name))?.value;try{const value=JSON.parse(raw||'{}');return{npcs:[...new Set((Array.isArray(value.npcs)?value.npcs:[]).filter(id=>COLLECTION_NPCS.has(id)))],events:[...new Set((Array.isArray(value.events)?value.events:[]).filter(id=>COLLECTION_EVENTS.has(id)))]}}catch{return{npcs:[],events:[]}}}
-function addCollection(db,name,kind,id){const allowed=kind==='npc'?COLLECTION_NPCS:kind==='event'?COLLECTION_EVENTS:null;if(!allowed?.has(id))return{ok:false,code:'invalid-collection-entry'};const current=readCollection(db,name),key=kind==='npc'?'npcs':'events',isNew=!current[key].includes(id);if(isNew)current[key].push(id);db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(collectionKey(name),JSON.stringify(current));return{ok:true,isNew,collection:current}}
-function collectionMilestones(db,name,collection){return Object.entries(COLLECTION_MILESTONES).map(([id,milestone])=>({id,title:milestone.title,stars:milestone.stars,complete:milestone.complete(collection),claimed:!!db.prepare("SELECT 1 FROM star_ledger WHERE player_name=? AND kind='collection-milestone' AND reference_id=? LIMIT 1").get(name,id)}))}
-export function explorationCollectionFor(playerName){const name=clean(playerName,12);if(!name)return null;let db;try{db=openLiveDb();const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return null;const collection=readCollection(db,name);return{ok:true,...collection,milestones:collectionMilestones(db,name,collection),balance:player.stars}}finally{try{db?.close()}catch{}}}
+function readCollection(db,name){const raw=db.prepare('SELECT value FROM settings WHERE key=?').get(collectionKey(name))?.value;try{const value=JSON.parse(raw||'{}');return{npcs:[...new Set((Array.isArray(value.npcs)?value.npcs:[]).filter(id=>COLLECTION_NPCS.has(id)))],events:[...new Set((Array.isArray(value.events)?value.events:[]).filter(id=>COLLECTION_EVENTS.has(id)))],locations:[...new Set((Array.isArray(value.locations)?value.locations:[]).filter(id=>COLLECTION_LOCATIONS.has(id)))]}}catch{return{npcs:[],events:[],locations:[]}}}
+function addCollection(db,name,kind,id){const allowed=kind==='npc'?COLLECTION_NPCS:kind==='event'?COLLECTION_EVENTS:kind==='location'?COLLECTION_LOCATIONS:null;if(!allowed?.has(id))return{ok:false,code:'invalid-collection-entry'};const current=readCollection(db,name),key=kind==='npc'?'npcs':kind==='event'?'events':'locations',isNew=!current[key].includes(id);if(isNew)current[key].push(id);db.prepare('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(collectionKey(name),JSON.stringify(current));return{ok:true,isNew,collection:current}}
+export function explorationCollectionFor(playerName){const name=clean(playerName,12);if(!name)return null;let db;try{db=openLiveDb();const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return null;return{ok:true,...readCollection(db,name),balance:player.stars}}finally{try{db?.close()}catch{}}}
 export function recordExplorationCollection(playerName,kind,id){const name=clean(playerName,12),safeKind=clean(kind,12),safeId=clean(id,30);if(!name)return{ok:false,code:'invalid-player'};let db;try{db=openLiveDb();if(!db.prepare('SELECT 1 FROM players WHERE name=?').get(name))return{ok:false,code:'player-not-found'};return addCollection(db,name,safeKind,safeId)}finally{try{db?.close()}catch{}}}
-export function claimCollectionMilestone(playerName,milestoneId){const name=clean(playerName,12),id=clean(milestoneId,40),milestone=COLLECTION_MILESTONES[id];if(!name||!milestone)return{ok:false,code:'invalid-collection-milestone'};let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const tx=db.transaction(()=>{const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='collection-milestone' AND reference_id=? LIMIT 1").get(name,id);if(prior)return{ok:true,alreadyClaimed:true,milestoneId:id,stars:0,balance:prior.balance};const collection=readCollection(db,name);if(!milestone.complete(collection))return{ok:false,code:'collection-milestone-incomplete',milestoneId:id,balance:player.stars};const before=player.stars,after=before+milestone.stars;if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,milestone.stars,'collection-milestone',id,`탐험 도감 · ${milestone.title}`,now);writeMirror(db,name);return{ok:true,alreadyClaimed:false,milestoneId:id,stars:milestone.stars,balance:after,createdAt:now}});return tx()}finally{try{db?.close()}catch{}}}
 export function classroomExplorationCollections(){let db;try{db=openLiveDb();return db.prepare('SELECT name FROM players ORDER BY name COLLATE NOCASE').all().map(({name})=>({name,...readCollection(db,name)}))}finally{try{db?.close()}catch{}}}
+
 const DAILY_MISSIONS=Object.freeze([
-  {id:'bookmaru',activityId:'vocabulary',giver:'책방 유령',icon:'📚',title:'일일 책마루 도전',detail:'책마루의 오늘 문제 5개를 완료해요.',stars:3}
+  {id:'bookmaru',activityIds:['vocabulary'],icon:'📚',title:'책마루 완료',detail:'책마루 활동을 1회 완료해요.'},
+  {id:'math',activityIds:['math-arithmetic'],icon:'➕',title:'수학 놀이터 완료',detail:'수학 놀이터에서 랜덤 복습을 1회 완료해요.'},
+  {id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random'],icon:'🗺️',title:'탐험 완료',detail:'탐험 동굴에서 원하는 탐험을 1회 완료해요.'}
 ]);
+const DAILY_REWARD=2;
 const classroomDay=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
-function dailyMissionFor(_name){const day=classroomDay();return{...DAILY_MISSIONS[0],day}}
 function kstDay(value){const date=new Date(value);return Number.isNaN(date.getTime())?'':date.toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})}
-export function dailyMissionStatus(playerName){const name=clean(playerName,12);if(!name)return null;let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return null;const mission=dailyMissionFor(name),record=db.prepare('SELECT updated_at AS updatedAt FROM activity_records WHERE player_name=? AND activity_id=?').get(name,mission.activityId),complete=kstDay(record?.updatedAt)===mission.day,referenceId=`daily-mission:${mission.day}`,claimed=!!db.prepare("SELECT 1 FROM star_ledger WHERE player_name=? AND kind='daily-mission' AND reference_id=? LIMIT 1").get(name,referenceId);return{ok:true,mission,complete,claimed,balance:player.stars}}finally{try{db?.close()}catch{}}}
-export function claimDailyMission(playerName){const name=clean(playerName,12);if(!name)return{ok:false,code:'invalid-player'};let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const mission=dailyMissionFor(name),referenceId=`daily-mission:${mission.day}`;const tx=db.transaction(()=>{const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='daily-mission' AND reference_id=? LIMIT 1").get(name,referenceId);if(prior)return{ok:true,alreadyClaimed:true,mission,stars:0,balance:prior.balance};const record=db.prepare('SELECT updated_at AS updatedAt FROM activity_records WHERE player_name=? AND activity_id=?').get(name,mission.activityId);if(kstDay(record?.updatedAt)!==mission.day)return{ok:false,code:'mission-not-complete',mission,balance:player.stars};const before=player.stars,after=before+mission.stars;if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,mission.stars,'daily-mission',referenceId,`${mission.giver} 의뢰 · ${mission.title}`,now);writeMirror(db,name);return{ok:true,alreadyClaimed:false,mission,stars:mission.stars,balance:after,createdAt:now}});return tx()}finally{try{db?.close()}catch{}}}
+function missionProgress(db,name,day){
+  return DAILY_MISSIONS.map(mission=>{
+    const placeholders=mission.activityIds.map(()=>'?').join(',');
+    const rows=db.prepare(`SELECT activity_id AS activityId,updated_at AS updatedAt FROM activity_records WHERE player_name=? AND activity_id IN (${placeholders})`).all(name,...mission.activityIds);
+    return{...mission,complete:rows.some(row=>kstDay(row.updatedAt)===day)};
+  });
+}
+function dailyMissionStatusFromDb(db,name,player,day=classroomDay()){
+  const missions=missionProgress(db,name,day),completed=missions.filter(m=>m.complete).length,complete=completed===missions.length,referenceId=`daily-mission:${day}`,claimed=!!db.prepare("SELECT 1 FROM star_ledger WHERE player_name=? AND kind='daily-mission' AND reference_id=? LIMIT 1").get(name,referenceId);
+  return{ok:true,day,missions,completed,total:missions.length,complete,claimed,rewardStars:DAILY_REWARD,balance:player.stars};
+}
+export function dailyMissionStatus(playerName){
+  const name=clean(playerName,12);if(!name)return null;let db;
+  try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return null;if(!validStarBalance(player.stars))throw new Error('corrupt-star-balance');return dailyMissionStatusFromDb(db,name,player)}finally{try{db?.close()}catch{}}
+}
+export function claimDailyMission(playerName){
+  const name=clean(playerName,12);if(!name)return{ok:false,code:'invalid-player'};let db;
+  try{
+    db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const day=classroomDay(),referenceId=`daily-mission:${day}`;
+    const tx=db.transaction(()=>{
+      const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};
+      const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='daily-mission' AND reference_id=? LIMIT 1").get(name,referenceId);
+      const missions=missionProgress(db,name,day),completed=missions.filter(m=>m.complete).length;
+      if(prior)return{ok:true,alreadyClaimed:true,day,missions,completed,total:missions.length,complete:completed===missions.length,claimed:true,rewardStars:DAILY_REWARD,stars:0,balance:prior.balance};
+      if(completed!==missions.length)return{ok:false,code:'mission-not-complete',day,missions,completed,total:missions.length,complete:false,claimed:false,rewardStars:DAILY_REWARD,balance:player.stars};
+      const before=player.stars,after=before+DAILY_REWARD;if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};
+      const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};
+      db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,DAILY_REWARD,'daily-mission',referenceId,'오늘의 의뢰 3개 모두 완료',now);
+      writeMirror(db,name);return{ok:true,alreadyClaimed:false,day,missions,completed,total:missions.length,complete:true,claimed:true,rewardStars:DAILY_REWARD,stars:DAILY_REWARD,balance:after,createdAt:now};
+    });
+    return tx();
+  }finally{try{db?.close()}catch{}}
+}
+
 export function claimExplorationReward(playerName,eventType){
   const name=clean(playerName,12),type=clean(eventType,20),reward=EXPLORATION_REWARDS[type];
   if(!name||!reward)return{ok:false,code:'invalid-exploration-event'};
-  let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const day=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'}),referenceId=`${type}:${day}`;
+  let db;try{db=openLiveDb();ensureSchema(db);recoverFromMirror(db,name);const day=classroomDay(),referenceId=`${type}:${day}`;
     const tx=db.transaction(()=>{const player=db.prepare('SELECT stars FROM players WHERE name=?').get(name);if(!player)return{ok:false,code:'player-not-found'};if(!validStarBalance(player.stars))return{ok:false,code:'corrupt-star-balance'};const prior=db.prepare("SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind='exploration-event' AND reference_id=? LIMIT 1").get(name,referenceId);if(prior){addCollection(db,name,'event',type);return{ok:true,alreadyClaimed:true,eventType:type,stars:0,balance:prior.balance}}const before=player.stars,after=before+reward.stars;if(after>MAX_STARS)return{ok:false,code:'star-limit-exceeded',balance:before};const now=new Date().toISOString(),updated=db.prepare('UPDATE players SET stars=?,updated_at=? WHERE name=? AND stars=?').run(after,now,name,before);if(updated.changes!==1)return{ok:false,code:'star-balance-changed'};db.prepare('INSERT INTO star_ledger(player_name,before_value,after_value,delta,kind,reference_id,detail,created_at) VALUES(?,?,?,?,?,?,?,?)').run(name,before,after,reward.stars,'exploration-event',referenceId,reward.detail,now);addCollection(db,name,'event',type);writeMirror(db,name);return{ok:true,alreadyClaimed:false,eventType:type,stars:reward.stars,balance:after,createdAt:now}});return tx();
   }finally{try{db?.close()}catch{}}
 }
+
 export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publishLiveEvent}){
   ensureStarLedger();
   installRestoreValidationMiddleware(app,{requireAdmin});
@@ -183,7 +211,7 @@ export function installStarLedgerRoutes(app,{requireSession,requireAdmin,publish
   app.post('/api/player/me/exploration-event',requireSession,(req,res)=>{try{const result=claimExplorationReward(req.session.name,req.body?.eventType);if(!result.ok)return res.status(result.code==='player-not-found'?404:400).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'exploration-event-failed',message:clean(err?.message||err,160)})}});
   app.get('/api/player/me/exploration-collection',requireSession,(req,res)=>{try{const result=explorationCollectionFor(req.session.name);if(!result)return res.status(404).json({ok:false,code:'player-not-found'});res.json(result)}catch(err){res.status(500).json({ok:false,code:'exploration-collection-read-failed',message:clean(err?.message||err,160)})}});
   app.post('/api/player/me/exploration-collection',requireSession,(req,res)=>{try{const result=recordExplorationCollection(req.session.name,req.body?.kind,req.body?.id);if(!result.ok)return res.status(result.code==='player-not-found'?404:400).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'exploration-collection-write-failed',message:clean(err?.message||err,160)})}});
-  app.post('/api/player/me/exploration-collection/milestone',requireSession,(req,res)=>{try{const result=claimCollectionMilestone(req.session.name,req.body?.milestoneId);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);if(!result.alreadyClaimed){const milestone=COLLECTION_MILESTONES[result.milestoneId];try{publishLiveEvent?.('📖',`${req.session.name} 학생이 탐험 도감 “${milestone.title}” 보상을 획득했습니다!`,'collection-milestone')}catch{}}res.json(result)}catch(err){res.status(500).json({ok:false,code:'collection-milestone-claim-failed',message:clean(err?.message||err,160)})}});
+  app.post('/api/player/me/exploration-collection/milestone',requireSession,(_req,res)=>res.status(410).json({ok:false,code:'collection-milestone-retired'}));
   app.get('/api/admin/exploration-collections',requireAdmin,(_req,res)=>{try{res.json({ok:true,students:classroomExplorationCollections()})}catch(err){res.status(500).json({ok:false,code:'exploration-collections-read-failed',message:clean(err?.message||err,160)})}});
   app.get('/api/player/me/daily-mission',requireSession,(req,res)=>{try{const result=dailyMissionStatus(req.session.name);if(!result)return res.status(404).json({ok:false,code:'player-not-found'});res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-read-failed',message:clean(err?.message||err,160)})}});
   app.post('/api/player/me/daily-mission/claim',requireSession,(req,res)=>{try{const result=claimDailyMission(req.session.name);if(!result.ok)return res.status(result.code==='player-not-found'?404:409).json(result);res.json(result)}catch(err){res.status(500).json({ok:false,code:'daily-mission-claim-failed',message:clean(err?.message||err,160)})}});

@@ -2,6 +2,8 @@ const fs=require('fs');
 const assert=require('assert');
 
 const src=fs.readFileSync('error-reporter.js','utf8');
+assert.ok(src.includes("VERSION='1.9.0'"),'오류 보고 버전은 V1 출시 버전과 일치해야 합니다.');
+assert.ok(src.includes('snapshot:buildExport'),'관리자 진단 내보내기에서 현재 브라우저 오류를 읽을 수 있어야 합니다.');
 assert.ok(src.includes('FLUSH_MS=10000'),'학생 오류 전송 확인 간격은 10초를 유지해야 합니다.');
 assert.ok(src.includes('MAX_FLUSH_REPORTS=6'),'오류 보고는 한 주기에 소량만 전송해야 합니다.');
 assert.ok(src.includes('if(flushing||!active())return'),'오프라인·숨김·비활성 게임 화면에서는 오류 전송을 반복하지 않아야 합니다.');

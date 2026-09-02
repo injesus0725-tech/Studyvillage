@@ -1,43 +1,79 @@
-/* v0.8 full-body avatar renderer */
-window.StudyVillageAvatar = (() => {
-  const BASES = {
-    'student-default': { emoji:'🧍', src:null, alt:'기본 학생 캐릭터' },
-    'student-boy': { emoji:'🧍‍♂️', src:null, alt:'소년 탐험가' },
-    'student-girl': { emoji:'🧍‍♀️', src:null, alt:'소녀 탐험가' },
-    'student-hero': { emoji:'🧑‍🚀', src:null, alt:'우주 탐험가' }
+/* StudyVillage mini-me renderer: every independently drawn part uses one 96x144 anatomical canvas. */
+window.StudyVillageAvatar=(()=>{
+  const frame=body=>`<svg viewBox="0 0 96 144" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" shape-rendering="geometricPrecision">${body}</svg>`;
+  const ink='#684b43',stroke=`stroke="${ink}" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"`;
+  const baseSvg=(skin,undershirt)=>frame(`<g ${stroke}><path fill="${skin}" d="M28 31Q28 13 48 13t20 18v19q0 18-20 18T28 50z"/><path fill="${skin}" d="M25 39h4v13h-4q-4-6 0-13zm46 0h-3v13h3q4-6 0-13z"/><ellipse fill="#4b3834" stroke="none" cx="37" cy="43" rx="2.2" ry="3.4"/><ellipse fill="#4b3834" stroke="none" cx="59" cy="43" rx="2.2" ry="3.4"/><circle fill="#fff" stroke="none" cx="37.6" cy="42" r=".7"/><circle fill="#fff" stroke="none" cx="59.6" cy="42" r=".7"/><ellipse fill="#f4a5a2" stroke="none" cx="32" cy="51" rx="4" ry="2"/><ellipse fill="#f4a5a2" stroke="none" cx="64" cy="51" rx="4" ry="2"/><path fill="none" d="M43 56q5 5 10 0"/><path fill="${skin}" d="M43 67h10v8H43z"/><path fill="${skin}" d="M22 78q0-5 5-5h4v31h-9zm43-5h4q5 0 5 5v26h-9z"/><path fill="${undershirt}" d="M31 71q17-5 34 0l2 38H29z"/><path fill="${skin}" d="M34 106h12v23H34zm16 0h12v23H50z"/><path fill="#554844" d="M31 125h16v11H28q-3-5 3-11zm18 0h16q6 6 3 11H49z"/></g>`);
+  const hair=(kind,color)=>{const shapes={
+    short:`<path d="M25 39Q22 12 48 9q25 1 23 29l-7-8-5 7-9-11-8 11-8-8-5 10z"/><path d="M28 23q12-12 35-5" fill="none"/>`,
+    bob:`<path d="M23 42Q21 10 48 8t26 34v23l-10 5V38l-7-9-9 10-9-10-7 10v31l-10-5z"/><path d="M25 53q-4 10 2 18m44-18q4 10-2 18" fill="none"/>`,
+    pony:`<path d="M25 39Q22 11 48 8t23 31l-7-9-5 8-11-12-9 12-8-8-3 9z"/><path d="M68 22q18-2 17 15-1 13-14 17l-5-9q13-4 7-15z"/><circle cx="71" cy="25" r="4"/>`,
+    wave:`<path d="M21 43Q20 9 48 7t28 36l-7-6-5 9-8-13-9 11-9-11-8 13z"/><path d="M23 45q-5 8 1 18t-2 16m51-34q6 8 0 18t2 16" fill="none"/>`};
+    return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.short}</g>`)};
+  const hat=(kind,color)=>{const shapes={
+    cap:`<path d="M27 28q3-16 21-16 19 1 22 16z"/><path fill="#496f98" d="M48 12q8 4 11 16H48z"/><path fill="#d7b55b" d="M46 13h4v15h-4z"/><path d="M47 28h32q-7 7-27 6z"/><path fill="#f5e5a5" d="M48 17l2 3 4 1-3 2 1 4-4-2-4 2 1-4-3-2 4-1z"/>`,
+    leaf:`<path d="M25 29q5-17 23-17 17 0 23 17z"/><path fill="#b9d77d" d="M48 13Q55 1 69 5 62 17 49 19z"/><path d="M24 29h49q-4 6-25 6t-24-6z"/><path fill="none" d="M51 16q7-5 13-8"/>`,
+    scholar:`<path d="M19 20L48 8l29 12-29 12z"/><path fill="#d5b65a" d="M31 25h34v9H31z"/><path fill="none" d="M70 20v19"/><path fill="#d5b65a" d="M67 39h6l-1 8h-4z"/>`,
+    crown:`<path d="M28 30l2-18 11 8 7-15 8 15 11-8 2 18z"/><path fill="#f5e7a0" d="M31 27h35v5H31z"/><circle cx="48" cy="21" r="3" fill="#8c3dd1"/><circle cx="35" cy="24" r="2" fill="#42b8d8"/><circle cx="61" cy="24" r="2" fill="#dc5577"/>`,
+    wizard:`<path d="M29 29Q36 16 43 4q10 5 22-1-7 10 1 26z"/><path fill="#d2b55e" d="M42 15l4 2 3-3-1 5 4 3-5-1-4 4 1-5z"/><path d="M17 29h62q-5 8-31 8t-31-8z"/><path fill="#745bb0" d="M25 28h45v5H25z"/>`,
+    pirate:`<path d="M24 27q8-20 24-9 16-11 24 9-11-4-24 5-13-9-24-5z"/><path fill="#c9a84f" d="M24 28q12 4 24-3 12 7 24 3l-2 5q-12 4-22-2-10 6-22 2z"/><path fill="#f0e4c7" d="M44 17h8v8h-8z"/><path d="M46 19h4m-2-2v6"/>`,
+    flower:`<path d="M25 29q3-16 23-16 19 0 23 16-9 5-23 5t-23-5z"/><path fill="#7d315f" d="M28 28h40v4H28z"/><g fill="#f6d9e7"><circle cx="63" cy="13" r="6"/><circle cx="56" cy="14" r="5"/><circle cx="60" cy="8" r="5"/></g><circle cx="60" cy="13" r="3" fill="#d7ad55"/>`};
+    return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.cap}</g>`)};
+  const glasses=(kind,color)=>{const shapes={
+    round:`<circle cx="37" cy="45" r="7.5"/><circle cx="59" cy="45" r="7.5"/><path d="M44.5 44h7M29 42l-6-2m44 2 6-2"/>`,
+    goggles:`<path d="M27 39h19v12H31q-5-3-4-12zm23 0h19q1 9-4 12H50z"/><path d="M46 43h4M27 42l-7-4m49 4 7-4"/>`,
+    monocle:`<circle cx="59" cy="44" r="8"/><path d="M66 50q5 12 2 25"/><path d="M30 43h14"/>`,
+    sun:`<path d="M27 39h19v12H32q-5-3-5-12zm23 0h19q0 9-5 12H50z"/><path d="M46 43h4"/>`,
+    heart:`<path d="M28 42q0-6 6-6 5 0 7 5 3-5 7-5 6 0 6 6 0 6-13 13-13-7-13-13zm29 0q0-6 6-6 7 0 7 6 0 6-13 13-1-7 0-13z"/>`};
+    const fill=kind==='sun'?color:kind==='heart'?'#b94e82':'#dceef5cc';return frame(`<g fill="${fill}" stroke="${color}" stroke-width="1.7" stroke-linejoin="round">${shapes[kind]||shapes.round}</g>`)};
+  const top=(kind,color)=>{const shapes={
+    hoodie:`<path d="M28 74l9-7h22l9 7-3 35H31z"/><path fill="#172b43" d="M37 68q11 16 22 0l4 7-15 10-15-10z"/><path fill="#c8a75a" d="M47 83h2v22h-2z"/><path fill="#233f5d" d="M35 96h26v10H35z"/>`,
+    uniform:`<path d="M28 73l10-5h20l10 5-3 36H31z"/><path fill="#f1ead8" d="M38 68l10 15 10-15-2 18H40z"/><path fill="#b6903d" d="M46 80h4l2 19-4 5-4-5z"/><path fill="none" d="M48 83v25M34 92h8m12 0h8"/>`,
+    robe:`<path d="M29 70h38l9 43H20z"/><path fill="#251d43" d="M38 69l10 14 10-14 8 7-18 17-18-17z"/><path fill="#c9a84f" d="M47 85h2v27h-2zM27 101h42v4H27z"/><path fill="#8d72c7" d="M43 91l5-6 5 6-5 6z"/>`,
+    armor:`<path fill="#27364b" d="M28 74l10-8h20l10 8-4 36H32z"/><path fill="#8193a9" d="M24 75l12-10 5 13-12 9zm48 0-12-10-5 13 12 9z"/><path fill="#cbd4de" d="M39 69l9 11 9-11 5 37H34z"/><path fill="#a98636" d="M34 96h28v7H34zM46 80h4v16h-4z"/><path fill="#5c6c83" d="M38 73l10 8 10-8-3 15H41z"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.hoodie}</g>`)};
+  const bottom=(kind,color)=>{const shapes={pants:`<path d="M29 102h38l-2 29H51l-3-19-3 19H31z"/><path fill="#243e63" d="M29 102h38v6H29z"/><path d="M48 105v9M34 108q5 4 10 0m8 0q5 4 10 0" fill="none"/><path fill="#d4a94f" d="M46 103h5v4h-5z"/><path fill="#fff3" d="M33 112h10v3H33zm20 0h10v3H53z"/>`,shorts:`<path d="M29 102h38l-3 17H52l-4-8-4 8H32z"/><path d="M48 104v8" fill="none"/>`,skirt:`<path d="M31 101h34l7 25H24z"/><path fill="#8f365d" d="M31 101h34v6H31z"/><path fill="#fff2" d="M35 107l-4 17m13-17-1 18m10-18 1 18m7-18 4 17"/><path fill="none" d="M27 121h42"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.pants}</g>`)};
+  const shoes=(kind,color)=>{const shapes={sneakers:`<path fill="#f7f3ea" d="M28 122h18v13H24q-5-5 4-13zm22 0h18q9 8 4 13H50z"/><path fill="${color}" d="M30 122h14v7H27zm23 0h14l3 7H53z"/><path fill="#d7ad50" d="M25 132h21v4H23zm25 0h22l1 4H50z"/><path fill="none" stroke="#fff" d="M32 125h9m14 0h9"/>`,boots:`<path d="M29 116h16v19H25q-4-5 4-10zm22 0h16v9q8 5 4 10H51z"/><path fill="#d6a46d" d="M29 121h16m6 0h16"/>`,wing:`<path d="M29 124h17v11H24q-4-6 5-11zm21 0h17q9 5 4 11H50z"/><path fill="#eafcff" d="M28 126l-16-12 6 16-12-5 14 11zm40 0 16-12-6 16 12-5-14 11z"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.sneakers}</g>`)};
+  const bag=(kind,color)=>{const shapes={backpack:`<path d="M67 75q10-8 21 0v34H67z"/><path fill="#6f452d" d="M69 83h17v11H69z"/><path fill="#d4aa50" d="M75 87l3-4 3 4-3 4z"/><path d="M71 77q7-15 14 0M72 98h12" fill="none"/><path fill="#fff2" d="M70 78h4v27h-4z"/>`,satchel:`<path d="M65 86h25v25H65z"/><path fill="#69482f" d="M66 86l12 10 11-10v7L78 101 66 93z"/><path d="M69 87q2-21 16-13" fill="none"/><circle fill="#d4aa50" cx="78" cy="97" r="2"/>`,books:`<path fill="#375d86" d="M68 78h22v34H68z"/><path fill="#e26058" d="M70 81h18v8H70z"/><path fill="#efc95d" d="M70 91h18v8H70z"/><path fill="#6aa4d5" d="M70 101h18v8H70z"/><path fill="#f7ecd3" d="M72 83h12v2H72zm0 10h12v2H72zm0 10h12v2H72z"/>`,art:`<path d="M66 84h25v27H66z"/><path fill="#b84d45" d="M66 84h25v6H66z"/><path d="M71 84q7-12 14 0" fill="none"/><circle cx="78" cy="99" r="7" fill="#f2d58a"/><circle cx="75" cy="97" r="2" fill="#e65b4f"/><circle cx="81" cy="96" r="2" fill="#4e83ca"/><circle cx="81" cy="102" r="2" fill="#62a867"/>`,rocket:`<path fill="#d9e8f2" d="M74 75q9-15 17 0v27H74z"/><circle cx="82" cy="85" r="5" fill="#65aee8"/><path fill="#ef594c" d="M75 101l-6 14 10-6 4 10 4-10 9 6-5-14z"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.backpack}</g>`)};
+  const hand=(kind,color)=>{const shapes={sword:`<path fill="#dfe8f1" d="M22 94L6 64l4-5 23 29z"/><path fill="#91a9c0" d="M10 62l4 4 15 22-4 3z"/><path fill="#b79242" d="M13 93l15-10 5 6-15 10z"/><circle cx="15" cy="99" r="3" fill="#6a4b2d"/>`,wand:`<path fill="#654b88" d="M22 98L9 70l5-3 14 28z"/><circle cx="10" cy="64" r="7" fill="#6ed0dc"/><path fill="#d6bd65" d="M10 53l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/>`,book:`<path fill="#2f5c8d" d="M2 83q11-5 21 1v23q-10-7-21-2z"/><path fill="#3b70a7" d="M23 84q10-7 21-1v22q-10-5-21 2z"/><path fill="#f7ecd4" d="M5 86q8-3 16 1v15q-8-4-16-1zm21 1q8-5 15-2v16q-8-3-15 1z"/><path fill="#d3b55c" d="M22 83h4v24h-4z"/><path fill="none" d="M8 91h10m-10 5h9m12-5h9m-9 5h8"/>`,magnifier:`<circle cx="13" cy="78" r="9" fill="#c8eff099"/><circle cx="13" cy="78" r="5" fill="#fff5"/><path fill="#c39b42" d="M18 84l14 18-5 4-13-19z"/><path fill="#263f5d" d="M25 94l7 8-5 4-6-9z"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.sword}</g>`)};
+  const pet=(kind,color)=>{const shapes={chick:`<circle cx="80" cy="119" r="14"/><path d="M77 103l4-7 4 8"/><path fill="#ef9240" d="M77 121h8l-4 5z"/>`,cat:`<path d="M68 111l5-14 8 9 9-9 4 14v22H68z"/><path d="M73 130q8 6 16 0" fill="none"/>`,owl:`<path d="M68 111q12-20 25 0v22H68z"/><circle cx="76" cy="116" r="6" fill="#f2d77b"/><circle cx="87" cy="116" r="6" fill="#f2d77b"/><path fill="#ef9b41" d="M78 124h7l-4 5z"/>`,fox:`<path d="M68 110l3-15 11 9 10-9 3 15-5 24H73z"/><path fill="#fff0df" d="M72 116l10 10 10-10-3 15H75z"/>`,dog:`<path d="M69 108l-5-10q-5 13 5 20v15h24v-22l-5-13-8 8z"/><path d="M77 126q5 4 10 0" fill="none"/>`,rabbit:`<path d="M71 109q-5-22 3-25 7 5 7 21 2-20 9-21 7 5 1 26l3 23H69z"/>`,dragon:`<path d="M69 108l4-12 7 9 7-10 5 14 3 24H68z"/><path d="M69 114l-8-6 6 14m26-8 7-6-5 14" fill="none"/><path fill="#ffd956" d="M91 101l7-6-3 10z"/>`,slime:`<path d="M67 128q1-25 14-25t15 25q-2 8-15 8t-14-8z"/><path d="M75 126q6 5 12 0" fill="none"/>`};return frame(`<g fill="${color}" ${stroke}>${shapes[kind]||shapes.cat}<circle cx="77" cy="116" r="2" fill="#292323"/><circle cx="87" cy="116" r="2" fill="#292323"/></g>`)};
+  const face=(kind)=>{const shapes={round:`<path fill="#ffd2ad" d="M27 32q1-20 21-20t21 20v19q0 18-21 18T27 51z"/>`,soft:`<path fill="#ffd2ad" d="M26 33q2-21 22-21t22 21v17q-2 20-22 22-20-2-22-22z"/>`,brave:`<path fill="#efbf99" d="M28 30q3-18 20-18t20 18v22q-3 17-20 17T28 52z"/>`};return frame(`<g ${stroke}>${shapes[kind]||shapes.round}</g>`) };
+  const expression=kind=>{const shapes={smile:`<ellipse fill="#493935" stroke="none" cx="37" cy="44" rx="2.4" ry="3.7"/><ellipse fill="#493935" stroke="none" cx="59" cy="44" rx="2.4" ry="3.7"/><path fill="none" d="M42 56q6 6 12 0"/>`,calm:`<path fill="none" d="M33 44q4-4 8 0m14 0q4-4 8 0M43 57q5 3 10 0"/>`,sparkle:`<path fill="#493935" d="M37 38l2 4 4 2-4 2-2 4-2-4-4-2 4-2zm22 0l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" stroke="none"/><path fill="none" d="M41 56q7 8 14 0"/>`};return frame(`<g stroke="#493935" stroke-width="1.7" stroke-linecap="round">${shapes[kind]||shapes.smile}<ellipse fill="#f1a0a0" stroke="none" cx="31" cy="52" rx="4" ry="2"/><ellipse fill="#f1a0a0" stroke="none" cx="65" cy="52" rx="4" ry="2"/></g>`) };
+  const RPG='/assets/avatar-runtime/';
+  const RETIRED_BASE_ASSETS=[`${RPG}base-boy-hairless-v3.png`,`${RPG}base-girl-hairless-v3.png`];void RETIRED_BASE_ASSETS;
+  const BASES={'student-default':{src:`${RPG}v2/bases/study-boy-v2.png?v=20260902art2`,alt:'새 탐험가 남자 캐릭터'},'student-boy':{src:`${RPG}v2/bases/study-boy-v2.png?v=20260902art2`,alt:'새 탐험가 남자 캐릭터'},'student-girl':{src:`${RPG}v2/bases/study-girl-v2.png?v=20260902art2`,alt:'새 탐험가 여자 캐릭터'},
+    'character-boy-02':{src:`${RPG}production/bases/character-boy-02.png?v=20260901heads1`,alt:'밤색 숏컷 남자'},'character-boy-03':{src:`${RPG}production/bases/character-boy-03.png?v=20260901heads1`,alt:'밤색 단발 남자'},'character-boy-04':{src:`${RPG}production/bases/character-boy-04.png?v=20260901heads1`,alt:'밤색 포니테일 남자'},'character-boy-05':{src:`${RPG}production/bases/character-boy-05.png?v=20260901heads1`,alt:'초록 숏컷 남자'},
+    'character-girl-02':{src:`${RPG}production/bases/character-girl-02.png?v=20260901heads1`,alt:'밤색 숏컷 여자'},'character-girl-03':{src:`${RPG}production/bases/character-girl-03.png?v=20260901heads1`,alt:'밤색 단발 여자'},'character-girl-04':{src:`${RPG}production/bases/character-girl-04.png?v=20260901heads1`,alt:'밤색 포니테일 여자'},'character-girl-05':{src:`${RPG}production/bases/character-girl-05.png?v=20260901heads1`,alt:'초록 숏컷 여자'}};
+  const INTERNAL_BASES={...BASES};
+  const ASSETS={
+    'face-round':{emoji:''},'face-soft':{emoji:''},'face-brave':{emoji:''},
+    'expression-smile':{emoji:''},'expression-calm':{emoji:''},'expression-sparkle':{emoji:''},
+    'hair-natural-wavy-v2':{src:`${RPG}v2/hair/natural-wavy-v1.png?v=20260903hair1`,alt:'내추럴 웨이브 머리'},'hair-short':{src:`${RPG}hair-short-rpg-v3.png`,alt:'갈색 레이어드 숏컷'},'hair-bob':{src:`${RPG}hair-bob-rpg-v3.png`,alt:'갈색 단발머리'},'hair-ponytail':{src:`${RPG}hair-ponytail-rpg-v4.png`,alt:'밤색 하이 포니테일'},'hair-blue':{src:`${RPG}hair-blue-rpg-v4.png`,alt:'별빛 남색 레이어드 숏컷'},
+    'cap-blue':{svg:hat('cap','#294f79')},'crown-gold':{src:`${RPG}hat-crown-rpg-v5.png`,alt:'별보석 황금 왕관'},'leaf-cap':{src:`${RPG}hat-leaf-rpg-v5.png`,alt:'초록 잎 탐험 베레모'},'scholar-cap':{src:`${RPG}hat-academy-v2.png`,alt:'별빛 아카데미 모자'},'hat-wizard':{src:`${RPG}hat-wizard-rpg-v4.png`,alt:'별자리 마법사 모자'},'hat-pirate':{src:`${RPG}hat-pirate-rpg-v4.png`,alt:'별나침반 해적 선장 모자'},'hat-flower':{src:`${RPG}hat-flower-rpg-v5.png`,alt:'들꽃 장식 로즈 베레모'},
+    'glasses-round':{svg:glasses('round','#51454d')},'explorer-goggles':{svg:glasses('goggles','#50634b')},'star-monocle':{svg:glasses('monocle','#a88737')},'glasses-sun':{svg:glasses('sun','#292936')},'glasses-heart':{src:`${RPG}glasses-heart-star-rpg-v8.png`,alt:'로즈골드 별하트 안경'},
+    'outfit-hoodie':{src:`${RPG}outfit-hoodie-rpg-v5.png`,alt:'별지도 모험 후드 재킷'},'outfit-uniform':{src:`${RPG}outfit-academy-v2.png`,alt:'별빛 아카데미 재킷'},'outfit-wizard':{src:`${RPG}outfit-wizard-rpg-v5.png`,alt:'별자리 견습 마법사 코트'},'outfit-armor':{src:`${RPG}outfit-armor-rpg-v4.png`,alt:'별빛 왕실 수호대 갑옷'},
+    'bottom-jeans':{svg:bottom('pants','#315f91')},'bottom-shorts':{src:`${RPG}bottom-adventurer-rpg-v6.png`,alt:'남색 모험가 벨트 반바지'},'bottom-skirt':{svg:bottom('skirt','#b94f78')},
+    'shoes-sneakers':{svg:shoes('sneakers','#315f91')},'shoes-boots':{src:`${RPG}shoes-adventurer-boots-rpg-v7.png`,alt:'황동 장식 가죽 탐험 장화'},'shoes-wing':{src:`${RPG}shoes-wing-rpg-v8.png`,alt:'별보석 바람 날개 신발'},
+    'backpack':{svg:bag('backpack','#875432')},'field-satchel':{svg:bag('satchel','#745033')},'book-pack':{svg:bag('books','#315f91')},'bag-art':{svg:bag('art','#c9604d')},'bag-rocket':{src:`${RPG}bag-star-rocket-rpg-v7.png`,alt:'별 탐험가 로켓 가방'},
+    'hand-sword':{src:`${RPG}hand-star-sword-rpg-v7.png`,alt:'별보석 모험가 검'},'hand-wand':{src:`${RPG}hand-starlight-wand-rpg-v8.png`,alt:'별빛 수정 지팡이'},'hand-book':{svg:hand('book','#315f91')},'hand-magnifier':{svg:hand('magnifier','#294f79')},
+    'pet-chick':{svg:pet('chick','#f4d544')},'pet-cat':{svg:pet('cat','#e59a43')},'pet-owl':{svg:pet('owl','#9a6d45')},'pet-fox':{svg:pet('fox','#e47739')},'pet-dog':{svg:pet('dog','#b87946')},'pet-rabbit':{svg:pet('rabbit','#eee5df')},'pet-dragon':{src:`${RPG}pet-star-dragon-rpg-v8.png`,alt:'별무늬 꼬마 용 친구'},'pet-slime':{svg:pet('slime','#63c67a')},
+    'outfit-silver-knight':{src:`${RPG}production/outfits/silver-knight.png`,onePiece:true,alt:'은빛 수호 기사 한벌 의상'},'outfit-star-mage-production':{src:`${RPG}production/outfits/star-mage.png`,onePiece:true,alt:'별자리 마법사 한벌 의상'},'outfit-school-scientist':{src:`${RPG}production/outfits/school-scientist.png`,onePiece:true,alt:'푸른빛 과학자 한벌 의상'},'outfit-forest-archer-production':{src:`${RPG}production/outfits/forest-archer.png`,onePiece:true,alt:'초록 숲 궁수 한벌 의상'},'outfit-pirate-captain-production':{src:`${RPG}production/outfits/pirate-captain.png`,onePiece:true,alt:'붉은 해적 선장 한벌 의상'},'outfit-moon-priest-production':{src:`${RPG}production/outfits/moon-priest.png`,onePiece:true,alt:'달빛 사제 한벌 의상'},
+    'outfit-starlight-dress-production':{src:`${RPG}production/outfits/starlight-dress.png`,onePiece:true,alt:'별빛 드레스 한벌 의상'},'outfit-flower-fairy-production':{src:`${RPG}production/outfits/flower-fairy-dress.png`,onePiece:true,alt:'꽃요정 원피스 한벌 의상'},'outfit-ribbon-magical-girl-production':{src:`${RPG}production/outfits/ribbon-magical-girl.png`,onePiece:true,alt:'리본 마법소녀 한벌 의상'},
+    'pet-maltese-production':{src:`${RPG}production/pets/maltese.png?v=20260902large2`,alt:'하얀 말티즈'},'pet-toy-poodle-production':{src:`${RPG}production/pets/toy-poodle.png?v=20260902large2`,alt:'살구 토이푸들'},'pet-corgi-production':{src:`${RPG}production/pets/corgi.png?v=20260902large2`,alt:'통통 웰시코기'},'pet-cheese-cat-production':{src:`${RPG}production/pets/cheese-cat.png?v=20260902large2`,alt:'치즈 줄무늬 고양이'},'pet-lop-rabbit-production':{src:`${RPG}production/pets/lop-rabbit.png?v=20260902large2`,alt:'크림 롭이어 토끼'},'pet-baby-dragon-production':{src:`${RPG}production/pets/baby-dragon.png?v=20260902large2`,alt:'사파이어 꼬마 용'},
+    'outfit-camp-explorer-v2':{src:`${RPG}v2/outfits/camp-explorer-v1.png?v=20260902art3`,onePiece:true,alt:'캠핑 탐험가 한벌 의상'},
+    'outfit-detective-v2':{src:`${RPG}v2/outfits/detective-v1.png?v=20260903outfits1`,onePiece:true,alt:'탐정 한벌 의상'},
+    'outfit-firefighter-v2':{src:`${RPG}v2/outfits/firefighter-v1.png?v=20260903outfits1`,onePiece:true,alt:'소방관 한벌 의상'},
+    'outfit-forest-fairy-v2':{src:`${RPG}v2/outfits/forest-fairy-v1.png?v=20260903outfits1`,onePiece:true,alt:'숲의 요정 한벌 의상'},
+    'effect-starlight-v2':{svg:frame('<g fill="#ffd95a" stroke="#b87a24" stroke-width="1"><path d="M8 34l2 5 6 1-5 4 2 6-5-3-5 3 2-6-5-4 6-1z"/><path d="M88 58l2 5 6 1-5 4 2 6-5-3-5 3 2-6-5-4 6-1z"/><path d="M11 100l1.5 4 4.5.5-3.5 3 1 4.5-3.5-2.5L7.5 112l1-4.5-3.5-3 4.5-.5z"/><circle cx="88" cy="105" r="2.5"/><circle cx="9" cy="72" r="2"/></g>'),alt:'포근한 별빛 효과'},
+    'pet-cream-pup-v2':{src:`${RPG}v2/pets/cream-pup-v1.png?v=20260902art4`,alt:'크림 강아지'}
   };
-  const ASSETS = {
-    'cap-blue': { emoji:'🧢', src:null, alt:'파란 모자' },
-    'crown-gold': { emoji:'👑', src:null, alt:'황금 왕관' },
-    'glasses-round': { emoji:'👓', src:null, alt:'동그란 안경' },
-    'backpack': { emoji:'🎒', src:null, alt:'모험 가방' },
-    'pet-chick': { emoji:'🐣', src:null, alt:'병아리 친구' },
-    'pet-cat': { emoji:'🐱', src:null, alt:'고양이 친구' },
-    'leaf-cap': { emoji:'🍃', src:null, alt:'새싹 탐험모' },
-    'scholar-cap': { emoji:'🎓', src:null, alt:'별빛 학사모' },
-    'explorer-goggles': { emoji:'🥽', src:null, alt:'숲빛 고글' },
-    'star-monocle': { emoji:'🔭', src:null, alt:'별 관측경' },
-    'field-satchel': { emoji:'🧰', src:null, alt:'탐험 도구 가방' },
-    'book-pack': { emoji:'📚', src:null, alt:'책마루 가방' },
-    'pet-owl': { emoji:'🦉', src:null, alt:'부엉이 친구' },
-    'pet-fox': { emoji:'🦊', src:null, alt:'여우 친구' }
-  };
-  function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
+  function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}
-  function asset(id,fallback=''){if(!id)return{emoji:'',src:null,alt:''};return ASSETS[id]||{emoji:fallback,src:null,alt:id}}
-  function paintBase(element,id='student-default'){paint(element,base(id));if(element)element.dataset.avatarBase=id}
-  function paintItem(element,id,fallback=''){paint(element,asset(id,fallback));if(element)element.dataset.avatarItem=id||''}
-  function setMotion(container,{moving=false,direction='down'}={}){
-    if(!container)return;
-    const dir=['up','down','left','right'].includes(direction)?direction:'down';
-    container.dataset.motion=moving?'walk':'idle';
-    container.dataset.direction=dir;
-    container.classList.toggle('is-walking',!!moving);
-    container.classList.toggle('is-idle',!moving);
-    container.classList.toggle('facing-left',dir==='left');
-    container.classList.toggle('facing-right',dir==='right');
-    container.classList.toggle('facing-up',dir==='up');
-    container.classList.toggle('facing-down',dir==='down');
-  }
-  return { BASES, ASSETS, base, asset, paint, paintBase, paintItem, setMotion };
+  function internalBase(id='student-default'){return INTERNAL_BASES[id]||INTERNAL_BASES['student-default']}
+  function defaultHair(){return''}
+  function asset(id,fallback=''){if(!id)return{emoji:'',src:null,svg:'',alt:''};return ASSETS[id]||{emoji:fallback,src:null,svg:'',alt:id}}
+  function paintBase(element,id='student-default'){paint(element,base(id));if(element)element.dataset.avatarBase=BASES[id]?id:'student-default'}
+  function paintAvatarBase(element,id='student-default'){paint(element,internalBase(id));if(element)element.dataset.avatarBase=INTERNAL_BASES[id]?id:'student-default'}
+  function paintHair(element,itemId){paintItem(element,itemId||'');if(element)element.dataset.avatarDefault='false'}
+  function paintItem(element,id,fallback=''){const spec=asset(id,fallback);paint(element,spec);if(element){element.dataset.avatarItem=id||'';const marker=`${element.id||''} ${element.className||''}`;if(marker.includes('outfit'))element.parentElement?.classList.toggle('sv-avatar-one-piece',!!spec.onePiece)}}
+  function setMotion(container,{moving=false,direction='down'}={}){if(!container)return;const dir=['up','down','left','right'].includes(direction)?direction:'down';container.dataset.motion=moving?'walk':'idle';container.dataset.direction=dir;container.classList.toggle('is-walking',!!moving);container.classList.toggle('is-idle',!moving);container.classList.toggle('facing-left',dir==='left');container.classList.toggle('facing-right',dir==='right');container.classList.toggle('facing-up',dir==='up');container.classList.toggle('facing-down',dir==='down')}
+  return{BASES,INTERNAL_BASES,ASSETS,base,internalBase,defaultHair,asset,paint,paintBase,paintAvatarBase,paintHair,paintItem,setMotion};
 })();

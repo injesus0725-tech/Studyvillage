@@ -6,7 +6,11 @@ const SAFE_ID=/^[a-z0-9-]{1,80}$/;
 
 const SETS=[
   {id:'forest-explorer-set',name:'숲 탐험가 세트',itemIds:['leaf-cap','explorer-goggles','field-satchel','pet-fox'],rarity:'adventure'},
-  {id:'starlight-scholar-set',name:'별빛 학자 세트',itemIds:['scholar-cap','star-monocle','book-pack','pet-owl'],rarity:'scholar'}
+  {id:'starlight-scholar-set',name:'별빛 학자 세트',itemIds:['scholar-cap','star-monocle','book-pack','pet-owl'],rarity:'scholar'},
+  {id:'village-student-set',name:'학습마을 학생 세트',itemIds:['hair-short','outfit-uniform','shoes-sneakers','hand-book'],rarity:'standard'},
+  {id:'wizard-set',name:'별빛 마법사 세트',itemIds:['hair-blue','hat-wizard','outfit-wizard','hand-wand'],rarity:'legend'},
+  {id:'guardian-set',name:'마을 수호자 세트',itemIds:['hat-pirate','outfit-armor','shoes-boots','hand-sword'],rarity:'legend'},
+  {id:'adventure-friend-set',name:'모험 친구 세트',itemIds:['bag-rocket','shoes-wing','pet-dragon','pet-slime'],rarity:'event'}
 ];
 
 export function validateItemSetRegistry(sets=SETS){
