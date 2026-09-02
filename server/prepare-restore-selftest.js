@@ -38,4 +38,19 @@ const bad=prepareStudyvillageRestore(broken);
 assert.equal(bad.ok,false,'invalid star mirror should be rejected');
 assert.equal(bad.code,'invalid-star-backup-setting');
 
+const currentCustomization=structuredClone(base);
+currentCustomization.players[0].equipment_json=JSON.stringify({
+  face:'face-round',expression:'expression-smile',effect:'aurora-effect',pet:'pet-maltese-production'
+});
+currentCustomization.players[0].owned_items_json=JSON.stringify(['aurora-effect','pet-maltese-production']);
+assert.equal(prepareStudyvillageRestore(currentCustomization).ok,true,'current face, expression, effect and production pet must restore');
+
+const unknownSlot=structuredClone(currentCustomization);
+unknownSlot.players[0].equipment_json=JSON.stringify({cape:'unknown-cape'});
+assert.equal(prepareStudyvillageRestore(unknownSlot).code,'invalid-player-customization','unknown equipment slots must remain blocked');
+
+const unownedPaidItem=structuredClone(currentCustomization);
+unownedPaidItem.players[0].owned_items_json='[]';
+assert.equal(prepareStudyvillageRestore(unownedPaidItem).code,'equipped-item-not-owned','unowned paid equipment must remain blocked');
+
 console.log('[Studyvillage] restore preparation selftest passed');

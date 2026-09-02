@@ -67,6 +67,7 @@ const tests=[
   'backup-size-bounds-contract-selftest.js',
   'error-reporter-polling-contract-selftest.js',
   'error-reporting-roundtrip-selftest.js',
+  'backup-restore-roundtrip-selftest.js',
   'exploration-attempt-progress-contract-selftest.js',
   'exploration-result-race-contract-selftest.js',
   'expedition-provisional-reward-contract-selftest.js',
