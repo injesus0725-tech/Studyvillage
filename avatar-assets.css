@@ -19,4 +19,4 @@
 .shop-preview-composite{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}
 
 /* One shared 256x256 head mask. Authored outfit necklines begin at Y=89. */
-.sv-avatar-one-piece>.player-icon,.sv-avatar-one-piece>.preview-base,.sv-avatar-one-piece>.sv-rank-base,.sv-avatar-one-piece>.sv-profile-base,.sv-avatar-one-piece>.sv-exp2-base,.sv-avatar-one-piece>.shop-preview-base,.sv-avatar-one-piece>.admin-avatar-base{clip-path:inset(0 0 65.3% 0)!important;-webkit-clip-path:inset(0 0 65.3% 0)!important;overflow:hidden!important}
+.sv-avatar-one-piece>.player-icon,.sv-avatar-one-piece>.preview-base,.sv-avatar-one-piece>.sv-rank-base,.sv-avatar-one-piece>.sv-profile-base,.sv-avatar-one-piece>.sv-exp2-base,.sv-avatar-one-piece>.shop-preview-base,.sv-avatar-one-piece>.admin-avatar-base{clip-path:inset(0 0 63.7% 0)!important;-webkit-clip-path:inset(0 0 63.7% 0)!important;overflow:hidden!important}
