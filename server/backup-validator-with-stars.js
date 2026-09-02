@@ -10,7 +10,7 @@ const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
 const ACTIVE_DIGITAL_ITEM_IDS=new Set(Object.keys(avatarShopPackV3));
-const SHOP_ITEM_IDS=new Set(['cap-blue','crown-gold','glasses-round','backpack','pet-chick','pet-cat','leaf-cap','scholar-cap','explorer-goggles','star-monocle','field-satchel','book-pack','pet-owl','pet-fox','hair-short','hair-bob','hair-ponytail','hair-blue','hat-wizard','hat-pirate','hat-flower','glasses-sun','glasses-heart','outfit-hoodie','outfit-uniform','outfit-wizard','outfit-armor','bottom-jeans','bottom-shorts','bottom-skirt','shoes-sneakers','shoes-boots','shoes-wing','bag-art','bag-rocket','hand-sword','hand-wand','hand-book','hand-magnifier','pet-dog','pet-rabbit','pet-dragon','pet-slime','aurora-effect',...ACTIVE_DIGITAL_ITEM_IDS]);
+const SAFE_ITEM_REFERENCE=/^[a-z0-9][a-z0-9-]{0,79}$/;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 const normalizePlayerName=value=>String(value??'').trim();
 const validCanonicalPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
@@ -96,7 +96,7 @@ export function validateStudyvillageBackupWithStars(backup){
     for(const entry of mirror.entries||[]){
       if(String(entry?.kind||'')!=='item-purchase')continue;
       const itemId=String(entry?.referenceId||'');
-      if(!SHOP_ITEM_IDS.has(itemId))return{ok:false,code:'invalid-item-purchase-reference',message:'아이템 구매 별 원장이 존재하지 않는 상점 아이템을 참조합니다.',playerName,itemId,settingKey:key};
+      if(!SAFE_ITEM_REFERENCE.test(itemId))return{ok:false,code:'invalid-item-purchase-reference',message:'아이템 구매 별 원장의 상품 식별자 형식이 올바르지 않습니다.',playerName,itemId,settingKey:key};
       if(Number(entry?.delta)>=0)return{ok:false,code:'invalid-item-purchase-delta',message:'아이템 구매 별 원장의 변화량이 차감 값이 아닙니다.',playerName,itemId,settingKey:key};
       if(ACTIVE_DIGITAL_ITEM_IDS.has(itemId)&&!owned.has(itemId))return{ok:false,code:'item-purchase-ownership-mismatch',message:'현재 판매 아이템의 구매 별 원장이 있지만 현재 보유 아이템 목록에 해당 아이템이 없습니다.',playerName,itemId,settingKey:key};
     }

@@ -1,8 +1,7 @@
 /* v1.13 star backup payload validator. Pure validation only; no DB writes. */
-import { avatarShopPackV3 } from './avatar-shop-pack-v3.js';
 const MAX_STARS=1000000;
 const MAX_MIRROR_ENTRIES=500;
-const SHOP_ITEM_IDS=new Set(['cap-blue','crown-gold','glasses-round','backpack','pet-chick','pet-cat','leaf-cap','scholar-cap','explorer-goggles','star-monocle','field-satchel','book-pack','pet-owl','pet-fox','hair-short','hair-bob','hair-ponytail','hair-blue','hat-wizard','hat-pirate','hat-flower','glasses-sun','glasses-heart','outfit-hoodie','outfit-uniform','outfit-wizard','outfit-armor','bottom-jeans','bottom-shorts','bottom-skirt','shoes-sneakers','shoes-boots','shoes-wing','bag-art','bag-rocket','hand-sword','hand-wand','hand-book','hand-magnifier','pet-dog','pet-rabbit','pet-dragon','pet-slime','aurora-effect',...Object.keys(avatarShopPackV3)]);
+const SAFE_ITEM_REFERENCE=/^[a-z0-9][a-z0-9-]{0,79}$/;
 
 function validInteger(value,min=0,max=MAX_STARS){
   const number=Number(value);
@@ -10,7 +9,7 @@ function validInteger(value,min=0,max=MAX_STARS){
 }
 function validatePurchaseSemantics({kind,referenceId,delta},errorPrefix){
   if(kind!=='item-purchase')return null;
-  if(!SHOP_ITEM_IDS.has(String(referenceId||'')))return `${errorPrefix}-item-purchase-reference`;
+  if(!SAFE_ITEM_REFERENCE.test(String(referenceId||'')))return `${errorPrefix}-item-purchase-reference`;
   if(!Number.isInteger(delta)||delta>=0)return `${errorPrefix}-item-purchase-delta`;
   return null;
 }

@@ -70,4 +70,13 @@ productionPurchase.players[0].owned_items_json=JSON.stringify(['pet-maltese-prod
 productionPurchase.settings[0].value=JSON.stringify({balance:10,entries:[{beforeValue:45,afterValue:10,delta:-35,kind:'item-purchase',referenceId:'pet-maltese-production',detail:'정식 펫 구매',createdAt:'2026-08-11T00:00:00.000Z'}]});
 assert.equal(prepareStudyvillageRestore(productionPurchase).ok,true,'production shop purchase history must restore');
 
+const historicalPurchase=structuredClone(base);
+historicalPurchase.players[0].stars=10;
+historicalPurchase.settings[0].value=JSON.stringify({balance:10,entries:[{beforeValue:62,afterValue:10,delta:-52,kind:'item-purchase',referenceId:'outfit-pirate',detail:'과거 정식 상품 구매',createdAt:'2026-08-11T00:00:00.000Z'}]});
+assert.equal(prepareStudyvillageRestore(historicalPurchase).ok,true,'safe historical shop purchase history must remain restorable');
+
+const unsafePurchase=structuredClone(historicalPurchase);
+unsafePurchase.settings[0].value=JSON.stringify({balance:10,entries:[{beforeValue:62,afterValue:10,delta:-52,kind:'item-purchase',referenceId:'../unsafe-item',detail:'잘못된 상품 식별자',createdAt:'2026-08-11T00:00:00.000Z'}]});
+assert.equal(prepareStudyvillageRestore(unsafePurchase).code,'invalid-star-backup-setting','unsafe item references must remain blocked');
+
 console.log('[Studyvillage] restore preparation selftest passed');
