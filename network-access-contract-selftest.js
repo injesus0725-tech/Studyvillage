@@ -7,12 +7,13 @@ const installer=fs.readFileSync(new URL('./server/question-review.js',import.met
 const connect=fs.readFileSync(new URL('./connect.html',import.meta.url),'utf8');
 const electron=fs.readFileSync(new URL('./electron/main.cjs',import.meta.url),'utf8');
 
-for(const token of ['VIRTUAL_HINTS','PHYSICAL_HINTS','isPrivateIpv4','recommended','recommendation','parseWindowsPowerShell','Get-NetIPConfiguration','node+windows-powershell+ipconfig']){
+for(const token of ['VIRTUAL_HINTS','PHYSICAL_HINTS','isPrivateIpv4','recommended','recommendation','parseWindowsPowerShell','Get-NetIPAddress','Get-NetIPConfiguration','node+windows-powershell-ipaddress+ipconfiguration+ipconfig']){
   if(!server.includes(token))throw new Error(`network-access.js: missing ${token}`);
 }
 if(/continue;[^\n]*VIRTUAL_HINTS/.test(server)||/filter\([^\n]*VIRTUAL_HINTS/.test(server))throw new Error('network-access.js: virtual adapters must be ranked, not discarded');
 if(!server.includes("app.get('/api/network'"))throw new Error('network-access.js: /api/network route missing');
 if(!server.includes('recommendedUrl'))throw new Error('network-access.js: recommendedUrl must remain in API response');
+if(!server.includes('wirelessCount')||!server.includes('Wi-Fi IPv4 주소는 발견되지 않았습니다'))throw new Error('network-access.js: missing explicit Wi-Fi discovery diagnostic');
 if(!installer.includes('installNetworkAccessRoute'))throw new Error('question-review.js: ranked network route is not installed');
 for(const token of ['학생용 접속 주소 직접 선택','address-select','use-address','studyvillage.classroomUrl']){
   if(!connect.includes(token))throw new Error(`connect.html: manual classroom address selection missing ${token}`);
