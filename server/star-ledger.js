@@ -77,7 +77,8 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
-const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary']);
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle']);
+const isStandardLearningActivity=activityId=>/^[a-z0-9-]{1,40}$/.test(activityId)&&!activityId.startsWith('exploration-')&&activityId!=='riddle'&&activityId!=='riddle-demo';
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
   if(activityId==='exploration-forest-riddle')return Math.min(3,Math.ceil(value/40));
@@ -85,7 +86,7 @@ function expeditionStarsFor(activityId,score){
   return 0;
 }
 function commitExpeditionReward(db,{name,activityId,score,submissionId,now}){
-  if(!EXPEDITION_REWARD_IDS.has(activityId)&&!STANDARD_REWARD_IDS.has(activityId))return{stars:0,balance:null};
+  if(!EXPEDITION_REWARD_IDS.has(activityId)&&!isStandardLearningActivity(activityId))return{stars:0,balance:null};
   if(!/^[A-Za-z0-9._:-]{8,100}$/.test(submissionId||''))throw Object.assign(new Error('invalid-expedition-submission'),{code:'invalid-expedition-submission'});
   ensureSchema(db);
   const kind=EXPEDITION_REWARD_IDS.has(activityId)?'expedition-completion':'learning-completion',prior=db.prepare('SELECT after_value AS balance FROM star_ledger WHERE player_name=? AND kind=? AND reference_id=? LIMIT 1').get(name,kind,submissionId);
