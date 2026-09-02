@@ -53,4 +53,15 @@ const unownedPaidItem=structuredClone(currentCustomization);
 unownedPaidItem.players[0].owned_items_json='[]';
 assert.equal(prepareStudyvillageRestore(unownedPaidItem).code,'equipped-item-not-owned','unowned paid equipment must remain blocked');
 
+const orphanScoreAudit=structuredClone(base);
+orphanScoreAudit.scoreLedger=[{id:77,player_name:'삭제된학생',scope:'player',activity_id:null,field:'xp',before_value:0,after_value:10,delta:10,source:'players-update',created_at:'2026-08-11T00:00:00.000Z'}];
+orphanScoreAudit.scoreAlertReviews=[{ledger_id:77,status:'normal',note:'',reviewed_at:'2026-08-11T00:00:00.000Z'}];
+orphanScoreAudit.scoreCorrections=[{id:1,ledger_id:77,correction_ledger_id:null,player_name:'삭제된학생',scope:'player',activity_id:null,field:'xp',before_value:0,after_value:0,reason:'옛 기록',corrected_at:'2026-08-11T00:00:00.000Z',undone_at:null,undo_ledger_id:null}];
+const repairedOrphan=prepareStudyvillageRestore(orphanScoreAudit);
+assert.equal(repairedOrphan.ok,true,'known deleted-student score audit residue must not block restore');
+assert.equal(repairedOrphan.removedOrphanScoreAuditRows,1);
+assert.equal(repairedOrphan.backup.scoreLedger.length,0);
+assert.equal(repairedOrphan.backup.scoreAlertReviews.length,0);
+assert.equal(repairedOrphan.backup.scoreCorrections.length,0);
+
 console.log('[Studyvillage] restore preparation selftest passed');

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
+import Database from 'better-sqlite3';
 
 const dataDir=fs.mkdtempSync(path.join(os.tmpdir(),'studyvillage-restore-roundtrip-'));
 const port=36000+(process.pid%1000),base=`http://127.0.0.1:${port}`;
@@ -18,6 +19,9 @@ try{
   const equipped=await request('/api/player/me/equipment',{method:'POST',headers:studentHeaders,body:JSON.stringify({baseCharacter:'student-girl',equipment:{face:'face-round',expression:'expression-smile'}})});
   assert.equal(equipped.status,200);
   const admin=await request('/api/admin/local-session',{method:'POST'});assert.equal(admin.status,200);const adminHeaders={Authorization:`Bearer ${admin.data.token}`};
+  const deletedLogin=await request('/api/login',{method:'POST',body:JSON.stringify({name:'삭제점검학생',password:'1234'})});assert.equal(deletedLogin.status,200);
+  const liveDb=new Database(path.join(dataDir,'studyvillage.db'));liveDb.prepare('INSERT INTO activity_records(player_name,activity_id,attempts,best_score,last_score,total_score,updated_at) VALUES(?,?,?,?,?,?,?)').run('삭제점검학생','delete-check',1,100,100,100,new Date().toISOString());liveDb.close();
+  assert.equal((await request(`/api/admin/player/${encodeURIComponent('삭제점검학생')}`,{method:'DELETE',headers:adminHeaders})).status,200);
   const backupResponse=await fetch(base+'/api/admin/backup',{headers:adminHeaders});assert.equal(backupResponse.status,200);const backup=await backupResponse.json();
   const savedEquipment=JSON.parse(backup.players.find(player=>player.name==='복원점검학생').equipment_json);
   assert.equal(savedEquipment.face,'face-round');assert.equal(savedEquipment.expression,'expression-smile');
