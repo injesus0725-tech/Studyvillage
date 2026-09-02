@@ -14,6 +14,6 @@ assert.ok(ranking.includes("['outfit','effect','bottom','shoes','hat','glasses',
 assert.ok(server.includes('equipment:rankingEquipment(row)'),'ranking API must return allowlisted equipment');
 assert.ok(admin.includes("for(const slot of ['effect','outfit','pet'])"),'teacher student table must paint canonical avatar layers');
 assert.ok(adminShop.includes('admin-shop-product-preview'),'teacher shop must render graphical product previews');
-assert.ok(adminHtml.includes('avatar-renderer.js?v=20260902art3'),'teacher mode must load the canonical renderer');
+assert.ok(adminHtml.includes('avatar-renderer.js?v=20260902art4'),'teacher mode must load the canonical renderer');
 for(const token of ["NEW_ART_RESET_KEY='avatar:new-art-reset:v2'","stars=0","equipment_json='{}'","owned_items_json='[]'","DELETE FROM star_ledger"])assert.ok(itemShop.includes(token),`one-time tester reset missing: ${token}`);
 console.log('new art one-set integration contract passed');
