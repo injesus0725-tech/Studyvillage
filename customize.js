@@ -1,7 +1,7 @@
 (()=>{
   const $=s=>document.querySelector(s),button=$('#customize-button'),panel=$('#customize-panel'),close=$('#customize-close'),save=$('#customize-save'),list=$('#inventory-list'),baseList=$('#base-character-list'),message=$('#customize-message'),game=$('#game-screen');
   if(!button||!panel||!save)return;
-  const slots=['hair','outfit','effect','pet'],slotNames={hair:'머리',outfit:'한벌 의상',effect:'효과',pet:'펫'},icons={'hair-natural-wavy-v2':'💇‍♀️','outfit-camp-explorer-v2':'🥾','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶'},REQUEST_TIMEOUT_MS=6000;
+  const slots=['hair','outfit','effect','pet'],slotNames={hair:'머리',outfit:'한벌 의상',effect:'효과',pet:'펫'},icons={'hair-natural-wavy-v2':'💇‍♀️','outfit-camp-explorer-v2':'🥾','outfit-detective-v2':'🔎','outfit-firefighter-v2':'🚒','outfit-forest-fairy-v2':'🌿','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶'},REQUEST_TIMEOUT_MS=6000;
   let playerData=null,shopData={ownedItems:[],equipment:{},items:[]},draft={outfit:null,effect:null,pet:null},draftBase='student-boy',loadPromise=null;
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   function ensureEffectLayers(){for(const [hostSelector,prefix,layerClass] of [['#player','player','avatar-layer'],['.avatar-preview','preview','preview-layer']]){const host=$(hostSelector);if(!host||host.querySelector(`#${prefix}-effect`))continue;const layer=document.createElement('span');layer.id=`${prefix}-effect`;layer.className=`${layerClass} ${prefix}-effect`;host.prepend(layer)}}

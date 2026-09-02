@@ -1,7 +1,7 @@
 /* v1.16 student star shop: base character / hair / one-piece outfit / effect / pet production categories. */
 (()=>{
   const game=document.querySelector('#game-screen'),shopButton=document.querySelector('#shop-button');if(!game||!shopButton)return;
-  const icons={'hair-natural-wavy-v2':'💇‍♀️','outfit-camp-explorer-v2':'🥾','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶','candy':'🍬','stationery':'✏️'};
+  const icons={'hair-natural-wavy-v2':'💇‍♀️','outfit-camp-explorer-v2':'🥾','outfit-detective-v2':'🔎','outfit-firefighter-v2':'🚒','outfit-forest-fairy-v2':'🌿','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶','candy':'🍬','stationery':'✏️'};
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
