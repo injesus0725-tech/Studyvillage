@@ -7,9 +7,9 @@ const $=s=>document.querySelector(s);const loginBox=$('#admin-login'),app=$('#ad
   const headers=()=>{const token=sessionStorage.getItem('studyvillage-admin-token')||'';return token?{Authorization:`Bearer ${token}`}:{}};
   function paint(host,player){
     host.className='admin-student-avatar';
-    host.innerHTML='<span class="admin-avatar-base"></span><span class="admin-avatar-effect"></span><span class="admin-avatar-outfit"></span><span class="admin-avatar-pet"></span>';
+    host.innerHTML='<span class="admin-avatar-base"></span><span class="admin-avatar-hair"></span><span class="admin-avatar-effect"></span><span class="admin-avatar-outfit"></span><span class="admin-avatar-pet"></span>';
     renderer.paintAvatarBase(host.querySelector('.admin-avatar-base'),player.baseCharacter||'student-boy');
-    for(const slot of ['effect','outfit','pet'])renderer.paintItem(host.querySelector(`.admin-avatar-${slot}`),player.equipment?.[slot]);
+    for(const slot of ['hair','effect','outfit','pet'])renderer.paintItem(host.querySelector(`.admin-avatar-${slot}`),player.equipment?.[slot]);
   }
   async function refresh(){
     if(busy||body.hidden)return;busy=true;

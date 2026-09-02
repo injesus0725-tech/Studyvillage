@@ -3,8 +3,8 @@ const assert=require('assert');
 const src=fs.readFileSync('student-shop.js','utf8');
 const css=fs.readFileSync('style.css','utf8');
 
-for(const [slot,label] of [['all','전체'],['character','기본 캐릭터'],['outfit','한벌 의상'],['effect','효과'],['pet','펫'],['physical','실물']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
-for(const retired of ['face','expression','hair','hat','glasses','bottom','shoes','bag','hand'])assert.ok(!src.includes(`data-shop-slot="${retired}"`),`폐기된 ${retired} 상점 필터가 남아 있으면 안 됩니다.`);
+for(const [slot,label] of [['all','전체'],['character','기본 캐릭터'],['hair','머리'],['outfit','한벌 의상'],['effect','효과'],['pet','펫'],['physical','실물']])assert.ok(src.includes(`data-shop-slot="${slot}"`),`${label} 상점 필터가 필요합니다.`);
+for(const retired of ['face','expression','hat','glasses','bottom','shoes','bag','hand'])assert.ok(!src.includes(`data-shop-slot="${retired}"`),`폐기된 ${retired} 상점 필터가 남아 있으면 안 됩니다.`);
 assert.ok(src.includes("activeSlot==='all'||item.slot===activeSlot"),'선택한 종류만 표시해야 합니다.');
 assert.ok(src.includes("aria-pressed',String(candidate===button)"),'현재 필터를 접근성 상태로 표시해야 합니다.');
 assert.ok(src.includes('if(lastData)render(lastData)'),'필터 변경은 서버 재요청 없이 즉시 반영해야 합니다.');

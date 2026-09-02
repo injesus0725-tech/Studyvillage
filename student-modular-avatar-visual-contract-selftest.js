@@ -11,12 +11,12 @@ for(const slot of ['outfit','pet']){
 assert.ok(renderer.includes('v2/bases/study-boy-v2.png')&&renderer.includes('v2/bases/study-girl-v2.png')&&renderer.includes("function defaultHair(){return''}"),'new default male/female faces and hair must remain part of the base body art');
 assert.ok(variants.includes('approved: Object.freeze([])'),'rejected prototype variants must not be registered for V1');
 assert.ok(shop.includes('paintProductPreview(b,item,data.baseCharacter)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact wearable on the equipped male/female base');
-for(const slot of ['character','outfit','effect','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 생산 분류가 보여야 합니다.`);
-for(const retired of ['hair','hat','glasses','bottom','shoes','bag','hand'])assert.ok(!shop.includes(`data-shop-slot="${retired}"`),`폐기된 ${retired} 분류를 상점에 다시 보여주면 안 됩니다.`);
-assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("const slots=['outfit','effect','pet']"),'base character must be selected separately and only outfit/effect/pet may remain as wearable production slots');
-assert.ok(customize.includes("effect:'효과'")&&customize.includes("outfit:'한벌 의상'")&&customize.includes('for(const c of playerData?.baseCharacters||[])'),'wardrobe must show base character plus outfit/effect/pet production architecture');
+for(const slot of ['character','hair','outfit','effect','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 생산 분류가 보여야 합니다.`);
+for(const retired of ['hat','glasses','bottom','shoes','bag','hand'])assert.ok(!shop.includes(`data-shop-slot="${retired}"`),`폐기된 ${retired} 분류를 상점에 다시 보여주면 안 됩니다.`);
+assert.ok(renderer.includes('paintAvatarBase')&&customize.includes("const slots=['hair','outfit','effect','pet']"),'base character must be selected separately and hair/outfit/effect/pet may remain as wearable production slots');
+assert.ok(customize.includes("hair:'머리'")&&customize.includes("effect:'효과'")&&customize.includes("outfit:'한벌 의상'")&&customize.includes('for(const c of playerData?.baseCharacters||[])'),'wardrobe must show base character plus hair/outfit/effect/pet production architecture');
 assert.ok(customize.includes('paintOwnedPreview(b,info,available)'),'owned-item cards must use the same applied design');
-assert.ok(contract.includes('.avatar-hair')&&contract.includes('display:none!important'),'legacy hair overlay must stay hidden so base-character face/hair remains intact');
+assert.ok(contract.includes('[data-avatar-item^="hair-"]')&&!contract.includes('.avatar-hair,.preview-hair'),'active full-head hair must use the shared canvas without a blanket hidden-layer rule');
 assert.ok(contract.includes('transform:none!important'),'production CSS must not carry per-item transform corrections');
 assert.ok(spec.includes('256×256')&&spec.includes('발바닥'),'production assets must be authored on the shared fixed 256 master canvas');
 assert.ok(spec.includes('기본 캐릭터')&&spec.includes('기본 의상'),'outfit production must be authored against the base character and cover default clothing');

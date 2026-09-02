@@ -1,11 +1,11 @@
 const fs=require('fs'),assert=require('assert');
 const server=fs.readFileSync('server/server.js','utf8'),shop=fs.readFileSync('server/item-shop.js','utf8'),customize=fs.readFileSync('customize.js','utf8'),index=fs.readFileSync('index.html','utf8'),ranking=fs.readFileSync('assets/student-stability-fixes.js','utf8');
-const activeSlots=['outfit','effect','pet'];
-const retiredUiSlots=['hair','face','expression','hat','glasses','bottom','shoes','bag','hand'];
+const activeSlots=['hair','outfit','effect','pet'];
+const retiredUiSlots=['face','expression','hat','glasses','bottom','shoes','bag','hand'];
 
 assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,effect:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must continue parsing legacy saved equipment and the active effect safely');
-assert.ok(customize.includes("const slots=['outfit','effect','pet']"),'customizer must expose only the three wearable production slots beside the separately selected base character');
-assert.ok(customize.includes("slotNames={outfit:'한벌 의상',effect:'효과',pet:'펫'}"),'wardrobe labels must match the production architecture');
+assert.ok(customize.includes("const slots=['hair','outfit','effect','pet']"),'customizer must expose the four production slots beside the separately selected base character');
+assert.ok(customize.includes("slotNames={hair:'머리',outfit:'한벌 의상',effect:'효과',pet:'펫'}"),'wardrobe labels must match the production architecture');
 assert.ok(customize.includes("let playerData=null")&&customize.includes("draftBase='student-boy'"),'base character selection must remain separate from wearable equipment');
 assert.ok(customize.includes('for(const c of playerData?.baseCharacters||[])'),'wardrobe must list only server-approved base characters');
 assert.ok(customize.includes("draftBase=(next.baseCharacters||[]).some(c=>c.id===next.baseCharacter)?next.baseCharacter:'student-boy'"),'reload must restore a validated base-character selection');
@@ -14,12 +14,12 @@ assert.ok(server.includes('RANKING_ITEM_SLOTS[id]===slot'),'student reload must 
 
 for(const slot of activeSlots){assert.ok(customize.includes(`'${slot}'`),`customizer must support production ${slot} slot`)}
 for(const slot of retiredUiSlots){assert.ok(!customize.includes(`slotNames={${slot}:`)&&!customize.includes(`data-shop-slot="${slot}"`),`retired ${slot} must not be reintroduced as a production wardrobe category`)}
-assert.ok(customize.includes('renderer?.paintItem(document.querySelector(\'#player-hair\'),null)')&&customize.includes('renderer?.paintItem(document.querySelector(\'#preview-hair\'),null)'),'legacy hair DOM layers must be explicitly cleared so stale hair cannot cover the selected base character');
+assert.ok(!customize.includes("#player-hair'),null")&&customize.includes("const slots=['hair','outfit','effect','pet']"),'active hair must render through the shared wardrobe loop');
 assert.ok(customize.includes('for(const slot of slots)')&&customize.includes('`#player-${slot}`')&&customize.includes('`#preview-${slot}`'),'customizer must render the production wearable slots through one shared loop');
 const inventoryStart=customize.indexOf('function renderInventory()'),inventoryEnd=customize.indexOf('async function fetchPlayer',inventoryStart),inventory=customize.slice(inventoryStart,inventoryEnd);
 assert.ok(inventoryStart>=0&&inventoryEnd>inventoryStart,'wardrobe inventory renderer must exist');
 assert.ok(inventory.includes('for(const slot of slots)'),'wardrobe list must expose every production wearable slot');
-assert.ok(!customize.includes("const slots=['hair'")&&!customize.includes("const slots=['face'")&&!customize.includes("const slots=['hat'"),'retired face, expression, hair, hat, and glasses slots must stay out of the wardrobe slot list');
+assert.ok(!customize.includes("const slots=['face'")&&!customize.includes("const slots=['hat'"),'retired face, expression, hat, and glasses slots must stay out of the wardrobe slot list');
 assert.ok(customize.includes('draft=normalizeEquipment({...next.equipment,...shop.equipment})'),'reload must merge player and shop wearable equipment with purchased equipment precedence');
 assert.ok(customize.includes("window.addEventListener('studyvillage:equip-purchased-item'"),'a newly purchased item must enter the immediate equip path');
 

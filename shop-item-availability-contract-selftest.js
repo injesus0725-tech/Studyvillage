@@ -17,8 +17,8 @@ assert.match(server,/availability:req\.body\?\.availability/,'관리자 API가 �
 assert.match(admin,/data-shop-available/,'관리자 화면에 아이템별 판매 토글이 있어야 합니다.');
 assert.match(admin,/JSON\.stringify\(\{enabled:toggle\.checked,prices,availability(?:,levelRequirements)?(?:,limited)?(?:,saleStarts)?(?:,saleEnds)?\}\)/,'관리자 저장 요청에 판매 상태가 포함돼야 합니다.');
 assert.match(student,/available=item\.available!==false/,'학생 화면이 이전 데이터와 호환되며 판매 상태를 읽어야 합니다.');
-for(const slot of ['character','outfit','effect','pet'])assert.match(student,new RegExp(`data-shop-slot=\\"${slot}\\"`),`학생 상점에서 ${slot} 생산 카테고리를 볼 수 있어야 합니다.`);
-for(const retired of ['hair','hat','glasses','bottom','shoes','bag','hand'])assert.doesNotMatch(student,new RegExp(`data-shop-slot=\\"${retired}\\"`),`폐기된 ${retired} 카테고리를 학생 상점에 다시 노출하면 안 됩니다.`);
+for(const slot of ['character','hair','outfit','effect','pet'])assert.match(student,new RegExp(`data-shop-slot=\\"${slot}\\"`),`학생 상점에서 ${slot} 생산 카테고리를 볼 수 있어야 합니다.`);
+for(const retired of ['hat','glasses','bottom','shoes','bag','hand'])assert.doesNotMatch(student,new RegExp(`data-shop-slot=\\"${retired}\\"`),`폐기된 ${retired} 카테고리를 학생 상점에 다시 노출하면 안 됩니다.`);
 assert.match(student,/판매 중지/,'학생에게 판매 중지 상태를 알려야 합니다.');
 
 console.log('shop item availability production contract self-test passed');

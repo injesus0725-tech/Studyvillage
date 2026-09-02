@@ -4,6 +4,7 @@
   "productionDirection": "AVATAR_PRODUCTION_DIRECTION.md",
   "newArtV2": {
     "bases": ["v2/bases/study-boy-v2.png", "v2/bases/study-girl-v2.png"],
+    "hair": ["v2/hair/natural-wavy-v1.png"],
     "outfits": ["v2/outfits/camp-explorer-v1.png"],
     "pets": ["v2/pets/cream-pup-v1.png"],
     "effect": "effect-starlight-v2 (inline lightweight SVG)"
