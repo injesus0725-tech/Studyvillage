@@ -2,6 +2,7 @@ const fs=require('fs');
 const assert=require('assert');
 
 const src=fs.readFileSync('admin-question-review.js','utf8');
+const server=fs.readFileSync('server/question-review.js','utf8');
 
 assert.ok(/(?:const|let)\s+[^;]*\bsavingReviews\s*=\s*new Set\(\)/.test(src),'문제 검토 저장 중 상태를 추적해야 합니다.');
 assert.ok(src.includes('if(savingReviews.has(key))return'),'같은 문제의 검토 상태 저장이 겹치면 안 됩니다.');
@@ -28,5 +29,16 @@ assert.ok((src.match(/r\.status===401/g)||[]).length>=4,'문제 검사·목록·
 assert.ok(src.includes("summary.textContent='관리자 로그인 필요'"),'인증 만료 시 이전 문제 검토 상태를 현재 상태처럼 보여주면 안 됩니다.');
 assert.ok(src.includes('관리자 로그인이 만료되었습니다. 다시 로그인해 주세요.'),'인증 만료 원인을 교사에게 명확히 안내해야 합니다.');
 assert.ok(src.includes("count.textContent='-'"),'문제 검사 인증 만료 시 이전 이상 건수를 그대로 유지하면 안 됩니다.');
+
+// Client/server contract: review rows must carry the field names the teacher UI actually reads.
+assert.ok(src.includes("'/api/admin/question-reviews'"),'교사 문제 검토 화면은 문제 검토 목록 API를 사용해야 합니다.');
+assert.ok(src.includes("/api/admin/question-reviews/${encodeURIComponent(key)}/review"),'교사 문제 검토 상태 저장 경로가 필요합니다.');
+assert.ok(src.includes('d.reviews||[]')&&src.includes('d.pendingCount||0'),'교사 화면이 reviews/pendingCount 호환 필드를 사용합니다.');
+assert.ok(src.includes('r.questionNumber'),'교사 화면은 문제 번호 호환 필드를 사용합니다.');
+assert.ok(server.includes('questionNumber:Number(row?.question)||0'),'서버가 저장된 question 필드를 questionNumber로 함께 제공해야 합니다.');
+assert.ok(server.includes('teacherNote:clean(row?.note,240)'),'서버가 교사 메모 호환 필드를 함께 제공해야 합니다.');
+assert.ok(server.includes("app.post('/api/admin/question-reviews/:key/review',requireAdmin,saveReview)"),'서버가 교사 화면의 /review 저장 경로를 제공해야 합니다.');
+assert.ok(server.includes("if(status==='pending')return'needs-review'")&&server.includes("if(status==='dismissed')return'ignored'"),'클라이언트 상태명을 서버 상태명으로 안전하게 변환해야 합니다.');
+assert.ok(server.includes('reviews,pendingCount'),'목록 응답에 reviews와 pendingCount를 함께 제공해야 합니다.');
 
 console.log('admin question review save safety contract self-test passed');

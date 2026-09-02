@@ -1,5 +1,10 @@
 const {spawnSync}=require('child_process');
 const tests=[
+  'recovery-r4-regression-contract-selftest.js',
+  'student-sound-effects-contract-selftest.js',
+  'classroom-cache-bust-contract-selftest.js',
+  'runtime-observer-loop-contract-selftest.js',
+  'admin-local-passwordless-contract-selftest.js',
   'packaged-student-script-coverage-contract-selftest.js',
   'admin-runtime-error-viewer-contract-selftest.js',
   'teacher-runtime-error-diagnostic-contract-selftest.js',
@@ -65,6 +70,10 @@ const tests=[
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'question-content-selftest.js',
+  'curriculum-question-bank-packaging-contract-selftest.js',
+  'question-catalog-settings-contract-selftest.js',
+  'student-curriculum-catalog-contract-selftest.js',
+  'legacy-quiz-completion-recovery-contract-selftest.js',
   'bookmaru-random-bank-contract-selftest.js',
   'question-input-type-contract-selftest.js',
   'admin-question-input-editor-contract-selftest.js',
@@ -98,6 +107,8 @@ const tests=[
   'star-ledger-balance-integrity-contract-selftest.js',
   'student-admin-action-boundary-contract-selftest.js',
   'student-accessory-benchmark-contract-selftest.js',
+  'student-v1-wardrobe-expansion-contract-selftest.js',
+  'student-full-wardrobe-reload-contract-selftest.js',
   'student-2d-exploration-map-contract-selftest.js',
   'student-building-interaction-safety-contract-selftest.js',
   'student-interaction-hint-isolation-contract-selftest.js',
@@ -160,7 +171,11 @@ const tests=[
   'checkpoint-session-isolation-contract-selftest.js',
   'student-expedition-checkpoint-contract-selftest.js',
   'vocabulary-startup-timeout-cleanup-contract-selftest.js',
-  'wardrobe-replace-write-integrity-contract-selftest.js'
+  'wardrobe-replace-write-integrity-contract-selftest.js',
+  'student-modular-avatar-visual-contract-selftest.js',
+  'avatar-rpg-hair-alignment-contract-selftest.js',
+  'avatar-runtime-contract-selftest.js',
+  'avatar-medium-template-contract-selftest.js'
 ];
 for(const file of tests){
   const result=spawnSync(process.execPath,[file],{stdio:'inherit'});

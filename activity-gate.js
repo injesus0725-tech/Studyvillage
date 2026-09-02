@@ -1,12 +1,16 @@
 /* v1.9 student activity gate.
    Teacher open/close state and configured attempt limits are checked before an activity starts.
-   Existing checkpoints are preserved; repeated gate input is suppressed. */
+   Existing checkpoints are preserved; repeated gate input is suppressed.
+   This file loads immediately before game.js, so required dialogue controls are created here first. */
 (()=>{
+  const dialogue=document.querySelector('#dialogue');
+  if(dialogue&&!document.querySelector('#dialogue-next'))dialogue.innerHTML='<div class="dialogue-avatar">👩‍🏫</div><div class="dialogue-body"><strong id="dialogue-name">도우미 선생님</strong><p id="dialogue-text"></p></div><button id="dialogue-next" type="button">다음 ▶</button>';
+
   const activityState=()=>window.StudyVillageActivityState;
   const recordIds={'riddle-demo':'riddle','library-vocabulary':'vocabulary'};
   const REQUEST_TIMEOUT_MS=5000;
   let bypassRiddle=false,lastNoticeAt=0;const pending=new Set(),NOTICE_COOLDOWN_MS=1800;
-  function blockedByPanel(){return[...document.querySelectorAll('#dialogue,#quiz-panel,#record-panel,#customize-panel,#library-game-panel')].some(el=>el&&!el.hidden)}
+  function blockedByPanel(){return[...document.querySelectorAll('#dialogue,#quiz-panel,#record-panel,#customize-panel,#library-game-panel,#library-game,#student-explore-panel,#study-expedition-stage,#curriculum-learning,.math-practice-panel,#building-interior')].some(el=>el&&!el.hidden&&el.getClientRects().length>0)}
   function nearQuizHall(){const player=document.querySelector('#player'),hall=document.querySelector('#quiz-hall');if(!player||!hall)return false;const p=player.getBoundingClientRect(),h=hall.getBoundingClientRect();return Math.hypot(p.left+p.width/2-(h.left+h.width/2),p.top+p.height/2-(h.top+h.height/2))<170}
   async function timedFetch(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}}
   async function checkAttemptLimit(id,name){const unavailable={ok:false,message:`📡 ${name}의 남은 도전 횟수를 확인할 수 없어요.\n교실 서버 연결이 돌아오면 다시 시도해 주세요.`};try{const headers=window.StudyVillageAuth?.authHeaders?.()||{},recordId=recordIds[id]||id,response=await timedFetch(`/api/player/me/activity-attempt-status/${encodeURIComponent(recordId)}`,{headers,cache:'no-store'});if(!response.ok)return unavailable;const status=await response.json();if(!status.ok)return unavailable;if(status.allowed)return{ok:true,remaining:status.remaining,extraAttempts:status.extraAttempts};return{ok:false,message:`🔒 ${name}의 도전 횟수를 모두 사용했어요.\n선생님이 추가 도전을 허용하면 다시 참여할 수 있어요.`}}catch{return unavailable}}

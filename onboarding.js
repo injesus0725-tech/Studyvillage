@@ -1,43 +1,72 @@
-/* v0.9.60 first-visit student guide */
+/* Student guide + tablet tap movement. Native buttons keep native click behavior. */
 (()=>{
-  const game=document.querySelector('#game-screen');
-  if(!game)return;
+  const game=document.querySelector('#game-screen'),world=document.querySelector('#world'),player=document.querySelector('#player');
+  if(!game||!world||!player)return;
+  const touchMode=()=>matchMedia?.('(pointer:coarse)').matches===true||innerWidth<=700;
   const style=document.createElement('style');
   style.textContent=`
+    [hidden]{display:none!important}
+    #game-screen.active{pointer-events:auto!important;touch-action:manipulation}
+    #game-screen.active .hud,#game-screen.active .hud *,#game-screen.active #world,#game-screen.active #world-map,#game-screen.active .building,#game-screen.active .npc{pointer-events:auto!important}
     .guide-button{border:0;border-radius:12px;padding:8px 11px;background:#fff8d8;color:#69551d;font-weight:900;cursor:pointer;box-shadow:0 2px 8px #0001}
     .welcome-guide{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:#17392388;backdrop-filter:blur(3px)}
-    .welcome-guide[hidden]{display:none}.welcome-card{width:min(520px,94vw);border-radius:24px;background:#fff;padding:24px;box-shadow:0 20px 60px #10271955;color:#294332}
+    .welcome-guide[hidden]{display:none!important}.welcome-card{width:min(520px,94vw);border-radius:24px;background:#fff;padding:24px;box-shadow:0 20px 60px #10271955;color:#294332}
     .welcome-card .guide-icon{font-size:48px}.welcome-card h2{margin:9px 0 8px;font-size:25px}.welcome-card p{margin:0;color:#65756b;line-height:1.65;font-weight:700}
     .guide-dots{display:flex;gap:6px;margin:18px 0}.guide-dots span{width:9px;height:9px;border-radius:999px;background:#dbe5dc}.guide-dots span.active{width:24px;background:#4d8a5d}
-    .guide-actions{display:flex;justify-content:space-between;gap:10px}.guide-actions button{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer}.guide-skip{background:#eef2ee;color:#627068}.guide-next{margin-left:auto;background:#38744a;color:#fff}
-    .first-character-choice{position:fixed;inset:0;z-index:10010;display:grid;place-items:center;padding:18px;background:#173923aa;backdrop-filter:blur(4px)}.first-character-choice[hidden]{display:none}.first-character-card{width:min(460px,94vw);padding:25px;border-radius:25px;background:#fffdf7;text-align:center;box-shadow:0 24px 70px #10271966}.first-character-card h2{margin:0 0 7px;color:#315d3b}.first-character-card p{margin:0 0 18px;color:#6d7b70;font-weight:800}.first-character-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.first-character-options button{min-height:142px;border:3px solid #dfeadb;border-radius:20px;background:#f4f9f1;color:#345d40;font-weight:1000;cursor:pointer}.first-character-options button:active{transform:scale(.98)}.first-character-options span{display:block;width:74px;height:108px;margin:0 auto;line-height:0}.first-character-options span svg{width:100%;height:100%;display:block}.first-character-status{min-height:22px;margin:13px 0 0!important;color:#8b5e24!important;font-size:13px}
-    @media(max-width:720px){.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}}
+    .guide-actions{display:flex;justify-content:space-between;gap:10px}.guide-actions button{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer;touch-action:manipulation}.guide-skip{background:#eef2ee;color:#627068}.guide-next{margin-left:auto;background:#38744a;color:#fff}
+    .teacher-preview-return{position:fixed;left:12px;top:12px;z-index:20000;padding:10px 14px;border-radius:999px;background:#fff;color:#315d3b;font-weight:900;text-decoration:none;box-shadow:0 5px 20px #0003;touch-action:manipulation}
+    .tap-target{position:absolute;z-index:9;width:26px;height:26px;border:3px solid #fff;border-radius:50%;background:#5e9fff66;box-shadow:0 0 0 3px #2f78d655;transform:translate(-50%,-50%);pointer-events:none!important;animation:tap-pulse .65s ease-out infinite alternate}
+    @keyframes tap-pulse{to{transform:translate(-50%,-50%) scale(1.22);opacity:.55}}
+    @media(max-width:720px),(pointer:coarse){.mobile-controls{display:flex!important;pointer-events:auto!important;z-index:120!important}.mobile-controls [data-key]{display:none!important}.mobile-controls button{pointer-events:auto!important;touch-action:manipulation!important}.control-help{display:none!important}#world{touch-action:none!important}.interaction-hint{display:none!important}.guide-button{padding:7px 9px;font-size:12px}.welcome-card{padding:20px}.welcome-card h2{font-size:22px}.teacher-preview-return{top:8px;left:8px;padding:8px 11px;font-size:12px}}
   `;
   document.head.appendChild(style);
+  if(new URLSearchParams(location.search).get('teacher-preview')==='1'){const back=document.createElement('a');back.href='/admin.html';back.className='teacher-preview-return';back.textContent='← 교사 화면으로';document.body.appendChild(back)}
+
   const steps=[
-    {icon:'🌳',title:'우리 학습마을에 온 걸 환영해!',text:'마을을 돌아다니며 건물에 들어가 학습 활동에 참여해 보세요. 활동 기록과 성장 내용은 자동으로 저장됩니다.'},
-    {icon:'🎮',title:'캐릭터를 움직여 보세요',text:'컴퓨터에서는 방향키 또는 WASD로 움직이고 Space 키로 상호작용해요. 태블릿에서는 화면 아래 방향 버튼과 상호작용 버튼을 사용하면 됩니다.'},
-    {icon:'🏫',title:'건물마다 할 일이 달라요',text:'배움터에서는 랜덤 계산 연습, 책마루에서는 어휘·상식 활동을 할 수 있어요. 꾸미기 화면에서는 가지고 있는 아이템을 장착하고 ⭐ 별 상점에서 새 아이템도 살 수 있습니다.'},
-    {icon:'⭐',title:'배우면서 성장해요',text:'활동을 마치면 기록과 XP, 별이 쌓여요. 위쪽의 ‘내 기록’에서 활동별 결과와 별 장부를 확인하고, 모은 별은 꾸미기 화면의 ⭐ 별 상점에서 사용할 수 있어요.'}
+    {icon:'🌳',title:'우리 학습마을에 온 걸 환영해!',text:'마을을 돌아다니며 건물과 탐험 메뉴에서 학습 활동에 참여해 보세요. 활동 기록과 성장 내용은 자동으로 저장됩니다.'},
+    {icon:'👆',title:'가고 싶은 곳을 터치해 보세요',text:'태블릿과 휴대폰에서는 지도에서 빈 곳을 터치하면 캐릭터가 그곳으로 이동합니다.'},
+    {icon:'🏫',title:'건물은 직접 터치해요',text:'배움터·책마루·도전관을 직접 터치하면 각 건물의 원래 학습 활동으로 들어갑니다. 탐험은 위쪽 탐험 메뉴에서 따로 시작합니다.'},
+    {icon:'⭐',title:'배우면서 성장해요',text:'활동을 마치면 기록과 XP가 쌓여요. 내 기록에서 결과를 확인하고 모은 별은 상점과 꾸미기에 사용할 수 있습니다.'}
   ];
-  let index=0;
-  const overlay=document.createElement('div');overlay.className='welcome-guide';overlay.hidden=true;overlay.innerHTML=`<section class="welcome-card" role="dialog" aria-modal="true" aria-label="마을 이용 안내"><div id="guide-icon" class="guide-icon"></div><h2 id="guide-title"></h2><p id="guide-text"></p><div id="guide-dots" class="guide-dots"></div><div class="guide-actions"><button id="guide-skip" class="guide-skip">나중에 보기</button><button id="guide-next" class="guide-next">다음 ▶</button></div></section>`;document.body.appendChild(overlay);
+  let guideIndex=0;
+  const overlay=document.createElement('div');overlay.className='welcome-guide';overlay.hidden=true;overlay.innerHTML=`<section class="welcome-card" role="dialog" aria-modal="true" aria-label="마을 이용 안내"><div id="guide-icon" class="guide-icon"></div><h2 id="guide-title"></h2><p id="guide-text"></p><div id="guide-dots" class="guide-dots"></div><div class="guide-actions"><button id="guide-skip" class="guide-skip" type="button">닫기</button><button id="guide-next" class="guide-next" type="button">다음 ▶</button></div></section>`;document.body.appendChild(overlay);
   const icon=overlay.querySelector('#guide-icon'),title=overlay.querySelector('#guide-title'),text=overlay.querySelector('#guide-text'),dots=overlay.querySelector('#guide-dots'),next=overlay.querySelector('#guide-next'),skip=overlay.querySelector('#guide-skip');
-  const choice=document.createElement('div');choice.className='first-character-choice';choice.hidden=true;choice.innerHTML='<section class="first-character-card" role="dialog" aria-modal="true" aria-label="첫 캐릭터 선택"><h2>내 캐릭터를 골라 주세요</h2><p>나중에 꾸미기 화면에서도 다시 바꿀 수 있어요.</p><div class="first-character-options"><button type="button" data-base="student-girl"><span class="base-choice-preview" data-base-preview="student-girl"></span>여자 캐릭터</button><button type="button" data-base="student-boy"><span class="base-choice-preview" data-base-preview="student-boy"></span>남자 캐릭터</button></div><p class="first-character-status" aria-live="polite"></p></section>';document.body.appendChild(choice);const choiceButtons=[...choice.querySelectorAll('button[data-base]')],choiceStatus=choice.querySelector('.first-character-status');
-  for(const preview of choice.querySelectorAll('[data-base-preview]'))window.StudyVillageAvatar?.paintBase(preview,preview.dataset.basePreview);
-  const profileName=document.querySelector('#profile-name');
-  const blockedKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D',' ']);
-  function playerKey(){const n=(profileName?.textContent||'student').trim();return`studyvillage-guide-seen:${n}`}
-  function render(){const s=steps[index];icon.textContent=s.icon;title.textContent=s.title;text.textContent=s.text;dots.innerHTML=steps.map((_,i)=>`<span class="${i===index?'active':''}"></span>`).join('');next.textContent=index===steps.length-1?'마을 시작하기 ✓':'다음 ▶'}
-  function open(){index=0;render();overlay.hidden=false}
-  function finish(markSeen=true){overlay.hidden=true;if(markSeen)localStorage.setItem(playerKey(),'1')}
-  next.addEventListener('click',()=>{if(index<steps.length-1){index++;render()}else finish(true)});
-  skip.addEventListener('click',()=>finish(false));
-  overlay.addEventListener('click',e=>{if(e.target===overlay)finish(false)});
-  window.addEventListener('keydown',e=>{if(!choice.hidden){if(blockedKeys.has(e.key)||e.key==='Escape'||e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation()}return}if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish(false);return}if(blockedKeys.has(e.key)){e.preventDefault();e.stopImmediatePropagation()}},true);
-  const hudRight=document.querySelector('.hud-right');if(hudRight){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',open);hudRight.insertBefore(b,hudRight.firstChild)}
-  let shown=false,choosing=false;function showGuideOnce(){if(shown||choosing||!game.classList.contains('active'))return;shown=true;setTimeout(()=>{if(!localStorage.getItem(playerKey()))open()},350)}const observer=new MutationObserver(showGuideOnce);observer.observe(game,{attributes:true,attributeFilter:['class']});
-  async function chooseCharacter(baseCharacter){if(!['student-girl','student-boy'].includes(baseCharacter)||choiceButtons.some(button=>button.disabled))return;choiceButtons.forEach(button=>button.disabled=true);choiceStatus.textContent='캐릭터를 저장하고 있어요.';const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const response=await fetch('/api/player/me/equipment',{method:'POST',headers:{'Content-Type':'application/json',...(window.StudyVillageAuth?.authHeaders?.()||{})},body:JSON.stringify({baseCharacter,equipment:{}}),signal:controller.signal}),data=await response.json();if(!response.ok||!data.ok)throw new Error(data.code||'save-failed');window.StudyVillageAvatar?.paintBase(document.querySelector('.player-icon'),baseCharacter);choice.hidden=true;choosing=false;window.dispatchEvent(new Event('studyvillage:activity-record-refresh'));showGuideOnce()}catch(error){choiceStatus.textContent=error?.name==='AbortError'?'저장 시간이 오래 걸려요. 다시 골라 주세요.':'저장하지 못했어요. 교실 서버 연결을 확인해 주세요.'}finally{clearTimeout(timer);choiceButtons.forEach(button=>button.disabled=false)}}
-  choiceButtons.forEach(button=>button.addEventListener('click',()=>chooseCharacter(button.dataset.base)));
-  window.addEventListener('studyvillage:first-character-choice',()=>{choosing=true;overlay.hidden=true;choiceStatus.textContent='';choice.hidden=false});
+  function renderGuide(){const s=steps[guideIndex];icon.textContent=s.icon;title.textContent=s.title;text.textContent=s.text;dots.innerHTML=steps.map((_,i)=>`<span class="${i===guideIndex?'active':''}"></span>`).join('');next.textContent=guideIndex===steps.length-1?'마을로 돌아가기 ✓':'다음 ▶'}
+  function openGuide(){guideIndex=0;renderGuide();overlay.hidden=false}
+  function finishGuide(){overlay.hidden=true}
+  next.addEventListener('click',()=>{if(guideIndex<steps.length-1){guideIndex++;renderGuide()}else finishGuide()});skip.addEventListener('click',finishGuide);overlay.addEventListener('click',e=>{if(e.target===overlay)finishGuide()});window.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finishGuide()}},true);
+  const hudRight=document.querySelector('.hud-right');if(hudRight&&!hudRight.querySelector('.guide-button')){const b=document.createElement('button');b.type='button';b.className='guide-button';b.textContent='❔ 마을 안내';b.addEventListener('click',openGuide);hudRight.insertBefore(b,hudRight.firstChild)}
+
+  const map=document.querySelector('#world-map')||world;
+  const marker=document.createElement('div');marker.className='tap-target';marker.hidden=true;map.appendChild(marker);
+  let target=null,moveTimer=0;
+  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+  const movementKeys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'];
+  function releaseMovement(){for(const key of movementKeys)window.dispatchEvent(new KeyboardEvent('keyup',{key,bubbles:true}));if(moveTimer){clearInterval(moveTimer);moveTimer=0}target=null;marker.hidden=true}
+  function worldPercent(clientX,clientY){const r=world.getBoundingClientRect();return{x:clamp((clientX-r.left)/r.width*100,3,97),y:clamp((clientY-r.top)/r.height*100,8,92)}}
+  function playerPercent(){const r=world.getBoundingClientRect(),p=player.getBoundingClientRect();return{x:(p.left+p.width/2-r.left)/r.width*100,y:(p.top+p.height/2-r.top)/r.height*100}}
+  function driveTowardTarget(){if(!target||!game.classList.contains('active')||document.hidden){releaseMovement();return}const p=playerPercent(),dx=target.x-p.x,dy=target.y-p.y;if(Math.hypot(dx,dy)<1.3){releaseMovement();return}for(const key of movementKeys)window.dispatchEvent(new KeyboardEvent('keyup',{key,bubbles:true}));if(Math.abs(dx)>0.8)window.dispatchEvent(new KeyboardEvent('keydown',{key:dx>0?'ArrowRight':'ArrowLeft',bubbles:true}));if(Math.abs(dy)>0.8)window.dispatchEvent(new KeyboardEvent('keydown',{key:dy>0?'ArrowDown':'ArrowUp',bubbles:true}))}
+  function beginMove(clientX,clientY){if(!touchMode()||!game.classList.contains('active'))return;releaseMovement();target=worldPercent(clientX,clientY);marker.style.left=`${target.x}%`;marker.style.top=`${target.y}%`;marker.hidden=false;driveTowardTarget();moveTimer=setInterval(driveTowardTarget,80)}
+  function panelVisible(el){if(!el||el.hidden)return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&el.getClientRects().length>0}
+  function visibleBlockingPanel(){return [...document.querySelectorAll('#building-interior,#student-explore-panel,#study-expedition-stage,.sv-expedition-panel,#customize-panel,#record-panel,#quiz-panel,#dialogue,.welcome-guide,.math-practice-panel,#library-game-panel,#library-game')].some(panelVisible)}
+  document.addEventListener('pointerup',e=>{
+    if(!touchMode()||!game.classList.contains('active')||visibleBlockingPanel())return;
+    if(!world.contains(e.target))return;
+    if(e.target.closest?.('.building,.npc,#player,button,a,input,select,textarea,[role="button"],[role="dialog"]'))return;
+    beginMove(e.clientX,e.clientY);e.preventDefault();e.stopPropagation();
+  },true);
+  window.addEventListener('blur',releaseMovement);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseMovement()});
+
+  function resetTransientUi(){
+    if(!game.classList.contains('active'))return;
+    overlay.hidden=true;releaseMovement();
+    for(const selector of ['#building-interior','#student-explore-panel','#study-expedition-stage','.sv-expedition-panel','#customize-panel','#record-panel','#quiz-panel','#dialogue']){
+      document.querySelectorAll(selector).forEach(node=>{node.hidden=true;node.style.removeProperty('pointer-events')});
+    }
+    document.body.classList.remove('inside-building','near-building-interaction');
+    game.style.removeProperty('pointer-events');world.style.removeProperty('pointer-events');map.style.removeProperty('pointer-events');
+    document.querySelectorAll('.hud button,.hud a,.building,.npc').forEach(node=>{node.style.removeProperty('pointer-events');if('disabled' in node)node.disabled=false});
+  }
+  let wasActive=game.classList.contains('active');new MutationObserver(()=>{const active=game.classList.contains('active');if(active&&!wasActive)requestAnimationFrame(resetTransientUi);wasActive=active}).observe(game,{attributes:true,attributeFilter:['class']});if(wasActive)requestAnimationFrame(resetTransientUi);window.addEventListener('studyvillage:session-cleared',()=>{overlay.hidden=true;releaseMovement()});
+  /* Never open a modal automatically after login. Character choice stays available from 꾸미기. */
 })();

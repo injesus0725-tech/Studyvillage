@@ -1,8 +1,9 @@
-/* v1.9 teacher-only question review queue.
+/* v1.10 teacher-only question review queue.
    Static question source is never changed here. Review/edit state is stored in settings so backup/restore preserves it. */
 import { auditQuestionSet, summarizeQuestionAudits } from './question-audit.js';
 import { installQuestionHistoryRoutes } from './question-history.js';
 import { installQuestionOverrideRoutes } from './question-overrides.js';
+import { installQuestionCatalogSettingRoutes } from './question-catalog-settings.js';
 import { changeStars, starBalanceFor, starLedgerFor } from './star-ledger.js';
 import { installItemShopRoutes } from './item-shop.js';
 import { installActivityAttemptSettingRoutes } from './activity-attempt-settings.js';
@@ -19,10 +20,20 @@ const clean=(v,n=240)=>String(v??'').trim().slice(0,n);
 const keyFor=(activityId,issue)=>`${activityId}:${Number(issue.question)||0}:${clean(issue.code,80)}`;
 function readQueue(getSetting){try{const rows=JSON.parse(getSetting(STORE_KEY)||'[]');return Array.isArray(rows)?rows:[]}catch{return[]}}
 function writeQueue(setSetting,rows){setSetting(STORE_KEY,JSON.stringify(rows.slice(0,500)))}
+function clientReviewRow(row){return{...row,questionNumber:Number(row?.question)||0,teacherNote:clean(row?.note,240)}}
+function clientReviewPayload(rows){const reviews=rows.map(clientReviewRow),pendingCount=rows.filter(row=>row?.status==='needs-review').length;return{reviews,pendingCount}}
+function normalizeClientReviewStatus(value){const status=clean(value,40);if(status==='pending')return'needs-review';if(status==='dismissed')return'ignored';return status}
+function updateReview({getSetting,setSetting,key,status,note}){
+  const normalized=normalizeClientReviewStatus(status);
+  if(!['needs-review','confirmed','fixed','ignored'].includes(normalized))return{ok:false,code:'invalid-review-status',httpStatus:400};
+  const rows=readQueue(getSetting),row=rows.find(x=>x.key===key);if(!row)return{ok:false,code:'review-not-found',httpStatus:404};
+  row.status=normalized;row.note=note;row.updatedAt=new Date().toISOString();writeQueue(setSetting,rows);return{ok:true,item:clientReviewRow(row)};
+}
 
 export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSetting}){
   installQuestionHistoryRoutes(app,{requireAdmin,getSetting,setSetting});
   installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSetting});
+  installQuestionCatalogSettingRoutes(app,{requireAdmin,getSetting,setSetting});
   installItemShopRoutes(app,{requireAdmin});
   installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting});
   installActivityAttemptOverviewRoutes(app,{requireAdmin});
@@ -54,12 +65,11 @@ export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSett
         const result=auditQuestionSet({activityId,questions});
         for(const issue of result.issues||[]){const key=keyFor(activityId,issue),old=prevByKey.get(key);next.push({key,activityId,question:Number(issue.question)||0,code:clean(issue.code,80),message:clean(issue.message,240),severity:clean(issue.severity,40)||'warning',status:old?.status||'needs-review',note:clean(old?.note,240),updatedAt:new Date().toISOString()})}
       }
-      writeQueue(setSetting,next);res.json({ok:true,summary:summarizeQuestionAudits(next),items:next});
+      writeQueue(setSetting,next);const client=clientReviewPayload(next);res.json({ok:true,summary:summarizeQuestionAudits(next),items:next,...client});
     }catch(err){res.status(500).json({ok:false,code:'question-review-scan-failed',message:clean(err?.message||err)})}
   });
-  app.get('/api/admin/question-reviews',requireAdmin,(req,res)=>{const rows=readQueue(getSetting);res.json({ok:true,summary:summarizeQuestionAudits(rows),items:rows})});
-  app.post('/api/admin/question-reviews/:key',requireAdmin,(req,res)=>{
-    const key=clean(req.params.key,200),status=clean(req.body?.status,40),note=clean(req.body?.note,240);if(!['needs-review','confirmed','fixed','ignored'].includes(status))return res.status(400).json({ok:false,code:'invalid-review-status'});
-    const rows=readQueue(getSetting),row=rows.find(x=>x.key===key);if(!row)return res.status(404).json({ok:false,code:'review-not-found'});row.status=status;row.note=note;row.updatedAt=new Date().toISOString();writeQueue(setSetting,rows);res.json({ok:true,item:row});
-  });
+  app.get('/api/admin/question-reviews',requireAdmin,(req,res)=>{const rows=readQueue(getSetting),client=clientReviewPayload(rows);res.json({ok:true,summary:summarizeQuestionAudits(rows),items:rows,...client})});
+  const saveReview=(req,res)=>{const result=updateReview({getSetting,setSetting,key:clean(req.params.key,200),status:req.body?.status,note:clean(req.body?.note,240)});if(!result.ok)return res.status(result.httpStatus).json({ok:false,code:result.code});res.json(result)};
+  app.post('/api/admin/question-reviews/:key/review',requireAdmin,saveReview);
+  app.post('/api/admin/question-reviews/:key',requireAdmin,saveReview);
 }

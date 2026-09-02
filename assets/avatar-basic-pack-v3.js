@@ -17,9 +17,9 @@
     'bag-school-navy':{svg:svg('<path fill="#465e7e" d="M68 78h22v33H68z"/><path fill="#d2b25c" d="M72 85h14v8H72z"/><path fill="none" d="M72 79q7-12 14 0"/>')},
     'hand-camera':{svg:svg('<rect fill="#41464e" x="5" y="82" width="31" height="21" rx="4"/><circle fill="#9ec2d7" cx="20" cy="93" r="7"/><rect fill="#c49b45" x="10" y="78" width="10" height="6" rx="2"/>')},
     'hand-microphone':{svg:svg('<circle fill="#59606a" cx="14" cy="79" r="7"/><path fill="#3d4249" d="M12 84h5l13 20-5 3z"/><path fill="#b99a47" d="M21 95l5-3 3 5-5 3z"/>')},
-    'pet-penguin':{svg:svg('<ellipse fill="#343b48" cx="78" cy="118" rx="17" ry="20"/><ellipse fill="#f4eee3" cx="78" cy="122" rx="11" ry="14"/><path fill="#e7ad42" d="M74 115h9l-5 6z"/><circle fill="#f4eee3" cx="72" cy="110" r="2"/><circle fill="#f4eee3" cx="84" cy="110" r="2"/>')},
-    'pet-bee':{svg:svg('<ellipse fill="#e2b94c" cx="79" cy="118" rx="17" ry="13"/><path fill="#3c3b3c" d="M69 108h5v20h-5zm11-3h5v25h-5z"/><ellipse fill="#dff4f7" cx="70" cy="102" rx="9" ry="6"/><ellipse fill="#dff4f7" cx="89" cy="102" rx="9" ry="6"/>')},
-    'pet-turtle':{svg:svg('<ellipse fill="#66865f" cx="77" cy="122" rx="18" ry="12"/><circle fill="#79a06f" cx="94" cy="120" r="7"/><path fill="#4d6d49" d="M63 121q14-18 28 0-14 15-28 0z"/><circle fill="#2f382f" stroke="none" cx="96" cy="119" r="1.5"/>')},
+    'pet-penguin':{svg:svg('<ellipse fill="#343b48" cx="81" cy="120" rx="14" ry="17"/><ellipse fill="#f4eee3" cx="81" cy="123" rx="9" ry="11"/><path fill="#e7ad42" d="M77 117h8l-4 5z"/><circle fill="#f4eee3" cx="76" cy="113" r="2"/><circle fill="#f4eee3" cx="86" cy="113" r="2"/>')},
+    'pet-bee':{svg:svg('<ellipse fill="#e2b94c" cx="82" cy="119" rx="13" ry="10"/><path fill="#3c3b3c" d="M74 111h4v16h-4zm9-2h4v20h-4z"/><ellipse fill="#dff4f7" cx="75" cy="107" rx="7" ry="5"/><ellipse fill="#dff4f7" cx="90" cy="107" rx="7" ry="5"/>')},
+    'pet-turtle':{svg:svg('<ellipse fill="#66865f" cx="81" cy="124" rx="15" ry="10"/><circle fill="#79a06f" cx="96" cy="122" r="6"/><path fill="#4d6d49" d="M70 123q11-15 22 0-11 13-22 0z"/><circle fill="#2f382f" stroke="none" cx="98" cy="121" r="1.5"/>')},
     'hair-spiky-brown':{svg:svg('<path fill="#5b3c2e" d="M24 40Q21 16 32 13l3-9 7 7 6-9 6 9 8-7 2 10q9 5 8 26l-8-9-8 8-9-11-9 11-7-8z"/>')},
     'hair-shoulder-wave':{svg:svg('<path fill="#7a4d3d" d="M22 43Q20 10 48 8t27 35v35l-9 6V39l-9-10-9 11-9-11-8 10v45l-9-6z"/><path fill="none" d="M24 52q-4 10 2 18m46-18q4 10-2 18"/>')},
     'hat-visor-orange':{svg:svg('<path fill="#d77c3f" d="M30 23q5-10 18-10t18 10H30z"/><path fill="#bd6132" d="M26 23h44q8 2 11 6-12 4-33 1-13-2-22-7z"/>')},
@@ -32,8 +32,9 @@
     'bag-tote-cream':{svg:svg('<path fill="#eadcbf" d="M67 85h23v27H67z"/><path fill="none" d="M71 86q2-14 8-14t8 14"/><path fill="#b68d54" d="M73 95h11v4H73z"/>')},
     'hand-brush':{svg:svg('<path fill="#9a6b45" d="M17 75l5-2 10 29-5 2z"/><path fill="#d2b078" d="M14 70l9-3 2 9-9 3z"/>')},
     'hand-flashlight':{svg:svg('<path fill="#4b5868" d="M12 86h11l5 22H17z"/><path fill="#d9c45a" d="M11 81h13v8H11z"/><path fill="#fff2a8" d="M24 81l13-8v16z"/>')},
-    'pet-koala':{svg:svg('<circle fill="#9ba2a7" cx="78" cy="118" r="17"/><circle fill="#858c91" cx="65" cy="107" r="8"/><circle fill="#858c91" cx="91" cy="107" r="8"/><ellipse fill="#d9dde0" cx="78" cy="122" rx="10" ry="9"/><ellipse fill="#45484b" cx="78" cy="118" rx="4" ry="5"/><circle fill="#333" cx="72" cy="113" r="2"/><circle fill="#333" cx="84" cy="113" r="2"/>')},
-    'pet-duck':{svg:svg('<ellipse fill="#ead45a" cx="78" cy="121" rx="17" ry="14"/><circle fill="#ead45a" cx="78" cy="108" r="12"/><path fill="#e79242" d="M84 110h12l-10 6z"/><circle fill="#333" cx="74" cy="106" r="2"/>')},
-    'pet-star':{svg:svg('<path fill="#e8c857" d="M78 98l7 13 14 2-10 10 3 14-14-7-13 7 3-14-11-10 15-2z"/><circle fill="#574b3f" cx="73" cy="119" r="1.8"/><circle fill="#574b3f" cx="83" cy="119" r="1.8"/><path fill="none" d="M74 126q4 3 8 0"/>')}
+    'pet-koala':{svg:svg('<circle fill="#9ba2a7" cx="81" cy="120" r="14"/><circle fill="#858c91" cx="70" cy="111" r="7"/><circle fill="#858c91" cx="92" cy="111" r="7"/><ellipse fill="#d9dde0" cx="81" cy="123" rx="8" ry="7"/><ellipse fill="#45484b" cx="81" cy="120" rx="3" ry="4"/><circle fill="#333" cx="76" cy="116" r="2"/><circle fill="#333" cx="86" cy="116" r="2"/>')},
+    'pet-duck':{svg:svg('<ellipse fill="#ead45a" cx="81" cy="122" rx="14" ry="11"/><circle fill="#ead45a" cx="81" cy="112" r="10"/><path fill="#e79242" d="M86 114h10l-8 5z"/><circle fill="#333" cx="78" cy="110" r="2"/>')},
+    'pet-star':{svg:svg('<path fill="#e8c857" d="M81 104l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z"/><circle fill="#574b3f" cx="77" cy="121" r="1.5"/><circle fill="#574b3f" cx="85" cy="121" r="1.5"/><path fill="none" d="M78 126q3 2 6 0"/>')}
   });
+  if(!document.querySelector('script[data-avatar-pack-v5]')){const extra=document.createElement('script');extra.src='assets/avatar-basic-pack-v5.js?v=20260826v5';extra.dataset.avatarPackV5='1';document.head.appendChild(extra)}
 })();

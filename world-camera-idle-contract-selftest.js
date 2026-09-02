@@ -1,8 +1,10 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('world-camera.js','utf8');
-assert.ok(src.includes("const game=document.querySelector('#game-screen')"),'camera must know whether the game screen is visible');
-assert.ok(src.includes('function active(){return !document.hidden&&(!game||!game.hidden)}'),'camera calculations must pause while the tab or game screen is hidden');
-assert.ok(src.includes('if(active()){'),'camera geometry work must be guarded by active game visibility');
-assert.ok(src.includes('requestAnimationFrame(updateCamera)'),'camera must resume naturally on the animation loop');
-console.log('world camera idle contract self-test passed');
+assert.ok(src.includes("const viewport=document.querySelector('#world')"),'lightweight village must bind to the visible world viewport');
+assert.ok(src.includes("layer.style.width='100%'" )&&src.includes("layer.style.height='100%'"),'home village map must fit the viewport instead of using an oversized camera canvas');
+assert.ok(src.includes("layer.style.transform='none'"),'home village must not run camera transforms');
+assert.ok(src.includes("layer.style.willChange='auto'"),'home village must not reserve continuous transform compositing');
+assert.ok(!src.includes('requestAnimationFrame(updateCamera)'),'home village camera must not run a permanent animation loop');
+assert.ok(!src.includes('getBoundingClientRect'),'home village camera module must not perform per-frame geometry reads');
+console.log('lightweight home village camera contract self-test passed');

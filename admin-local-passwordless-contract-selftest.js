@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8');
+const client=fs.readFileSync('admin-network-guard.js','utf8');
+assert.ok(server.includes("app.post('/api/admin/local-session'"),'교사용 PC 전용 자동 세션 경로가 필요합니다.');
+assert.ok(server.includes("code:'teacher-pc-only'"),'원격 학생 기기의 관리자 자동 입장을 차단해야 합니다.');
+assert.ok(server.includes("const LOCAL_TEACHER_ADDRESSES=localTeacherAddresses()")&&server.includes("LOCAL_TEACHER_ADDRESSES.has(normalizeRemoteAddress(req.socket?.remoteAddress))"),'루프백과 교사 PC 자체 주소만 교사용 PC로 인정해야 합니다.');
+assert.ok(server.includes("for(const entries of Object.values(os.networkInterfaces()))")&&server.includes("addresses.add(normalizeRemoteAddress(entry.address))"),'교사 PC에서 자체 교실 주소로 열어도 무암호 입장이 가능해야 합니다.');
+assert.ok(client.includes("previousFetch('/api/admin/local-session'"),'교사용 화면은 다른 관리자 요청 래퍼와 충돌하지 않고 로컬 세션을 요청해야 합니다.');
+assert.ok(!client.includes("password.value='teacher1234'"),'기본 비밀번호 자동 입력 방식은 사용하지 않아야 합니다.');
+assert.ok(client.includes("sessionStorage.setItem('studyvillage-admin-token',data.token)"),'발급된 교사용 세션을 관리자 기능에서 사용해야 합니다.');
+assert.ok(client.includes("if(stored&&!isLoginUrl(url)&&!headers.Authorization)headers.Authorization=`Bearer ${stored}`"),'교사용 토큰은 새로고침 없이 모든 관리자 요청에 적용되어야 합니다.');
+assert.ok(!client.includes('location.reload();return}}catch{}finally{localEntryRunning=false}'),'교사용 자동 입장은 흰 화면을 유발할 수 있는 새로고침 반복을 사용하지 않아야 합니다.');
+console.log('admin local passwordless contract self-test passed');

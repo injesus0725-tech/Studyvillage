@@ -24,6 +24,26 @@
   }
   window.addEventListener('studyvillage:activity-record-refresh',refreshConfirmedPlayer);
 
+  // The legacy riddle saves through StudyVillageData.savePlayer rather than the
+  // newer activity endpoint.  A server-confirmed riddle response always carries
+  // rewardStars; the offline pending snapshot does not.  Refresh only after the
+  // confirmed response so an outage never makes the HUD claim an unsaved result.
+  const data=window.StudyVillageData;
+  if(data?.savePlayer&&!data.__riddleRefreshWrapped){
+    const originalSave=data.savePlayer.bind(data);
+    data.savePlayer=async(...args)=>{
+      const player=await originalSave(...args);
+      if(player&&Object.prototype.hasOwnProperty.call(player,'rewardStars')){
+        applyPlayer(player);
+        window.dispatchEvent(new Event('studyvillage:activity-record-refresh'));
+        window.dispatchEvent(new Event('studyvillage:ranking-refresh'));
+        window.dispatchEvent(new Event('studyvillage:stars-refresh'));
+      }
+      return player;
+    };
+    Object.defineProperty(data,'__riddleRefreshWrapped',{value:true});
+  }
+
   const quizNext=document.querySelector('#quiz-next');
   let retryingRiddleResult=false;
   quizNext?.addEventListener('click',event=>{

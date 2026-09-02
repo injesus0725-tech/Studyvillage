@@ -5,5 +5,7 @@ assert.ok(src.includes("document.hidden||!game.classList.contains('active')"),'�
 assert.ok(src.includes('getBoundingClientRect()'),'실제 캐릭터 위치 기반 움직임 감지는 유지해야 합니다.');
 assert.ok(src.includes("document.addEventListener('visibilitychange'"),'탭이 다시 보이면 움직임 감지를 재개해야 합니다.');
 assert.ok(src.includes('MutationObserver'),'게임 화면이 활성화되면 움직임 감지를 재개해야 합니다.');
-assert.ok(src.includes('if(!raf)raf=requestAnimationFrame(frame)'),'중복 애니메이션 프레임 예약을 막아야 합니다.');
-console.log('avatar motion runtime safety contract self-test passed');
+assert.ok(src.includes("function start(){if(timer||document.hidden||!game.classList.contains('active'))return"),'중복 움직임 샘플링 타이머를 막아야 합니다.');
+assert.ok(src.includes('timer=setInterval(sample,120)'),'태블릿 부하를 줄이기 위해 움직임 샘플링 주기를 제한해야 합니다.');
+assert.ok(src.includes('clearInterval(timer);timer=null'),'게임이 비활성화되면 움직임 샘플링 타이머를 정리해야 합니다.');
+console.log('avatar motion lightweight runtime safety contract self-test passed');

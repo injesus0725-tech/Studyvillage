@@ -12,7 +12,39 @@
 'bag-treasure':{svg:s('<path fill="#8a5b38" d="M67 86h23v25H67z"/><path fill="#c8a348" d="M68 91h21v6H68z"/><path fill="none" d="M70 86q9-15 17 0"/><circle fill="#e6c85b" cx="79" cy="101" r="3"/>')},
 'hand-shield':{svg:s('<path fill="#8b633e" d="M5 77l18-5 10 10-4 21-12 8-12-8z"/><path fill="#d0aa58" d="M17 77h4v29h-4zM8 88h21v4H8z"/>')},
 'hand-crystal':{svg:s('<path fill="#78d7e5" d="M20 72l10 12-7 18-13 2-6-13 6-15z"/><path fill="#dffaff" d="M20 72l2 17-12-13zm2 17 8-5-7 18z"/>')},
-'pet-fennec':{svg:s('<ellipse fill="#d8a367" cx="78" cy="119" rx="16" ry="14"/><path fill="#d8a367" d="M65 108l-8-18 15 12zm26 0 9-18-15 12z"/><ellipse fill="#f1d7b5" cx="78" cy="122" rx="9" ry="7"/><circle fill="#333" cx="72" cy="115" r="2"/><circle fill="#333" cx="84" cy="115" r="2"/>')},
-'pet-baby-wolf':{svg:s('<ellipse fill="#7d8793" cx="78" cy="119" rx="17" ry="14"/><path fill="#7d8793" d="M65 108l2-15 10 10zm27 0-2-15-10 10z"/><ellipse fill="#c9ced3" cx="78" cy="122" rx="9" ry="7"/><circle fill="#2f3338" cx="72" cy="115" r="2"/><circle fill="#2f3338" cx="84" cy="115" r="2"/>')},
-'pet-moon':{svg:s('<path fill="#e1d37a" d="M91 101q-20 3-20 22t20 20q-28 3-29-20 1-24 29-22z"/><path fill="#fff2b4" d="M82 111l3 5 6 1-5 4 1 6-5-3-5 3 1-6-5-4 6-1z"/>')}
+'pet-fennec':{svg:s('<ellipse fill="#d8a367" cx="81" cy="122" rx="13" ry="11"/><path fill="#d8a367" d="M70 113l-7-15 13 10zm22 0 7-15-13 10z"/><ellipse fill="#f1d7b5" cx="81" cy="124" rx="7" ry="5"/><circle fill="#333" cx="76" cy="118" r="2"/><circle fill="#333" cx="86" cy="118" r="2"/>')},
+'pet-baby-wolf':{svg:s('<ellipse fill="#7d8793" cx="81" cy="122" rx="14" ry="11"/><path fill="#7d8793" d="M70 113l2-12 8 8zm22 0-2-12-8 8z"/><ellipse fill="#c9ced3" cx="81" cy="124" rx="7" ry="5"/><circle fill="#2f3338" cx="76" cy="118" r="2"/><circle fill="#2f3338" cx="86" cy="118" r="2"/>')},
+'pet-moon':{svg:s('<path fill="#e1d37a" d="M90 106q-15 3-15 18t15 17q-22 3-23-17 1-20 23-18z"/><path fill="#fff2b4" d="M83 114l2 4 5 1-4 3 1 5-4-2-4 2 1-5-4-3 5-1z"/>')}
 });})();
+
+/* Compatibility hardening for the two-phase equipment save used by customize.js.
+   After the legacy/base save succeeds, clear every purchased slot first. customize.js then
+   writes back only the purchased items still selected. This also handles the all-unequipped case. */
+(()=>{
+  const slots=['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'];
+  const emptyEquipment=()=>Object.fromEntries(slots.map(slot=>[slot,null]));
+  const originalFetch=window.fetch.bind(window);
+  window.fetch=async function(input,init={}){
+    const url=typeof input==='string'?input:input?.url||'',method=String(init?.method||(typeof input!=='string'&&input?.method)||'GET').toUpperCase();
+    const response=await originalFetch(input,init);
+    if(method==='POST'&&/(^|\/)api\/player\/me\/equipment(?:\?|$)/.test(url)&&response.ok){
+      try{
+        const headers=new Headers(init?.headers||{});if(!headers.has('Content-Type'))headers.set('Content-Type','application/json');
+        const cleared=await originalFetch('/api/shop/equipment',{method:'PUT',headers,body:JSON.stringify({equipment:emptyEquipment()})});
+        if(!cleared.ok)console.warn('[StudyVillage avatar] stale purchased equipment clear failed',cleared.status);
+      }catch(err){console.warn('[StudyVillage avatar] stale purchased equipment clear failed',err)}
+    }
+    return response;
+  };
+})();
+
+/* Keep an 87-item shop practical on tablet-sized screens. */
+(()=>{
+  function enhance(){
+    const filters=document.querySelector('#student-shop-filters'),list=document.querySelector('#student-shop-items');if(!filters||!list)return false;
+    if(!filters.querySelector('[data-shop-slot="face"]')){const all=filters.querySelector('[data-shop-slot="all"]');let anchor=all;for(const [slot,label] of [['face','얼굴'],['expression','표정']]){const b=document.createElement('button');b.type='button';b.dataset.shopSlot=slot;b.setAttribute('aria-pressed','false');b.textContent=label;anchor?.after(b);anchor=b}}
+    if(!document.querySelector('#sv-avatar-shop-ux-style')){const style=document.createElement('style');style.id='sv-avatar-shop-ux-style';style.textContent='#student-shop-items{max-height:min(44vh,420px);overflow-y:auto;overscroll-behavior:contain;padding-right:4px}.student-shop-filters{display:flex;flex-wrap:wrap;gap:6px;max-height:94px;overflow-y:auto;overscroll-behavior:contain}.student-shop .inventory-item{min-height:92px}.student-shop-head{position:sticky;top:0;z-index:2;background:inherit}';document.head.appendChild(style)}
+    return true;
+  }
+  if(!enhance()){const observer=new MutationObserver(()=>{if(enhance())observer.disconnect()});observer.observe(document.body,{subtree:true,childList:true})}
+})();

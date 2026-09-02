@@ -5,7 +5,15 @@ const policy=fs.readFileSync('server/activity-attempt-policy.js','utf8');
 for(const token of [
   "const STORE_KEY='activity-attempt-policies:v1'",
   'const checked=validateAttemptPolicyMap(raw)',
-  "return checked.ok?{...checked.policies,'math-arithmetic':DAILY_MATH_POLICY,'library-vocabulary':DAILY_BOOKMARU_POLICY}",
+  "const withDailyReset=policy=>",
+  "normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'}",
+  "Object.entries(checked.policies).map(([id,policy])=>[id,withDailyReset(policy)])",
+  "'riddle-demo':Object.freeze({mode:'limited',limit:1",
+  "'library-vocabulary':Object.freeze({mode:'limited',limit:1",
+  "'math-arithmetic':Object.freeze({mode:'limited',limit:3",
+  "'exploration-forest-riddle':Object.freeze({mode:'limited',limit:3",
+  "'exploration-mountain-riddle':Object.freeze({mode:'limited',limit:3",
+  'return{...DAILY_CORE_POLICIES,...saved}',
   "app.put('/api/admin/activity-attempt-policies',requireAdmin",
   'if(!checked.ok)return res.status(400)',
   'setSetting(STORE_KEY,JSON.stringify(checked.policies))'
