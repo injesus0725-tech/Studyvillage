@@ -8,7 +8,7 @@ for(const slot of ['outfit','pet']){
   assert.ok(index.includes(`id="player-${slot}"`)&&index.includes(`id="preview-${slot}"`),`missing production ${slot} layer`);
   assert.ok(expedition.includes(`'${slot}'`),`expedition must copy production ${slot}`);
 }
-assert.ok(renderer.includes("base-boy-v2.png")&&renderer.includes("base-girl-v2.png")&&renderer.includes("function defaultHair(){return''}"),'existing default male/female faces and hair must remain part of the base body art');
+assert.ok(renderer.includes('v2/bases/study-boy-v2.png')&&renderer.includes('v2/bases/study-girl-v2.png')&&renderer.includes("function defaultHair(){return''}"),'new default male/female faces and hair must remain part of the base body art');
 assert.ok(variants.includes('approved: Object.freeze([])'),'rejected prototype variants must not be registered for V1');
 assert.ok(shop.includes('paintProductPreview(b,item,data.baseCharacter)')&&shop.includes('renderer.paintItem(part,item.id)'),'shop cards must show the exact wearable on the equipped male/female base');
 for(const slot of ['character','outfit','effect','pet'])assert.ok(shop.includes(`data-shop-slot="${slot}"`),`상점에 ${slot} 생산 분류가 보여야 합니다.`);

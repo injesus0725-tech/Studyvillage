@@ -6,7 +6,7 @@ const root=__dirname;
 const runtimeDir=path.join(root,'assets/avatar-runtime');
 const renderer=fs.readFileSync(path.join(root,'avatar-renderer.js'),'utf8');
 const catalog=JSON.parse(fs.readFileSync(path.join(runtimeDir,'catalog.json'),'utf8'));
-const listed=[...catalog.baseCharacters,...catalog.hair,...catalog.outfits,...catalog.pets];
+const listed=[...catalog.baseCharacters,...catalog.hair,...catalog.outfits,...catalog.pets,...catalog.newArtV2.bases,...catalog.newArtV2.outfits,...catalog.newArtV2.pets];
 assert.deepStrictEqual(catalog.canvas,{width:256,height:256},'runtime canvas must remain 256x256');
 assert.strictEqual(new Set(listed).size,listed.length,'runtime catalog paths must be unique');
 for(const rel of listed){

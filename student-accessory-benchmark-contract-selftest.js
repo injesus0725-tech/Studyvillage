@@ -12,8 +12,8 @@ const retirement=fs.readFileSync('AVATAR_NORMALIZER_RETIREMENT.md','utf8');
 const normalizerStub=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8');
 
 const characters=['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05'];
-const outfits=['outfit-silver-knight','outfit-star-mage-production','outfit-school-scientist','outfit-forest-archer-production','outfit-pirate-captain-production','outfit-moon-priest-production'];
-const pets=['pet-maltese-production','pet-toy-poodle-production','pet-corgi-production','pet-cheese-cat-production','pet-lop-rabbit-production','pet-baby-dragon-production'];
+const outfits=['outfit-camp-explorer-v2'];
+const pets=['pet-cream-pup-v2'];
 
 for(const id of characters){
   assert.ok(!catalog.includes(`'${id}'`),`rejected prototype character must not be sold ${id}`);
@@ -27,6 +27,7 @@ for(const id of pets){
   assert.ok(catalog.includes(`'${id}'`),`production pet catalog missing ${id}`);
   assert.ok(renderer.includes(`'${id}'`),`avatar renderer missing ${id}`);
 }
+assert.ok(catalog.includes("'effect-starlight-v2'")&&renderer.includes("'effect-starlight-v2'"),'one-set effect must exist in catalog and renderer');
 for(const retired of ['leaf-cap','scholar-cap','explorer-goggles','star-monocle','field-satchel','book-pack']){
   assert.ok(!catalog.includes(`'${retired}'`),`retired accessory must not return to production catalog: ${retired}`);
   assert.ok(!client.includes(`'${retired}'`),`retired accessory must not return to student shop: ${retired}`);

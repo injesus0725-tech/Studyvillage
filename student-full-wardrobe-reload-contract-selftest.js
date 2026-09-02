@@ -3,7 +3,7 @@ const server=fs.readFileSync('server/server.js','utf8'),shop=fs.readFileSync('se
 const activeSlots=['outfit','effect','pet'];
 const retiredUiSlots=['hair','face','expression','hat','glasses','bottom','shoes','bag','hand'];
 
-assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must continue parsing legacy saved equipment safely');
+assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,effect:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must continue parsing legacy saved equipment and the active effect safely');
 assert.ok(customize.includes("const slots=['outfit','effect','pet']"),'customizer must expose only the three wearable production slots beside the separately selected base character');
 assert.ok(customize.includes("slotNames={outfit:'한벌 의상',effect:'효과',pet:'펫'}"),'wardrobe labels must match the production architecture');
 assert.ok(customize.includes("let playerData=null")&&customize.includes("draftBase='student-boy'"),'base character selection must remain separate from wearable equipment');
