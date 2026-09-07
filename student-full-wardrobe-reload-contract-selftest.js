@@ -1,11 +1,11 @@
 const fs=require('fs'),assert=require('assert');
 const server=fs.readFileSync('server/server.js','utf8'),shop=fs.readFileSync('server/item-shop.js','utf8'),customize=fs.readFileSync('customize.js','utf8'),index=fs.readFileSync('index.html','utf8'),ranking=fs.readFileSync('assets/student-stability-fixes.js','utf8');
-const activeSlots=['hair','outfit','effect','pet'];
+const activeSlots=['effect','pet'];
 const retiredUiSlots=['face','expression','hat','glasses','bottom','shoes','bag','hand'];
 
 assert.match(server,/function parseEquipment\(r\)\{const out=\{face:'face-round',expression:'expression-smile',hair:null,hat:null,glasses:null,outfit:null,effect:null,bottom:null,shoes:null,bag:null,hand:null,pet:null\}/,'student reload must continue parsing legacy saved equipment and the active effect safely');
-assert.ok(customize.includes("const slots=['hair','outfit','effect','pet']"),'customizer must expose the four production slots beside the separately selected base character');
-assert.ok(customize.includes("slotNames={hair:'머리',outfit:'한벌 의상',effect:'효과',pet:'펫'}"),'wardrobe labels must match the production architecture');
+assert.ok(customize.includes("const slots=['effect','pet']"),'customizer must expose only effect and pet beside the complete character');
+assert.ok(customize.includes("slotNames={effect:'효과',pet:'펫'}"),'wardrobe labels must match the complete-character architecture');
 assert.ok(customize.includes("let playerData=null")&&customize.includes("draftBase='student-boy'"),'base character selection must remain separate from wearable equipment');
 assert.ok(customize.includes('for(const c of playerData?.baseCharacters||[])'),'wardrobe must list only server-approved base characters');
 assert.ok(customize.includes("draftBase=(next.baseCharacters||[]).some(c=>c.id===next.baseCharacter)?next.baseCharacter:'student-boy'"),'reload must restore a validated base-character selection');
@@ -14,7 +14,7 @@ assert.ok(server.includes('RANKING_ITEM_SLOTS[id]===slot'),'student reload must 
 
 for(const slot of activeSlots){assert.ok(customize.includes(`'${slot}'`),`customizer must support production ${slot} slot`)}
 for(const slot of retiredUiSlots){assert.ok(!customize.includes(`slotNames={${slot}:`)&&!customize.includes(`data-shop-slot="${slot}"`),`retired ${slot} must not be reintroduced as a production wardrobe category`)}
-assert.ok(!customize.includes("#player-hair'),null")&&customize.includes("const slots=['hair','outfit','effect','pet']"),'active hair must render through the shared wardrobe loop');
+assert.ok(customize.includes("const slots=['effect','pet']"),'effect and pet must render through the shared wardrobe loop');
 assert.ok(customize.includes('for(const slot of slots)')&&customize.includes('`#player-${slot}`')&&customize.includes('`#preview-${slot}`'),'customizer must render the production wearable slots through one shared loop');
 const inventoryStart=customize.indexOf('function renderInventory()'),inventoryEnd=customize.indexOf('async function fetchPlayer',inventoryStart),inventory=customize.slice(inventoryStart,inventoryEnd);
 assert.ok(inventoryStart>=0&&inventoryEnd>inventoryStart,'wardrobe inventory renderer must exist');

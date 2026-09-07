@@ -11,16 +11,16 @@ const direction=fs.readFileSync('AVATAR_PRODUCTION_DIRECTION.md','utf8');
 const retirement=fs.readFileSync('AVATAR_NORMALIZER_RETIREMENT.md','utf8');
 const normalizerStub=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8');
 
-const characters=['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05'];
-const outfits=['outfit-camp-explorer-v2'];
+const rejectedCharacters=['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05'];
+const characters=['character-peter-pan-boy','character-peter-pan-girl'];
 const pets=['pet-cream-pup-v2'];
 
-for(const id of characters){
+for(const id of rejectedCharacters){
   assert.ok(!catalog.includes(`'${id}'`),`rejected prototype character must not be sold ${id}`);
   assert.ok(!variants.includes(`'${id}'`),`rejected prototype character must not be registered ${id}`);
 }
-for(const id of outfits){
-  assert.ok(catalog.includes(`'${id}'`),`production outfit catalog missing ${id}`);
+for(const id of characters){
+  assert.ok(catalog.includes(`'${id}'`),`production complete character catalog missing ${id}`);
   assert.ok(renderer.includes(`'${id}'`),`avatar renderer missing ${id}`);
 }
 for(const id of pets){
@@ -33,12 +33,12 @@ for(const retired of ['leaf-cap','scholar-cap','explorer-goggles','star-monocle'
   assert.ok(!client.includes(`'${retired}'`),`retired accessory must not return to student shop: ${retired}`);
 }
 
-assert.ok(client.includes('data-shop-slot="character"'),'student shop must expose the production base character category');
-assert.ok(client.includes('data-shop-slot="outfit"'),'student shop must expose one-piece outfit category');
+assert.ok(client.includes('data-shop-slot="character"'),'student shop must expose the complete character category');
+assert.ok(!client.includes('data-shop-slot="outfit"')&&!client.includes('data-shop-slot="hair"'),'student shop must not expose retired split hair/outfit categories');
 assert.ok(client.includes('data-shop-slot="pet"'),'student shop must expose pet category');
 
 // Final production contract. Verify durable concepts instead of one exact prose sentence.
-for(const token of ['256×256','목선','발바닥선','기본 의상','must-cover','0,0']){
+for(const token of ['256×256','완전체 캐릭터','220','238']){
   assert.ok(itemSpec.includes(token),`avatar item spec missing final production concept: ${token}`);
 }
 assert.ok(itemSpec.includes('런타임 자동 픽셀 분석')&&itemSpec.includes('금지한다'),'runtime pixel normalization must remain prohibited');
