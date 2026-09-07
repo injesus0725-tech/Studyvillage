@@ -1,10 +1,21 @@
 #customize-panel[data-mode="shop"] .student-shop { display: block !important; }
 #customize-panel[data-mode="wardrobe"] .student-shop { display: none !important; }
 #customize-panel .avatar-preview {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  position: relative;
+  top: auto;
+  z-index: 1;
+  width: 112px !important;
+  height: 112px !important;
+  margin: -72px 52px 12px auto;
+  pointer-events: none;
   background: #eaf7e7;
+}
+@media (max-width: 700px), (pointer: coarse) {
+  #customize-panel .avatar-preview {
+    width: 96px !important;
+    height: 96px !important;
+    margin: -62px 46px 10px auto;
+  }
 }
 #customize-panel[data-mode="shop"] #student-shop-items,
 #customize-panel[data-mode="wardrobe"] #inventory-list {

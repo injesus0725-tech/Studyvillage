@@ -3,7 +3,7 @@
   "canvas": {"width": 256, "height": 256},
   "productionDirection": "AVATAR_PRODUCTION_DIRECTION.md",
   "newArtV2": {
-    "bases": ["v2/bases/study-boy-v2.png", "v2/bases/study-girl-v2.png", "production/characters/peter-pan-boy.png", "production/characters/peter-pan-girl.png", "production/characters/hello-kitty-boy.png", "production/characters/hello-kitty-girl.png"],
+    "bases": ["v2/bases/study-boy-v2.png", "v2/bases/study-girl-v2.png", "production/characters/peter-pan-boy.png", "production/characters/peter-pan-girl.png", "production/characters/hello-kitty-boy.png", "production/characters/hello-kitty-girl.png", "production/characters/kuromi.png", "production/characters/my-melody.png", "production/characters/cinnamoroll.png", "production/characters/pompompurin.png"],
     "hair": [],
     "outfits": [],
     "pets": ["v2/pets/cream-pup-v1.png"],

@@ -12,7 +12,7 @@ const retirement=fs.readFileSync('AVATAR_NORMALIZER_RETIREMENT.md','utf8');
 const normalizerStub=fs.readFileSync('assets/avatar-auto-normalize-v1.js','utf8');
 
 const rejectedCharacters=['character-boy-02','character-boy-03','character-boy-04','character-boy-05','character-girl-02','character-girl-03','character-girl-04','character-girl-05'];
-const characters=['character-peter-pan-boy','character-peter-pan-girl','character-hello-kitty-boy','character-hello-kitty-girl'];
+const characters=['character-peter-pan-boy','character-peter-pan-girl','character-hello-kitty-boy','character-hello-kitty-girl','character-kuromi','character-my-melody','character-cinnamoroll','character-pompompurin'];
 const pets=['pet-cream-pup-v2'];
 
 for(const id of rejectedCharacters){

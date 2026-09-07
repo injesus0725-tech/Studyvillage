@@ -4,9 +4,9 @@ const path=require('path');
 const root=__dirname;
 const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 const catalog=read('server/avatar-shop-pack-v3.js'),renderer=read('avatar-renderer.js'),shop=read('student-shop.js'),customize=read('customize.js'),ranking=read('village-layout.js'),server=read('server/server.js'),admin=read('admin.js'),adminShop=read('admin-shop.js'),adminHtml=read('admin.html'),itemShop=read('server/item-shop.js');
-const expected=['v2/bases/study-boy-v2.png','v2/bases/study-girl-v2.png','production/characters/peter-pan-boy.png','production/characters/peter-pan-girl.png','production/characters/hello-kitty-boy.png','production/characters/hello-kitty-girl.png','v2/pets/cream-pup-v1.png'];
+const expected=['v2/bases/study-boy-v2.png','v2/bases/study-girl-v2.png','production/characters/peter-pan-boy.png','production/characters/peter-pan-girl.png','production/characters/hello-kitty-boy.png','production/characters/hello-kitty-girl.png','production/characters/kuromi.png','production/characters/my-melody.png','production/characters/cinnamoroll.png','production/characters/pompompurin.png','v2/pets/cream-pup-v1.png'];
 for(const rel of expected){const full=path.join(root,'assets/avatar-runtime',rel),data=fs.readFileSync(full);assert.equal(data.toString('ascii',1,4),'PNG',`${rel} must be PNG`);assert.equal(data.readUInt32BE(16),256,`${rel} width must be 256`);assert.equal(data.readUInt32BE(20),256,`${rel} height must be 256`);assert.ok(renderer.includes(rel),`renderer missing ${rel}`)}
-for(const id of ['character-peter-pan-boy','character-peter-pan-girl','character-hello-kitty-boy','character-hello-kitty-girl','effect-starlight-v2','pet-cream-pup-v2']){assert.ok(catalog.includes(`'${id}'`),`active complete-character catalog missing ${id}`);assert.ok(renderer.includes(`'${id}'`),`renderer missing ${id}`)}
+for(const id of ['character-peter-pan-boy','character-peter-pan-girl','character-hello-kitty-boy','character-hello-kitty-girl','character-kuromi','character-my-melody','character-cinnamoroll','character-pompompurin','effect-starlight-v2','pet-cream-pup-v2']){assert.ok(catalog.includes(`'${id}'`),`active complete-character catalog missing ${id}`);assert.ok(renderer.includes(`'${id}'`),`renderer missing ${id}`)}
 for(const id of ['hair-natural-wavy-v2','outfit-camp-explorer-v2','outfit-detective-v2','outfit-firefighter-v2','outfit-forest-fairy-v2'])assert.ok(!catalog.includes(`'${id}'`),`retired split-layer product returned: ${id}`);
 for(const id of ['outfit-silver-knight','pet-maltese-production','pet-cheese-cat-production'])assert.ok(!catalog.includes(`'${id}'`),`retired tester product returned: ${id}`);
 assert.ok(shop.includes("item.slot==='physical'||!renderer")&&shop.includes('shop-preview-${item.slot}'),'student shop must render every digital layer including the new effect');
@@ -15,7 +15,7 @@ assert.ok(ranking.includes("['outfit','effect','bottom','shoes','hat','glasses',
 assert.ok(server.includes('equipment:rankingEquipment(row)'),'ranking API must return allowlisted equipment');
 assert.ok(admin.includes("for(const slot of ['hair','effect','outfit','pet'])"),'teacher student table must paint canonical avatar layers');
 assert.ok(adminShop.includes('admin-shop-product-preview'),'teacher shop must render graphical product previews');
-assert.ok(adminHtml.includes('avatar-renderer.js?v=20260908character2'),'teacher mode must load the current complete-character renderer');
+assert.ok(adminHtml.includes('avatar-renderer.js?v=20260908character3'),'teacher mode must load the current complete-character renderer');
 const reset=itemShop.slice(itemShop.indexOf('function resetRetiredLayerPurchases'),itemShop.indexOf('function readPrices'));
 for(const token of ["COMPLETE_CHARACTER_RESET_KEY='avatar:complete-character-reset:v1'","equipment_json='{}'","owned_items_json='[]'"])assert.ok(itemShop.includes(token),`one-time complete-character reset missing: ${token}`);
 assert.ok(!reset.includes('stars=')&&!reset.includes('DELETE FROM star_ledger'),'complete-character cleanup must preserve stars and their ledger');

@@ -1,14 +1,15 @@
 /* v1.17 student star shop: complete character / effect / pet production categories. */
 (()=>{
   const game=document.querySelector('#game-screen'),shopButton=document.querySelector('#shop-button');if(!game||!shopButton)return;
-  const icons={'character-peter-pan-boy':'🧝‍♂️','character-peter-pan-girl':'🧝‍♀️','character-hello-kitty-boy':'🎀','character-hello-kitty-girl':'🎀','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶','candy':'🍬','stationery':'✏️'};
+  const icons={'character-peter-pan-boy':'🧝‍♂️','character-peter-pan-girl':'🧝‍♀️','character-hello-kitty-boy':'🎀','character-hello-kitty-girl':'🎀','character-kuromi':'🖤','character-my-melody':'🎀','character-cinnamoroll':'☁️','character-pompompurin':'🍮','effect-starlight-v2':'✨','pet-cream-pup-v2':'🐶','candy':'🍬','stationery':'✏️','jeti':'🥤','chupa-chups':'🍭'};
   const headers=()=>window.StudyVillageAuth?.authHeaders?.()||{};
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const REQUEST_TIMEOUT_MS=5000;
   document.querySelector('#student-shop-panel')?.remove();
   const panel=document.createElement('section');panel.id='student-shop-panel';panel.className='record-panel student-shop-panel';panel.hidden=true;
-  panel.innerHTML='<div class="record-header"><div><span class="record-badge">별 상점</span><h2>⭐ 꾸미기 상점</h2></div><button id="student-shop-close" class="quiz-close" type="button">✕</button></div><p class="student-shop-help">여기서는 완전체 캐릭터, 효과, 펫을 구매해요. 구매한 것은 위쪽의 <b>내 옷장</b>에서 선택할 수 있어요.</p>';
+  panel.innerHTML='<div class="record-header"><div><span class="record-badge">별 상점</span><h2>⭐ 꾸미기 상점</h2></div><button id="student-shop-close" class="quiz-close" type="button">✕</button></div><p class="student-shop-help">여기서는 캐릭터, 효과, 펫을 구매해요. 구매한 것은 위쪽의 <b>내 옷장</b>에서 선택할 수 있어요.</p>';
   const shop=document.createElement('section');shop.className='inventory-group student-shop';shop.innerHTML='<div class="student-shop-head"><h3>판매 목록</h3><strong id="student-shop-balance">0별</strong></div><p id="student-shop-status" class="record-message">상점 정보를 불러오는 중이에요.</p><div id="student-shop-filters" class="student-shop-filters" role="group" aria-label="아이템 종류"><button type="button" data-shop-slot="all" aria-pressed="true">전체</button><button type="button" data-shop-slot="character">완전체 캐릭터</button><button type="button" data-shop-slot="effect">효과</button><button type="button" data-shop-slot="pet">펫</button><button type="button" data-shop-slot="physical">실물</button></div><div id="student-shop-items" class="inventory-items"></div>';
+  shop.querySelector('[data-shop-slot="character"]').textContent='캐릭터';
   panel.appendChild(shop);game.appendChild(panel);
   if(!document.querySelector('#student-shop-panel-style')){const style=document.createElement('style');style.id='student-shop-panel-style';style.textContent='#student-shop-panel{width:min(760px,calc(100vw - 28px));max-height:min(86dvh,760px);overflow:auto;z-index:251}.student-shop-help{padding:10px 13px;border-radius:14px;background:#eef7e9;color:#49624f;font-weight:800}#student-shop-panel #student-shop-items{max-height:none}';document.head.appendChild(style)}
   const balance=shop.querySelector('#student-shop-balance'),status=shop.querySelector('#student-shop-status'),filters=shop.querySelector('#student-shop-filters'),list=shop.querySelector('#student-shop-items');

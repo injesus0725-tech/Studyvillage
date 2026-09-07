@@ -41,6 +41,7 @@ const shopSource=fs.readFileSync(new URL('./item-shop.js',import.meta.url),'utf8
 for(const prefix of ['compat:stars:','compat:base-character:','compat:owned-items:'])assert.ok(shopSource.includes(prefix),`student delete cleanup must cover ${prefix}`);
 assert.match(shopSource,/res\.on\('finish',[\s\S]*res\.statusCode>=200&&res\.statusCode<300[\s\S]*cleanupDeletedPlayerCompatibility/,'compatibility cleanup must run only after successful student deletion');
 assert.ok(shopSource.includes("'candy':5")&&shopSource.includes("'stationery':15"),'physical shop defaults must include candy and stationery');
+for(const id of ['jeti','chupa-chups'])assert.ok(shopSource.includes(`'${id}'`),'requested physical products must use teacher delivery fulfillment');
 assert.ok(shopSource.includes("fulfillment:'teacher-delivery'"),'physical purchase must be identified as teacher delivery');
 assert.ok(shopSource.includes("'physical-item-refund'"),'teacher cancellation must create an auditable star refund');
 assert.ok(shopSource.includes("if(!cols.includes('level'))db.exec('ALTER TABLE players ADD COLUMN level INTEGER NOT NULL DEFAULT 1')"),'shop must migrate the real XP-based player schema before querying level');
@@ -97,8 +98,14 @@ try{
   assert.equal(second.ok,true,'stationery delivery request should succeed');
   const delivered=resolveDeliveryRequest(second.deliveryRequestId,'delivered');
   assert.equal(delivered.ok,true,'teacher should mark delivery complete');
+  const jeti=purchaseItem('테스트학생','jeti');
+  assert.equal(jeti.ok,true,'제티 delivery request should succeed');
+  assert.equal(jeti.itemName,'제티');
+  const lollipop=purchaseItem('테스트학생','chupa-chups');
+  assert.equal(lollipop.ok,true,'츄파춥스 delivery request should succeed');
+  assert.equal(lollipop.itemName,'츄파춥스');
   const verifyDb=new Database(path.join(tempDir,'studyvillage.db'),{readonly:true});
-  assert.equal(verifyDb.prepare('SELECT stars FROM players WHERE name=?').get('테스트학생').stars,85,'delivery completion must not refund stars');
+  assert.equal(verifyDb.prepare('SELECT stars FROM players WHERE name=?').get('테스트학생').stars,75,'physical delivery requests must deduct the configured stars');
   assert.equal(verifyDb.prepare("SELECT COUNT(*) AS count FROM star_ledger WHERE player_name=? AND kind='physical-item-refund'").get('테스트학생').count,1,'refund must be written once to star ledger');
   verifyDb.close();
 }finally{
