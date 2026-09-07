@@ -84,6 +84,7 @@ const tests=[
   'question-input-type-contract-selftest.js',
   'admin-question-input-editor-contract-selftest.js',
   'math-practice-server-validation-contract-selftest.js',
+  'math-problem-generator-selftest.js',
   'math-daily-attempt-policy-contract-selftest.js',
   'semester-reward-economy-contract-selftest.js',
   'restore-executor-single-run-contract-selftest.js',

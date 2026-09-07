@@ -26,6 +26,9 @@ assert.match(hub,/Math\.floor\(Math\.random\(\)\*\(i\+1\)\)/,'questions must use
 assert.match(hub,/shuffle\(q\.options\)/,'catalog answer choices must be shuffled');
 assert.match(hub,/answer:options\.indexOf\(correct\)/,'catalog answer index must follow shuffled choices');
 assert.match(hub,/const NPCS=\[/,'v2 exploration must include random NPC encounters');
+assert.match(hub,/NEGATIVE_NPC_WEIGHTS=Object\.freeze\(\{robot:\.55,ghost:\.45,goblin:\.45\}\)/,'all XP-reducing or loss-causing NPCs must have reduced selection weights');
+assert.match(hub,/troubleChance=Math\.max\(\.04,Math\.min\(\.05,/,'negative trouble encounters must stay within the reduced 4–5 percent range');
+assert.match(hub,/id:'star-thief'.*starDelta:-1/,'the star thief must take at most one star');
 assert.match(hub,/const REWARDS=\[/,'v2 exploration must include random discoveries');
 assert.match(hub,/const PATHS=\[/,'v2 exploration must offer path choices');
 assert.match(hub,/submission/,'expedition saves must carry an idempotent submission id');

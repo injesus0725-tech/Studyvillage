@@ -8,8 +8,8 @@ for(const name of ['체육관','보건실','식당','Wee클래스','3-1 교실',
 assert.match(code,/kind:'location',id/,'choosing a school location must record a non-blocking collection visit');
 assert.match(code,/const LOCATION_TRAITS=Object\.freeze/,'location probability differences must live in one settings table');
 for(const id of ['gymnasium','nurse-office','cafeteria','wee-class','class-3-1','teachers-office','playground','multipurpose-room','english-room'])assert.ok(code.includes(`'${id}':{`),`missing probability traits for ${id}`);
-assert.match(code,/Math\.max\(\.8,Math\.min\(1\.2/,'individual location weights must stay within a small 20 percent range');
-assert.match(code,/Math\.max\(\.08,Math\.min\(\.1/,'special-event probability must remain tightly bounded');
+assert.match(code,/Math\.max\(\.1,Math\.min\(1\.2/,'weighted choices must remain bounded while allowing deliberately rarer negative encounters');
+assert.match(code,/troubleChance=Math\.max\(\.04,Math\.min\(\.05/,'special-event probability must remain tightly bounded at the reduced classroom rate');
 assert.match(code,/Math\.max\(\.02,Math\.min\(\.03/,'angel probability must remain rare and tightly bounded');
 assert.match(code,/forceNpc=stageFinds>=3/,'location traits must preserve the forced NPC safety stop');
 for(const oldName of ['푸른 숲길','바위 오솔길','달빛 길','반짝이는 길','버섯 길','꽃향기 길','옛 유적 길','샘물 길'])assert.ok(!code.includes(oldName),`retired path remains: ${oldName}`);
