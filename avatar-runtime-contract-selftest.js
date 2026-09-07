@@ -18,6 +18,6 @@ for(const rel of listed){
 }
 assert.deepStrictEqual(catalog.newArtV2.hair,[],'분리형 머리 상품은 새 완전체 체계에서 비어 있어야 합니다.');
 assert.deepStrictEqual(catalog.newArtV2.outfits,[],'분리형 복장 상품은 새 완전체 체계에서 비어 있어야 합니다.');
-for(const name of ['peter-pan-boy.png','peter-pan-girl.png'])assert.ok(listed.some(rel=>rel.endsWith(name)),`${name} 완전체 캐릭터가 카탈로그에 필요합니다.`);
+for(const name of ['peter-pan-boy.png','peter-pan-girl.png','hello-kitty-boy.png','hello-kitty-girl.png'])assert.ok(listed.some(rel=>rel.endsWith(name)),`${name} 완전체 캐릭터가 카탈로그에 필요합니다.`);
 for(const gender of ['boy','girl'])for(let n=2;n<=10;n++)assert.ok(!fs.existsSync(path.join(runtimeDir,`character-${gender}-${String(n).padStart(2,'0')}.png`)),'retired completed character remains');
 console.log(`avatar runtime contract passed: ${listed.length} production files at 256x256`);
