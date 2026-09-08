@@ -99,6 +99,13 @@ for(const effectId of ['effect-surprise-aura','effect-sprout-aura','effect-ghost
   assert.equal(prepareStudyvillageRestore(newEffectCustomization).ok,true,`${effectId} must remain valid through backup restore`);
 }
 
+for(const characterId of ['character-royal-prince','character-star-wizard','character-ice-mage-boy']){
+  const newCharacterCustomization=structuredClone(base);
+  newCharacterCustomization.players[0].base_character=characterId;
+  newCharacterCustomization.players[0].owned_items_json=JSON.stringify([characterId]);
+  assert.equal(prepareStudyvillageRestore(newCharacterCustomization).ok,true,`${characterId} must remain valid through backup restore`);
+}
+
 const unknownSlot=structuredClone(currentCustomization);
 unknownSlot.players[0].equipment_json=JSON.stringify({cape:'unknown-cape'});
 assert.equal(prepareStudyvillageRestore(unknownSlot).code,'invalid-player-customization','unknown equipment slots must remain blocked');
