@@ -64,6 +64,13 @@ for(const characterId of ['character-ice-mage','character-flower-princess','char
   assert.equal(prepareStudyvillageRestore(newCharacterCustomization).ok,true,`${characterId} must remain valid through backup restore`);
 }
 
+for(const petId of ['pet-shih-tzu','pet-black-cat','pet-baby-penguin']){
+  const newPetCustomization=structuredClone(currentCustomization);
+  newPetCustomization.players[0].equipment_json=JSON.stringify({pet:petId});
+  newPetCustomization.players[0].owned_items_json=JSON.stringify([petId]);
+  assert.equal(prepareStudyvillageRestore(newPetCustomization).ok,true,`${petId} must remain valid through backup restore`);
+}
+
 const unknownSlot=structuredClone(currentCustomization);
 unknownSlot.players[0].equipment_json=JSON.stringify({cape:'unknown-cape'});
 assert.equal(prepareStudyvillageRestore(unknownSlot).code,'invalid-player-customization','unknown equipment slots must remain blocked');
