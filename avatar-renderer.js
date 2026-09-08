@@ -93,7 +93,10 @@ window.StudyVillageAvatar=(()=>{
     'pet-border-collie':{src:`${RPG}production/pets/border-collie.png?v=20260908pet2`,alt:'보더콜리 친구'},
     'pet-shih-tzu':{src:`${RPG}production/pets/shih-tzu.png?v=20260908pet3`,alt:'시추 친구'},
     'pet-black-cat':{src:`${RPG}production/pets/black-cat.png?v=20260908pet3`,alt:'검은 고양이 친구'},
-    'pet-baby-penguin':{src:`${RPG}production/pets/baby-penguin.png?v=20260908pet3`,alt:'아기 펭귄 친구'}
+    'pet-baby-penguin':{src:`${RPG}production/pets/baby-penguin.png?v=20260908pet3`,alt:'아기 펭귄 친구'},
+    'pet-hamster':{src:`${RPG}production/pets/hamster.png?v=20260908pet4`,alt:'햄스터 친구'},
+    'pet-baby-owl':{src:`${RPG}production/pets/baby-owl.png?v=20260908pet4`,alt:'아기 부엉이 친구'},
+    'pet-dolphin':{src:`${RPG}production/pets/dolphin.png?v=20260908pet4`,alt:'돌고래 친구'}
   };
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}
