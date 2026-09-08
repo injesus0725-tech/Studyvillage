@@ -7,7 +7,7 @@
     "hair": [],
     "outfits": [],
     "pets": ["v2/pets/cream-pup-v1.png", "production/pets/ice-fox.png", "production/pets/leaf-frog.png", "production/pets/sunny-fish.png", "production/pets/white-tiger.png", "production/pets/red-panda.png", "production/pets/border-collie.png"],
-    "effects": ["effect-starlight-v2 (inline lightweight SVG)", "production/effects/heart-aura.png"]
+    "effects": ["effect-starlight-v2 (inline lightweight SVG)", "production/effects/heart-aura.png", "production/effects/snow-aura.png", "production/effects/music-aura.png", "production/effects/rainbow-aura.png"]
   },
   "baseCharacters": ["base-boy-v2.png", "base-girl-v2.png"],
   "hair": [
