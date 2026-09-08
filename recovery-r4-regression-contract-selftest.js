@@ -15,7 +15,7 @@ for(const token of ["function sound(kind='reward')","window.StudyVillageSound?.p
 assert.ok(activity.includes('findBonusXp=Math.min(8,requestedXp)'),'discovery XP must remain a small, server-bounded exploration bonus');
 assert.ok(activity.includes('ghostWrong=body?.ghostWrong===true')&&activity.includes('goblinWrong=body?.goblinWrong===true'),'NPC penalties must depend on an incorrect answer reported for that NPC');
 assert.ok(activity.includes("xpDelta=goblinWrong?-3:0"),'goblin XP loss must be limited to 3 and apply only after a wrong answer');
-assert.ok(activity.includes("Math.min(angel?3:1"),'ordinary exploration star extras must stay small while the rare angel may reach five with base stars');
+assert.ok(activity.includes('findBonusStars=Math.min(5,findCount,requestedStars)')&&activity.includes('npcStars=(angelCorrect?3:0)+foxCount'),'every displayed star reservation must survive later NPC encounters and remain server-bounded');
 assert.ok(exploration.includes("trait:'오답 시 별 -1개'")&&exploration.includes("trait:'오답 시 XP -3'"),'student NPC text must describe the softened wrong-answer penalties');
 assert.ok(activity.includes('Math.max(-1,Math.min(5,Math.trunc(Number(body?.eventStarDelta)||0)))'),'villain star loss must be bounded to one star on the server');
 assert.ok(data.includes("async function ready(){return !!window.StudyVillageAuth?.authHeaders?.().Authorization}"),'challenge saves must attempt the authenticated request instead of trusting a stale health-check cache');

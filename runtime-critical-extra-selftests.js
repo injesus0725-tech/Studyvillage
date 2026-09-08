@@ -71,6 +71,7 @@ const tests=[
   'exploration-attempt-progress-contract-selftest.js',
   'exploration-result-race-contract-selftest.js',
   'expedition-provisional-reward-contract-selftest.js',
+  'exploration-settlement-parity-contract-selftest.js',
   'live-broadcast-safety-contract-selftest.js',
   'login-input-password-safety-contract-selftest.js',
   'student-registration-lock-contract-selftest.js',

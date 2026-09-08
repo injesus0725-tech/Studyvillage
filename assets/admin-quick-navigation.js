@@ -14,6 +14,7 @@
     ['활동 도전(매일)',()=>document.querySelector('#attempt-policy-panel')],
     ['별 지급·관리',()=>document.querySelector('#admin-star-panel')],
     ['아이템·상점',()=>document.querySelector('#shop-admin-panel')],
+    ['전달 요청',()=>document.querySelector('#shop-delivery-list')],
     ['단원 출제',()=>document.querySelector('#question-catalog-panel')],
     ['문제 수정',()=>document.querySelector('#question-editor-panel')||panelByTitle('문제')],
     ['접속 학생',()=>panelByTitle('접속')],
