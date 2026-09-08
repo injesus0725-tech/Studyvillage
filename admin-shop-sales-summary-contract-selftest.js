@@ -3,7 +3,7 @@ const assert=require('assert');
 const server=fs.readFileSync('server/item-shop.js','utf8');
 const admin=fs.readFileSync('admin-shop.js','utf8');
 
-const summary=server.slice(server.indexOf('export function adminShopState'),server.indexOf('export function playerShopState'));
+const summary=server.slice(server.indexOf('function adminShopStateBase'),server.indexOf('function playerShopStateBase'));
 assert.ok(summary.includes("WHERE kind IN ('item-purchase','physical-item-purchase')"),'디지털·실물 상점 구매 장부만 판매 집계에 포함해야 합니다.');
 assert.ok(summary.includes('COUNT(DISTINCT player_name) AS buyers'),'아이템별 구매 학생 수를 중복 없이 집계해야 합니다.');
 assert.ok(summary.includes('CASE WHEN delta<0 THEN -delta ELSE 0 END'),'실제 차감된 별만 양수 합계로 계산해야 합니다.');

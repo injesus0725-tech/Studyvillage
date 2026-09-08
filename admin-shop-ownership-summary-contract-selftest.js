@@ -3,7 +3,7 @@ const assert=require('assert');
 const server=fs.readFileSync('server/item-shop.js','utf8');
 const admin=fs.readFileSync('admin-shop.js','utf8');
 
-const summary=server.slice(server.indexOf('export function adminShopState'),server.indexOf('export function playerShopState'));
+const summary=server.slice(server.indexOf('function adminShopStateBase'),server.indexOf('function playerShopStateBase'));
 assert.ok(summary.includes("SELECT owned_items_json FROM players"),'현재 학생 보유 목록을 읽어야 합니다.');
 assert.ok(summary.includes('validateOwnedItemsStrict(player.owned_items_json)'),'보유 목록을 엄격히 검증해야 합니다.');
 assert.ok(summary.includes('if(!owned.ok)continue'),'한 학생의 손상된 보유 목록이 전체 통계를 막지 않아야 합니다.');

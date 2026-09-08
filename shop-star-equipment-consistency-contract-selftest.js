@@ -20,11 +20,11 @@ for(const token of [
   "if(state.ok===false)return res.status(409).json(state)"
 ])assert.ok(src.includes(token),`shop consistency guard missing: ${token}`);
 
-const stateStart=src.indexOf('export function playerShopState');
-const purchaseStart=src.indexOf('export function purchaseItem');
+const stateStart=src.indexOf('function playerShopStateBase');
+const purchaseStart=src.indexOf('function purchaseItemBase');
 const equipStart=src.indexOf('export function saveOwnedEquipment');
 assert.ok(stateStart>=0&&purchaseStart>stateStart&&equipStart>purchaseStart,'shop state/purchase/equipment functions must exist');
-const state=src.slice(stateStart,src.indexOf('export function configureShop',stateStart));
+const state=src.slice(stateStart,src.indexOf('function configureShopBase',stateStart));
 assert.ok(state.includes('if(!validStarBalance(player.stars))'), 'shop read must strictly validate star balance');
 assert.ok(state.includes('repairWardrobeData(db,name,player)'), 'shop read must repair legacy wardrobe state before returning it');
 assert.ok(state.includes("return{ok:false,code:'corrupt-star-balance'}"), 'shop read must surface corrupt star balance');
