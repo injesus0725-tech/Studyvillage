@@ -8,7 +8,13 @@ export const wholeCharacterCatalog=Object.freeze([
   {id:'character-kuromi',name:'쿠로미 캐릭터',gender:'girl',builtIn:false,price:48},
   {id:'character-my-melody',name:'마이멜로디 캐릭터',gender:'girl',builtIn:false,price:48},
   {id:'character-cinnamoroll',name:'시나모롤 캐릭터',gender:'boy',builtIn:false,price:48},
-  {id:'character-pompompurin',name:'폼폼푸린 캐릭터',gender:'boy',builtIn:false,price:48}
+  {id:'character-pompompurin',name:'폼폼푸린 캐릭터',gender:'boy',builtIn:false,price:48},
+  {id:'character-hanbok-princess',name:'한복 공주 캐릭터',gender:'girl',builtIn:false,price:58},
+  {id:'character-sailor-school',name:'세일러 스쿨 캐릭터',gender:'girl',builtIn:false,price:48},
+  {id:'character-pastel-lovely',name:'파스텔 러블리 캐릭터',gender:'girl',builtIn:false,price:52},
+  {id:'character-mechanic',name:'정비사 캐릭터',gender:'boy',builtIn:false,price:45},
+  {id:'character-camping-brother',name:'캠핑 브라더 캐릭터',gender:'boy',builtIn:false,price:48},
+  {id:'character-pilot',name:'파일럿 캐릭터',gender:'boy',builtIn:false,price:55}
 ]);
 
 export const purchasableWholeCharacters=Object.freeze(wholeCharacterCatalog.filter(character=>!character.builtIn));
