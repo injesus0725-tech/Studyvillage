@@ -20,6 +20,7 @@ const productionItems={
   'character-scholar':{name:'학자 캐릭터',slot:'character',price:45},
   'character-guitar-teacher-suit':{name:'기타 선생님 정장 캐릭터',slot:'character',price:58},
   'character-guitar-teacher-casual':{name:'기타 선생님 캐주얼 캐릭터',slot:'character',price:52},
+  'character-chef':{name:'요리사 캐릭터',slot:'character',price:45},
   'effect-starlight-v2':{name:'포근한 별빛',slot:'effect',price:24},
   'effect-heart-aura':{name:'두근두근 하트',slot:'effect',price:28},
   'pet-cream-pup-v2':{name:'크림 강아지',slot:'pet',price:35},

@@ -21,7 +21,8 @@ export const wholeCharacterCatalog=Object.freeze([
   {id:'character-street-hero',name:'스트리트 히어로 캐릭터',gender:'boy',builtIn:false,price:52},
   {id:'character-scholar',name:'학자 캐릭터',gender:'boy',builtIn:false,price:45},
   {id:'character-guitar-teacher-suit',name:'기타 선생님 정장 캐릭터',gender:'boy',builtIn:false,price:58},
-  {id:'character-guitar-teacher-casual',name:'기타 선생님 캐주얼 캐릭터',gender:'boy',builtIn:false,price:52}
+  {id:'character-guitar-teacher-casual',name:'기타 선생님 캐주얼 캐릭터',gender:'boy',builtIn:false,price:52},
+  {id:'character-chef',name:'요리사 캐릭터',gender:'boy',builtIn:false,price:45}
 ]);
 
 export const purchasableWholeCharacters=Object.freeze(wholeCharacterCatalog.filter(character=>!character.builtIn));
