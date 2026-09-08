@@ -113,6 +113,13 @@ for(const petId of ['pet-dachshund','pet-calico-cat','pet-phoenix']){
   assert.equal(prepareStudyvillageRestore(newPetCustomization).ok,true,`${petId} must remain valid through backup restore`);
 }
 
+for(const effectId of ['effect-crown-aura','effect-sweat-aura','effect-anger-aura']){
+  const newEffectCustomization=structuredClone(currentCustomization);
+  newEffectCustomization.players[0].equipment_json=JSON.stringify({effect:effectId});
+  newEffectCustomization.players[0].owned_items_json=JSON.stringify([effectId]);
+  assert.equal(prepareStudyvillageRestore(newEffectCustomization).ok,true,`${effectId} must remain valid through backup restore`);
+}
+
 const unknownSlot=structuredClone(currentCustomization);
 unknownSlot.players[0].equipment_json=JSON.stringify({cape:'unknown-cape'});
 assert.equal(prepareStudyvillageRestore(unknownSlot).code,'invalid-player-customization','unknown equipment slots must remain blocked');

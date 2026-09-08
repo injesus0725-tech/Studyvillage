@@ -7,7 +7,7 @@
     "hair": [],
     "outfits": [],
     "pets": ["v2/pets/cream-pup-v1.png", "production/pets/ice-fox.png", "production/pets/leaf-frog.png", "production/pets/sunny-fish.png", "production/pets/white-tiger.png", "production/pets/red-panda.png", "production/pets/border-collie.png", "production/pets/shih-tzu.png", "production/pets/black-cat.png", "production/pets/baby-penguin.png", "production/pets/hamster.png", "production/pets/baby-owl.png", "production/pets/dolphin.png", "production/pets/dachshund.png", "production/pets/calico-cat.png", "production/pets/phoenix.png"],
-    "effects": ["effect-starlight-v2 (inline lightweight SVG)", "production/effects/heart-aura.png", "production/effects/snow-aura.png", "production/effects/music-aura.png", "production/effects/rainbow-aura.png", "production/effects/daydream-aura.png", "production/effects/focus-aura.png", "production/effects/bunny-aura.png", "production/effects/surprise-aura.png", "production/effects/sprout-aura.png", "production/effects/ghost-aura.png"]
+    "effects": ["effect-starlight-v2 (inline lightweight SVG)", "production/effects/heart-aura.png", "production/effects/snow-aura.png", "production/effects/music-aura.png", "production/effects/rainbow-aura.png", "production/effects/daydream-aura.png", "production/effects/focus-aura.png", "production/effects/bunny-aura.png", "production/effects/surprise-aura.png", "production/effects/sprout-aura.png", "production/effects/ghost-aura.png", "production/effects/crown-aura.png", "production/effects/sweat-aura.png", "production/effects/anger-aura.png"]
   },
   "baseCharacters": ["base-boy-v2.png", "base-girl-v2.png"],
   "hair": [
