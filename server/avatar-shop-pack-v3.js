@@ -54,6 +54,9 @@ const productionItems={
   'pet-hamster':{name:'햄스터 친구',slot:'pet',price:34},
   'pet-baby-owl':{name:'아기 부엉이 친구',slot:'pet',price:36},
   'pet-dolphin':{name:'돌고래 친구',slot:'pet',price:38},
+  'pet-dachshund':{name:'닥스훈트 친구',slot:'pet',price:38},
+  'pet-calico-cat':{name:'삼색 고양이 친구',slot:'pet',price:38},
+  'pet-phoenix':{name:'피닉스 친구',slot:'pet',price:42},
   'jeti':{name:'제티',slot:'physical',price:5},
   'chupa-chups':{name:'츄파춥스',slot:'physical',price:5}
 };
