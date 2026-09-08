@@ -77,7 +77,8 @@ window.StudyVillageAvatar=(()=>{
     'pet-leaf-frog':{src:`${RPG}production/pets/leaf-frog.png?v=20260908pet1`,alt:'초록개구리 친구'},
     'pet-sunny-fish':{src:`${RPG}production/pets/sunny-fish.png?v=20260908pet1`,alt:'노랑물고기 친구'},
     'pet-white-tiger':{src:`${RPG}production/pets/white-tiger.png?v=20260908pet1`,alt:'백호 친구'},
-    'pet-red-panda':{src:`${RPG}production/pets/red-panda.png?v=20260908pet1`,alt:'레서판다 친구'}
+    'pet-red-panda':{src:`${RPG}production/pets/red-panda.png?v=20260908pet1`,alt:'레서판다 친구'},
+    'pet-border-collie':{src:`${RPG}production/pets/border-collie.png?v=20260908pet2`,alt:'보더콜리 친구'}
   };
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}

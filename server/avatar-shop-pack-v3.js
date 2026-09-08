@@ -29,6 +29,7 @@ const productionItems={
   'pet-sunny-fish':{name:'노랑물고기 친구',slot:'pet',price:36},
   'pet-white-tiger':{name:'백호 친구',slot:'pet',price:42},
   'pet-red-panda':{name:'레서판다 친구',slot:'pet',price:40},
+  'pet-border-collie':{name:'보더콜리 친구',slot:'pet',price:40},
   'jeti':{name:'제티',slot:'physical',price:5},
   'chupa-chups':{name:'츄파춥스',slot:'physical',price:5}
 };
