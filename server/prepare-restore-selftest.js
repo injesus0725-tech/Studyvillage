@@ -45,6 +45,11 @@ currentCustomization.players[0].equipment_json=JSON.stringify({
 currentCustomization.players[0].owned_items_json=JSON.stringify(['aurora-effect','pet-maltese-production']);
 assert.equal(prepareStudyvillageRestore(currentCustomization).ok,true,'current face, expression, effect and production pet must restore');
 
+const heartEffectCustomization=structuredClone(currentCustomization);
+heartEffectCustomization.players[0].equipment_json=JSON.stringify({effect:'effect-heart-aura'});
+heartEffectCustomization.players[0].owned_items_json=JSON.stringify(['effect-heart-aura']);
+assert.equal(prepareStudyvillageRestore(heartEffectCustomization).ok,true,'heart effect item id must remain valid through backup restore');
+
 const unknownSlot=structuredClone(currentCustomization);
 unknownSlot.players[0].equipment_json=JSON.stringify({cape:'unknown-cape'});
 assert.equal(prepareStudyvillageRestore(unknownSlot).code,'invalid-player-customization','unknown equipment slots must remain blocked');
