@@ -70,7 +70,12 @@ window.StudyVillageAvatar=(()=>{
     'outfit-starlight-dress-production':{src:`${RPG}production/outfits/starlight-dress.png`,onePiece:true,alt:'별빛 드레스 한벌 의상'},'outfit-flower-fairy-production':{src:`${RPG}production/outfits/flower-fairy-dress.png`,onePiece:true,alt:'꽃요정 원피스 한벌 의상'},'outfit-ribbon-magical-girl-production':{src:`${RPG}production/outfits/ribbon-magical-girl.png`,onePiece:true,alt:'리본 마법소녀 한벌 의상'},
     'pet-maltese-production':{src:`${RPG}production/pets/maltese.png?v=20260902large2`,alt:'하얀 말티즈'},'pet-toy-poodle-production':{src:`${RPG}production/pets/toy-poodle.png?v=20260902large2`,alt:'살구 토이푸들'},'pet-corgi-production':{src:`${RPG}production/pets/corgi.png?v=20260902large2`,alt:'통통 웰시코기'},'pet-cheese-cat-production':{src:`${RPG}production/pets/cheese-cat.png?v=20260902large2`,alt:'치즈 줄무늬 고양이'},'pet-lop-rabbit-production':{src:`${RPG}production/pets/lop-rabbit.png?v=20260902large2`,alt:'크림 롭이어 토끼'},'pet-baby-dragon-production':{src:`${RPG}production/pets/baby-dragon.png?v=20260902large2`,alt:'사파이어 꼬마 용'},
     'effect-starlight-v2':{svg:frame('<g fill="#ffd95a" stroke="#b87a24" stroke-width="1"><path d="M8 34l2 5 6 1-5 4 2 6-5-3-5 3 2-6-5-4 6-1z"/><path d="M88 58l2 5 6 1-5 4 2 6-5-3-5 3 2-6-5-4 6-1z"/><path d="M11 100l1.5 4 4.5.5-3.5 3 1 4.5-3.5-2.5L7.5 112l1-4.5-3.5-3 4.5-.5z"/><circle cx="88" cy="105" r="2.5"/><circle cx="9" cy="72" r="2"/></g>'),alt:'포근한 별빛 효과'},
-    'pet-cream-pup-v2':{src:`${RPG}v2/pets/cream-pup-v1.png?v=20260902art4`,alt:'크림 강아지'}
+    'pet-cream-pup-v2':{src:`${RPG}v2/pets/cream-pup-v1.png?v=20260902art4`,alt:'크림 강아지'},
+    'pet-ice-fox':{src:`${RPG}production/pets/ice-fox.png?v=20260908pet1`,alt:'얼음여우 친구'},
+    'pet-leaf-frog':{src:`${RPG}production/pets/leaf-frog.png?v=20260908pet1`,alt:'초록개구리 친구'},
+    'pet-sunny-fish':{src:`${RPG}production/pets/sunny-fish.png?v=20260908pet1`,alt:'노랑물고기 친구'},
+    'pet-white-tiger':{src:`${RPG}production/pets/white-tiger.png?v=20260908pet1`,alt:'백호 친구'},
+    'pet-red-panda':{src:`${RPG}production/pets/red-panda.png?v=20260908pet1`,alt:'레서판다 친구'}
   };
   function paint(element,spec){if(!element)return;element.replaceChildren();element.classList.toggle('image-asset',!!spec?.src);element.classList.toggle('svg-asset',!!spec?.svg);if(spec?.svg)element.innerHTML=spec.svg;else if(spec?.src){const img=document.createElement('img');img.src=spec.src;img.alt=spec.alt||'';img.draggable=false;element.appendChild(img)}else element.textContent=spec?.emoji||''}
   function base(id='student-default'){return BASES[id]||BASES['student-default']}

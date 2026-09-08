@@ -22,6 +22,11 @@ const productionItems={
   'character-guitar-teacher-casual':{name:'기타 선생님 캐주얼 캐릭터',slot:'character',price:52},
   'effect-starlight-v2':{name:'포근한 별빛',slot:'effect',price:24},
   'pet-cream-pup-v2':{name:'크림 강아지',slot:'pet',price:35},
+  'pet-ice-fox':{name:'얼음여우 친구',slot:'pet',price:40},
+  'pet-leaf-frog':{name:'초록개구리 친구',slot:'pet',price:34},
+  'pet-sunny-fish':{name:'노랑물고기 친구',slot:'pet',price:36},
+  'pet-white-tiger':{name:'백호 친구',slot:'pet',price:42},
+  'pet-red-panda':{name:'레서판다 친구',slot:'pet',price:40},
   'jeti':{name:'제티',slot:'physical',price:5},
   'chupa-chups':{name:'츄파춥스',slot:'physical',price:5}
 };
