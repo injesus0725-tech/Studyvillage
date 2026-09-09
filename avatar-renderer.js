@@ -61,6 +61,9 @@ window.StudyVillageAvatar=(()=>{
     'character-royal-prince':{src:`${RPG}production/characters/royal-prince.png?v=20260908character9`,alt:'왕자 캐릭터'},
     'character-star-wizard':{src:`${RPG}production/characters/star-wizard.png?v=20260908character9`,alt:'별빛 마법사 캐릭터'},
     'character-ice-mage-boy':{src:`${RPG}production/characters/ice-mage-boy.png?v=20260908character9`,alt:'얼음 마법사 소년 캐릭터'},
+    'character-astronaut':{src:`${RPG}production/characters/astronaut.png?v=20260909character10`,alt:'우주 비행사 캐릭터'},
+    'character-robot-warrior':{src:`${RPG}production/characters/robot-warrior.png?v=20260909character10`,alt:'로봇 전사 캐릭터'},
+    'character-inventor':{src:`${RPG}production/characters/inventor.png?v=20260909character10`,alt:'발명가 캐릭터'},
     'character-boy-02':{src:`${RPG}production/bases/character-boy-02.png?v=20260901heads1`,alt:'밤색 숏컷 남자'},'character-boy-03':{src:`${RPG}production/bases/character-boy-03.png?v=20260901heads1`,alt:'밤색 단발 남자'},'character-boy-04':{src:`${RPG}production/bases/character-boy-04.png?v=20260901heads1`,alt:'밤색 포니테일 남자'},'character-boy-05':{src:`${RPG}production/bases/character-boy-05.png?v=20260901heads1`,alt:'초록 숏컷 남자'},
     'character-girl-02':{src:`${RPG}production/bases/character-girl-02.png?v=20260901heads1`,alt:'밤색 숏컷 여자'},'character-girl-03':{src:`${RPG}production/bases/character-girl-03.png?v=20260901heads1`,alt:'밤색 단발 여자'},'character-girl-04':{src:`${RPG}production/bases/character-girl-04.png?v=20260901heads1`,alt:'밤색 포니테일 여자'},'character-girl-05':{src:`${RPG}production/bases/character-girl-05.png?v=20260901heads1`,alt:'초록 숏컷 여자'}};
   const INTERNAL_BASES={...BASES};
