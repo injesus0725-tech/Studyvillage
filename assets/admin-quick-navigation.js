@@ -2,7 +2,9 @@
 (()=>{
   const app=document.querySelector('#admin-app');if(!app)return;
   const style=document.createElement('style');style.textContent=`
-    .admin-quick-nav{position:sticky;top:0;z-index:120;display:flex;gap:8px;flex-wrap:wrap;padding:10px 12px;margin:0 0 14px;border:1px solid #dce8dd;border-radius:16px;background:#fffdf7f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
+    .admin-sticky-controls{position:sticky;top:0;z-index:120;display:grid;gap:8px;margin:0 0 14px;padding:8px;border:1px solid #dce8dd;border-radius:16px;background:#f4f7f1f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
+    .admin-sticky-controls .actions{padding:2px 4px}
+    .admin-quick-nav{display:flex;gap:8px;flex-wrap:wrap;padding:8px 4px 2px;border-top:1px solid #dce8dd;background:transparent}
     .admin-quick-nav button{border:1px solid #d8e4d8;border-radius:999px;padding:8px 12px;background:#f4f8f2;color:#315d3b;font-weight:900;cursor:pointer}
     .admin-quick-nav button:active{transform:translateY(1px)}
     .admin-jump-highlight{outline:4px solid #ffd966;outline-offset:4px;transition:outline-color .8s}
@@ -23,7 +25,7 @@
   ];
   const jump=target=>{if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('admin-jump-highlight');setTimeout(()=>target.classList.remove('admin-jump-highlight'),1300);return true};
   for(const[label,resolver]of items){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{const target=resolver();if(!jump(target))setTimeout(()=>jump(resolver()),350)};nav.appendChild(button)}
-  const header=app.querySelector('header');header?.after(nav);if(!header)app.prepend(nav);
+  const header=app.querySelector('header'),actions=header?.querySelector('.actions'),sticky=document.createElement('div');sticky.className='admin-sticky-controls';if(actions)sticky.appendChild(actions);sticky.appendChild(nav);header?.after(sticky);if(!header)app.prepend(sticky);
   const organizeQuestionPanels=()=>{let anchor=nav;for(const selector of ['#question-review-panel','#question-editor-panel','#question-catalog-panel']){const target=document.querySelector(selector);if(!target)continue;anchor.after(target);anchor=target}};
   setTimeout(organizeQuestionPanels,1000);
 
