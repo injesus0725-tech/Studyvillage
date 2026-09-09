@@ -27,8 +27,8 @@
   ];
   const jump=target=>{if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('admin-jump-highlight');setTimeout(()=>target.classList.remove('admin-jump-highlight'),1300);return true};
   for(const[label,resolver]of items){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{const target=resolver();if(!jump(target))setTimeout(()=>jump(resolver()),350)};nav.appendChild(button)}
-  const header=app.querySelector('header'),actions=header?.querySelector('.actions'),sticky=document.createElement('div');sticky.className='admin-sticky-controls';if(actions)sticky.appendChild(actions);sticky.appendChild(nav);header?.after(sticky);if(!header)app.prepend(sticky);
-  const organizeQuestionPanels=()=>{let anchor=sticky;for(const selector of ['#question-review-panel','#question-editor-panel','#question-catalog-panel']){const target=document.querySelector(selector);if(!target)continue;anchor.after(target);anchor=target}};
+  const header=app.querySelector('header'),actions=header?.querySelector('.actions'),sticky=document.createElement('div');sticky.className='admin-sticky-controls';if(actions)sticky.appendChild(actions);sticky.appendChild(nav);app.prepend(sticky);
+  const organizeQuestionPanels=()=>{let anchor=header||sticky;for(const selector of ['#question-review-panel','#question-editor-panel','#question-catalog-panel']){const target=document.querySelector(selector);if(!target)continue;anchor.after(target);anchor=target}};
   setTimeout(organizeQuestionPanels,1000);
 
   function decorateStudentRows(){
