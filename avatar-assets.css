@@ -107,14 +107,8 @@
 #player.is-walking .avatar-layer {
   animation: studyvillage-walk-bob 0.34s steps(2, end) infinite alternate;
 }
-#player.facing-left .player-icon,
-#player.facing-left .avatar-layer {
-  transform: scaleX(1) !important;
-}
-#player.facing-right .player-icon,
-#player.facing-right .avatar-layer {
-  transform: scaleX(-1) !important;
-}
+#player.facing-left .player-icon,#player.facing-left .avatar-layer{transform:scaleX(1)!important}
+#player.facing-right .player-icon,#player.facing-right .avatar-layer{transform:scaleX(-1)!important}
 #player.is-idle .player-icon,
 #player.is-idle .avatar-layer {
   animation: none;

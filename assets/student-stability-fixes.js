@@ -17,7 +17,7 @@
     legacyQuizHall.style.removeProperty("pointer-events");
   }
   if (legacyQuizPanel) {
-    legacyQuizPanel.hidden = true;
+    legacyQuizPanel.hidden=true;
     legacyQuizPanel.setAttribute("aria-hidden", "true");
   }
   if (legacyHint) legacyHint.style.setProperty("display", "none", "important");
