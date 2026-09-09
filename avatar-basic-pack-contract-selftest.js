@@ -16,7 +16,7 @@ assert.ok(ranking.includes("['outfit','effect','bottom','shoes','hat','glasses',
 assert.ok(server.includes('equipment:rankingEquipment(row)'),'ranking API must return allowlisted equipment');
 assert.ok(admin.includes("for(const slot of ['hair','effect','outfit','pet'])"),'teacher student table must paint canonical avatar layers');
 assert.ok(adminShop.includes('admin-shop-product-preview'),'teacher shop must render graphical product previews');
-assert.ok(adminHtml.includes('avatar-renderer.js?v=20260909sizefix1'),'teacher mode must load the current complete-character renderer');
+assert.ok(adminHtml.includes('avatar-renderer.js?v=20260909effecttop2'),'teacher mode must load the current complete-character renderer');
 const reset=itemShop.slice(itemShop.indexOf('function resetRetiredLayerPurchases'),itemShop.indexOf('function readPrices'));
 for(const token of ["COMPLETE_CHARACTER_RESET_KEY='avatar:complete-character-reset:v1'","equipment_json='{}'","owned_items_json='[]'"])assert.ok(itemShop.includes(token),`one-time complete-character reset missing: ${token}`);
 assert.ok(!reset.includes('stars=')&&!reset.includes('DELETE FROM star_ledger'),'complete-character cleanup must preserve stars and their ledger');

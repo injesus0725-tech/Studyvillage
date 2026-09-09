@@ -2,12 +2,14 @@
 (()=>{
   const app=document.querySelector('#admin-app');if(!app)return;
   const style=document.createElement('style');style.textContent=`
-    .admin-sticky-controls{position:sticky;top:0;z-index:120;display:grid;gap:8px;margin:0 0 14px;padding:8px;border:1px solid #dce8dd;border-radius:16px;background:#f4f7f1f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
-    .admin-sticky-controls .actions{padding:2px 4px}
-    .admin-quick-nav{display:flex;gap:8px;flex-wrap:wrap;padding:8px 4px 2px;border-top:1px solid #dce8dd;background:transparent}
+    .admin-sticky-controls{position:sticky;top:0;z-index:120;display:grid;gap:6px;margin:0 0 14px;padding:7px;border:1px solid #dce8dd;border-radius:16px;background:#f4f7f1f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
+    .admin-sticky-controls .actions{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:2px 4px;scrollbar-width:thin}
+    .admin-sticky-controls .actions>*{flex:0 0 auto}
+    .admin-quick-nav{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:7px 4px 2px;border-top:1px solid #dce8dd;background:transparent;scrollbar-width:thin}
     .admin-quick-nav button{border:1px solid #d8e4d8;border-radius:999px;padding:8px 12px;background:#f4f8f2;color:#315d3b;font-weight:900;cursor:pointer}
     .admin-quick-nav button:active{transform:translateY(1px)}
     .admin-jump-highlight{outline:4px solid #ffd966;outline-offset:4px;transition:outline-color .8s}
+    #admin-app>.panel,#admin-app>.summary{scroll-margin-top:125px}
   `;document.head.appendChild(style);
   const nav=document.createElement('nav');nav.className='admin-quick-nav';nav.setAttribute('aria-label','관리자 빠른 메뉴');
   const panelByTitle=text=>[...app.querySelectorAll('.panel')].find(p=>p.querySelector('h2')?.textContent.includes(text));
