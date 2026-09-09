@@ -22,7 +22,22 @@ export const wholeCharacterCatalog=Object.freeze([
   {id:'character-scholar',name:'학자 캐릭터',gender:'boy',builtIn:false,price:45},
   {id:'character-guitar-teacher-suit',name:'기타 선생님 정장 캐릭터',gender:'boy',builtIn:false,price:58},
   {id:'character-guitar-teacher-casual',name:'기타 선생님 캐주얼 캐릭터',gender:'boy',builtIn:false,price:52},
-  {id:'character-chef',name:'요리사 캐릭터',gender:'boy',builtIn:false,price:45}
+  {id:'character-chef',name:'요리사 캐릭터',gender:'boy',builtIn:false,price:45},
+  {id:'character-ice-mage',name:'얼음 마법사 캐릭터',gender:'girl',builtIn:false,price:58},
+  {id:'character-flower-princess',name:'꽃의 공주 캐릭터',gender:'girl',builtIn:false,price:56},
+  {id:'character-sea-princess',name:'바다의 공주 캐릭터',gender:'girl',builtIn:false,price:56},
+  {id:'character-desert-princess',name:'사막의 공주 캐릭터',gender:'girl',builtIn:false,price:56},
+  {id:'character-brave-warrior',name:'용감한 무사 캐릭터',gender:'boy',builtIn:false,price:55},
+  {id:'character-little-witch',name:'꼬마 마녀 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-royal-prince',name:'왕자 캐릭터',gender:'boy',builtIn:false,price:55},
+  {id:'character-star-wizard',name:'별빛 마법사 캐릭터',gender:'boy',builtIn:false,price:55},
+  {id:'character-ice-mage-boy',name:'얼음 마법사 소년 캐릭터',gender:'boy',builtIn:false,price:56},
+  {id:'character-astronaut',name:'우주 비행사 캐릭터',gender:'girl',builtIn:false,price:56},
+  {id:'character-robot-warrior',name:'로봇 전사 캐릭터',gender:'boy',builtIn:false,price:58},
+  {id:'character-inventor',name:'발명가 캐릭터',gender:'girl',builtIn:false,price:52},
+  {id:'character-strawberry-patissier',name:'딸기 파티시에 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-starlight-detective',name:'별빛 탐정 캐릭터',gender:'girl',builtIn:false,price:54},
+  {id:'character-roller-girl',name:'롤러스케이트 소녀 캐릭터',gender:'girl',builtIn:false,price:50}
 ]);
 
 export const purchasableWholeCharacters=Object.freeze(wholeCharacterCatalog.filter(character=>!character.builtIn));
