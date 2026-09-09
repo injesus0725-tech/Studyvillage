@@ -86,7 +86,7 @@ window.StudyVillageAvatar=(()=>{
     'effect-heart-aura':{src:`${RPG}production/effects/heart-aura.png?v=20260909effecttop2`,alt:'두근두근 하트 효과'},
     'effect-snow-aura':{src:`${RPG}production/effects/snow-aura.png?v=20260909sizefix1`,alt:'반짝 눈송이 효과'},
     'effect-music-aura':{src:`${RPG}production/effects/music-aura.png?v=20260909effecttop2`,alt:'신나는 음표 효과'},
-    'effect-rainbow-aura':{src:`${RPG}production/effects/rainbow-aura.png?v=20260909effecttop2`,alt:'희망 무지개 효과'},
+    'effect-rainbow-aura':{src:`${RPG}production/effects/rainbow-aura.png?v=20260909effecthalo1`,alt:'희망 무지개 효과'},
     'effect-daydream-aura':{src:`${RPG}production/effects/daydream-aura.png?v=20260909effecttop2`,alt:'멍한 생각 효과'},
     'effect-focus-aura':{src:`${RPG}production/effects/focus-aura.png?v=20260909effecttop2`,alt:'집중 느낌 효과'},
     'effect-bunny-aura':{src:`${RPG}production/effects/bunny-aura.png?v=20260909effecttop2`,alt:'토끼 풍선 효과'},

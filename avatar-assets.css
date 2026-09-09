@@ -32,9 +32,11 @@
 .avatar-shoes {
   z-index: 5 !important;
 }
-.avatar-expression,
-.avatar-effect {
+.avatar-expression {
   z-index: 6 !important;
+}
+.avatar-effect {
+  z-index: 0 !important;
 }
 .avatar-hat,
 .avatar-glasses,
@@ -76,6 +78,9 @@
 }
 .preview-expression {
   z-index: 6 !important;
+}
+.preview-effect {
+  z-index: 0 !important;
 }
 .preview-hat,
 .preview-glasses,
@@ -149,9 +154,11 @@
 .sv-rank-shoes {
   z-index: 4 !important;
 }
-.sv-rank-expression,
-.sv-rank-effect {
+.sv-rank-expression {
   z-index: 5 !important;
+}
+.sv-rank-effect {
+  z-index: 0 !important;
 }
 .sv-rank-hat,
 .sv-rank-glasses,
@@ -210,6 +217,25 @@
 }
 .shop-preview-part {
   z-index: 3;
+}
+.shop-preview-effect,
+.admin-avatar-effect,
+.admin-shop-product-preview .shop-preview-effect,
+.sv-profile-effect,
+.sv-exp2-effect,
+.sv-exp-avatar-effect {
+  z-index: 0 !important;
+}
+[data-avatar-item^="effect-"] img {
+  animation: studyvillage-effect-sparkle 2.4s ease-in-out infinite;
+  transform-origin: 50% 42%;
+}
+@keyframes studyvillage-effect-sparkle {
+  0%,100% { opacity: .78; filter: brightness(.96) drop-shadow(0 0 1px #fff8); }
+  50% { opacity: 1; filter: brightness(1.14) drop-shadow(0 0 3px #fff); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-avatar-item^="effect-"] img { animation: none; }
 }
 /* Production one-piece preview contract, 2026-08-31.
    Do not rely on :has(): the classroom Samsung browser must receive the same result.
