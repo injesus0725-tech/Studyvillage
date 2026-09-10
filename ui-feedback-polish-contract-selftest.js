@@ -1,0 +1,12 @@
+const fs=require('fs'),assert=require('assert');
+const student=fs.readFileSync('index.html','utf8'),admin=fs.readFileSync('admin.html','utf8'),src=fs.readFileSync('assets/ui-feedback-polish.js','utf8'),css=fs.readFileSync('assets/ui-feedback-polish.css','utf8'),library=fs.readFileSync('library-game.js','utf8'),libraryCss=fs.readFileSync('library-game.css','utf8'),shop=fs.readFileSync('student-shop.js','utf8');
+assert.ok(student.includes('id="shop-button"')&&student.includes('id="customize-button"'),'상점과 내 옷장 입구가 분리되어야 합니다.');
+assert.ok(student.includes('id="customize-panel"')&&shop.includes("panel.id='student-shop-panel'")&&shop.includes("document.querySelector('#customize-panel')?.setAttribute('hidden','')"),'상점과 옷장은 서로 가리는 별도 화면이어야 합니다.');
+assert.ok(!src.includes('wardrobeButton.click()')&&shop.includes("querySelector('#shop-button')")&&shop.includes('panel.hidden=false'),'상점 버튼은 옷장 버튼을 대신 누르지 않고 직접 구매 화면을 열어야 합니다.');
+assert.ok(css.includes('.avatar-preview')&&css.includes('position: relative')&&css.includes('pointer-events: none'),'옷장 미리보기는 상품 터치와 스크롤을 가리지 않아야 합니다.');
+assert.ok(src.includes("app.prepend(header)")&&src.includes('(nav || header).after(summary)'),'교사용 관리자 머리말과 요약이 동적 상점보다 위에 있어야 합니다.');
+assert.ok(library.includes("next.hidden=false")&&library.includes("next.onclick=()=>"),'책마루는 정오답 피드백 뒤 다음 문제 버튼을 기다려야 합니다.');
+assert.ok(libraryCss.includes('#library-next:not([hidden])')&&libraryCss.includes('position:sticky'),'작은 화면에서도 책마루 다음 문제 버튼이 화면 아래에 가려지면 안 됩니다.');
+for(const kind of ['angel','villain','reward','mystery'])assert.ok(src.includes(`'${kind}'`),`${kind} 등장 효과음을 연결해야 합니다.`);
+assert.ok(student.includes('ui-feedback-polish.js')&&admin.includes('ui-feedback-polish.js'),'학생·관리자 화면 모두 안정화 모듈을 불러야 합니다.');
+console.log('UI feedback polish contract self-test passed');

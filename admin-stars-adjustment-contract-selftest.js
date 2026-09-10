@@ -7,5 +7,5 @@ assert.ok(src.includes('setAdjusting(true)'),'별 저장 시작 시 버튼을 �
 assert.ok(src.includes('finally{setAdjusting(false)}'),'성공/실패 후 버튼 잠금을 반드시 풀어야 합니다.');
 assert.ok(src.includes("add.disabled=value")&&src.includes("subtract.disabled=value"),'별 지급과 차감 버튼을 함께 잠가야 합니다.');
 assert.ok(src.includes("confirm(`${name} 학생의 별을"),'별 변경 전 교사 최종 확인을 유지해야 합니다.');
-assert.ok(src.includes("reason=prompt('별 변경 이유"),'별 변경 사유 기록을 유지해야 합니다.');
+assert.ok(src.includes("reason=await window.StudyVillageAdminDialog.ask('별 변경 이유"),'EXE에서도 작동하는 입력창으로 별 변경 사유 기록을 유지해야 합니다.');
 console.log('admin stars adjustment contract self-test passed');

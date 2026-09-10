@@ -1,0 +1,18 @@
+/* 2026-09-03 production contract: base character -> full-head hair -> outfit -> effect -> pet. */
+/* Active hair uses the shared canvas; legacy hair products remain outside the active catalog. */
+
+/* FINAL LIGHTWEIGHT RUNTIME CONTRACT
+   Production PNGs are authored on the shared 256x256 master canvas.
+   Runtime never scans pixels, creates canvases, or rewrites PNGs.
+   Every wearable is a plain 0,0 overlay. */
+[data-avatar-item^="hair-"],[data-avatar-item^="outfit-"],[data-avatar-item^="pet-"]{overflow:visible!important}
+[data-avatar-item^="hair-"]>img,[data-avatar-item^="outfit-"]>img,[data-avatar-item^="pet-"]>img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  transform:none!important;
+  transform-origin:center bottom!important;
+}
+
+/* Base variants are full-base skins only; never inherit wearable transforms. */
+[data-avatar-base^="character-boy-"]>img,[data-avatar-base^="character-girl-"]>img{width:100%!important;height:100%!important;object-fit:contain!important;transform:none!important}

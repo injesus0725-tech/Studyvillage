@@ -103,6 +103,8 @@ BEGIN
   VALUES(OLD.player_name,'activity',OLD.activity_id,'total_score',OLD.total_score,0,-OLD.total_score,'activity-delete',strftime('%Y-%m-%dT%H:%M:%fZ','now'));
 END;
 `);
+    const orphanIds=db.prepare('SELECT l.id FROM score_ledger l LEFT JOIN players p ON p.name=l.player_name WHERE p.name IS NULL').all().map(row=>Number(row.id)).filter(Number.isInteger);
+    if(orphanIds.length){const removeOrphans=db.transaction(()=>{const placeholders=orphanIds.map(()=>'?').join(',');db.prepare(`DELETE FROM score_alert_reviews WHERE ledger_id IN (${placeholders})`).run(...orphanIds);db.prepare(`DELETE FROM score_corrections WHERE player_name NOT IN (SELECT name FROM players) OR ledger_id IN (${placeholders}) OR correction_ledger_id IN (${placeholders}) OR undo_ledger_id IN (${placeholders})`).run(...orphanIds,...orphanIds,...orphanIds);db.prepare(`DELETE FROM score_ledger WHERE id IN (${placeholders})`).run(...orphanIds)});removeOrphans();setSetting('release:orphan-score-ledger-cleanup',JSON.stringify({removed:orphanIds.length,cleanedAt:new Date().toISOString()}))}
     const triggerCount=Number(db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_score_ledger_%'`).get()?.n||0);
     const reviewTable=!!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='score_alert_reviews'`).get();
     const correctionTable=!!db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='score_corrections'`).get();
