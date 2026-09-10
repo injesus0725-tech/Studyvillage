@@ -40,6 +40,12 @@ function validateBanks(before,after){
   if(stable(beforeKeys)!==stable(afterKeys))throw new Error('단원/문제 세트의 추가·삭제·이름 변경이 감지되었습니다.');
   let added=0;
   const globalIds=new Set();
+  for(const set of Object.values(before)){
+    for(const question of Array.isArray(set.questions)?set.questions:[]){
+      const id=String(question?.id||'').trim();
+      if(id)globalIds.add(id);
+    }
+  }
   for(const key of beforeKeys){
     const oldSet=before[key],newSet=after[key];
     const oldMeta={...oldSet},newMeta={...newSet};
@@ -51,8 +57,9 @@ function validateBanks(before,after){
     for(let index=0;index<oldQuestions.length;index++){
       if(stable(oldQuestions[index])!==stable(newQuestions[index]))throw new Error(`${key}: 기존 문제 ${index+1}번이 수정·이동되었습니다.`);
     }
-    const seenQuestions=new Set();
-    newQuestions.forEach((question,index)=>{
+    const seenQuestions=new Set(oldQuestions.map(question=>normalize(question.question)));
+    newQuestions.slice(oldQuestions.length).forEach((question,offset)=>{
+      const index=oldQuestions.length+offset;
       const label=`${key} ${index+1}번`;
       validateQuestion(question,label);
       const id=String(question.id).trim();
