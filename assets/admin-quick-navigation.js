@@ -2,7 +2,8 @@
 (()=>{
   const app=document.querySelector('#admin-app');if(!app)return;
   const style=document.createElement('style');style.textContent=`
-    .admin-sticky-controls{position:sticky;top:0;z-index:120;display:grid;gap:6px;margin:0 0 14px;padding:7px;border:1px solid #dce8dd;border-radius:16px;background:#f4f7f1f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
+    .admin-wrap.admin-has-fixed-controls{padding-top:142px}
+    .admin-sticky-controls{position:fixed;top:8px;left:50%;transform:translateX(-50%);width:min(1180px,94vw);z-index:120;display:grid;gap:6px;margin:0;padding:7px;border:1px solid #dce8dd;border-radius:16px;background:#f4f7f1f2;box-shadow:0 8px 22px #18342118;backdrop-filter:blur(8px)}
     .admin-sticky-controls .actions{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:2px 4px;scrollbar-width:thin}
     .admin-sticky-controls .actions>*{flex:0 0 auto}
     .admin-quick-nav{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;padding:7px 4px 2px;border-top:1px solid #dce8dd;background:transparent;scrollbar-width:thin}
@@ -27,10 +28,7 @@
   ];
   const jump=target=>{if(!target)return false;target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('admin-jump-highlight');setTimeout(()=>target.classList.remove('admin-jump-highlight'),1300);return true};
   for(const[label,resolver]of items){const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=()=>{const target=resolver();if(!jump(target))setTimeout(()=>jump(resolver()),350)};nav.appendChild(button)}
-  const header=app.querySelector('header'),actions=header?.querySelector('.actions'),sticky=document.createElement('div');sticky.className='admin-sticky-controls';if(actions)sticky.appendChild(actions);sticky.appendChild(nav);app.prepend(sticky);
-  const keepStickyFirst=()=>{if(app.firstElementChild!==sticky)app.prepend(sticky)};
-  new MutationObserver(keepStickyFirst).observe(app,{childList:true});
-  for(const delay of [0,250,750,1500])setTimeout(keepStickyFirst,delay);
+  const header=app.querySelector('header'),actions=header?.querySelector('.actions'),sticky=document.createElement('div');sticky.className='admin-sticky-controls';if(actions)sticky.appendChild(actions);sticky.appendChild(nav);app.classList.add('admin-has-fixed-controls');app.appendChild(sticky);
   const organizeQuestionPanels=()=>{let anchor=header||sticky;for(const selector of ['#question-review-panel','#question-editor-panel','#question-catalog-panel']){const target=document.querySelector(selector);if(!target)continue;anchor.after(target);anchor=target}};
   setTimeout(organizeQuestionPanels,1000);
 
