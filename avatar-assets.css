@@ -259,7 +259,7 @@
   transform: none !important;
 }
 
-/* Keep authored 256x256 pet coordinates identical on every student surface. */
+/* Pet PNG contract: 256x256 canvas, artwork <=116x116, right 10px, bottom 8px. */
 [data-avatar-item^="pet-"] img {
   width: 100% !important;
   height: 100% !important;
