@@ -25,8 +25,7 @@
     'shoes-slipon-yellow':{svg:svg('<path fill="#d6b64f" d="M27 124h19v11H24q-4-5 3-11zm23 0h19q7 6 3 11H50z"/><path fill="#f5efe0" d="M31 125h12v4H31zm22 0h12v4H53z"/>')},
     'bag-mini':{svg:svg('<path fill="#8b5f42" d="M70 82h18v28H70z"/><path fill="#d2a854" d="M73 89h12v9H73z"/><path fill="none" d="M73 83q6-11 12 0"/>')},
     'hand-pencil':{svg:svg('<path fill="#e5c34f" d="M14 72l5-3 15 29-5 3z"/><path fill="#e9a5a0" d="M14 72l5-3 3 6-5 3z"/><path fill="#3d3a39" d="M34 98l2 7-7-4z"/>')},
-    'hand-notebook':{svg:svg('<rect fill="#5680aa" x="5" y="82" width="28" height="25" rx="2"/><rect fill="#f2ead8" x="9" y="86" width="20" height="17"/><path fill="none" d="M13 91h12m-12 5h12m-12 5h8"/>')},
-    'pet-hamster':{svg:svg('<circle fill="#d9a96f" cx="81" cy="120" r="14"/><circle fill="#c18c58" cx="71" cy="110" r="6"/><circle fill="#c18c58" cx="91" cy="110" r="6"/><ellipse fill="#f4dfc8" cx="81" cy="124" rx="8" ry="7"/><circle fill="#342d2b" cx="76" cy="117" r="2"/><circle fill="#342d2b" cx="86" cy="117" r="2"/><circle fill="#a85e5e" cx="81" cy="122" r="2"/>')}
+    'hand-notebook':{svg:svg('<rect fill="#5680aa" x="5" y="82" width="28" height="25" rx="2"/><rect fill="#f2ead8" x="9" y="86" width="20" height="17"/><path fill="none" d="M13 91h12m-12 5h12m-12 5h8"/>')}
   };
   const basicsV2={
     'face-oval':{svg:frame('<g stroke="#684b43" stroke-width="1.45"><path fill="#ffd2ad" d="M27 31q2-19 21-19t21 19v18q-2 22-21 24-19-2-21-24z"/></g>')},

@@ -36,7 +36,7 @@ assert.match(hub,/REQUEST_TIMEOUT=7000/,'expedition requests must not hang forev
 for(const retired of ['exploration-social','exploration-science'])assert.ok(!admin.includes(`'${retired}':`),`${retired} must leave active admin labels`);
 assert.ok(!admin.includes("'riddle-demo':"),'standalone riddle challenge must not return to admin attempt controls');
 for(const retired of ["'riddle-demo':Object.freeze","'exploration-social':Object.freeze","'exploration-science':Object.freeze"])assert.ok(!settings.includes(retired),`retired default attempt policy remains: ${retired}`);
-assert.ok(settings.includes("RETIRED_ACTIVITY_IDS=new Set(['riddle-demo','exploration-social','exploration-science'])"),'old saved policies must be filtered so retired controls cannot reappear');
+assert.ok(settings.includes("RETIRED_ACTIVITY_IDS=new Set(['riddle-demo','exploration-social','exploration-science','exploration-math'])"),'old saved policies must be filtered so retired controls cannot reappear');
 for(const legacy of ["'exploration-social'","'exploration-science'","'exploration-riddle'"])assert.ok(taxonomy.includes(legacy),`${legacy} may remain only as legacy score-history metadata`);
 assert.match(index,/question-data\.js[\s\S]*assets\/student-exploration-v2\.js/,'question data must load before exploration v2');
 assert.doesNotMatch(index,/assets\/student-study-menu\.js/,'retired exploration menu must not load in production');

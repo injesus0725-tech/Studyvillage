@@ -2,6 +2,7 @@ const fs=require('fs');
 const assert=require('assert');
 const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readFileSync('server/activity-attempt-student.js','utf8'),client=fs.readFileSync('math-practice.js','utf8'),explore=fs.readFileSync('assets/student-exploration-v2.js','utf8'),building=fs.readFileSync('building-interiors.js','utf8'),review=fs.readFileSync('assets/student-math-review.js','utf8'),index=fs.readFileSync('index.html','utf8'),hub=fs.readFileSync('assets/student-study-menu.js','utf8');
 assert.ok(server.includes("ACTIVITY_ID='math-arithmetic'"),'math practice needs a stable activity id');
+assert.ok(server.includes("EXPLORATION_ACTIVITY_IDS=Object.freeze({addition:'exploration-math-addition',multiplication:'exploration-math-multiplication'})"),'addition and multiplication exploration completions need distinct server activity ids');
 assert.ok(server.includes('problems:problems.map(publicProblem)'),'server must issue sanitized student-visible math problem fields');
 assert.ok(server.includes('function publicProblem(problem,index)')&&!server.match(/publicProblem\([^)]*\).*answer:problem\.answer/),'issued math problems must never expose answers');
 assert.ok(server.includes('gradeProblem(row.problems[index],req.body?.answer)'),'intermediate check must use the shared server grader');
@@ -33,6 +34,7 @@ assert.ok(building.includes("studyvillage:open-math-practice"),'마을 수학 �
 assert.ok(review.includes("originalFetch(input,options)"),'수학 놀이터 복습 도우미는 원래 요청을 그대로 전달해야 합니다.');
 assert.ok(!review.includes("mode:'addition'")&&!review.includes('mode:"addition"'),'수학 놀이터를 덧셈 전용으로 강제하면 안 됩니다.');
 assert.ok(explore.includes("mode:'addition'")&&explore.includes("mode:'multiplication'"),'탐험의 덧셈·곱셈 모드는 수학 놀이터와 독립적으로 명시되어야 합니다.');
+assert.ok(explore.includes("mode:'addition',activityId:'exploration-math-addition'")&&explore.includes("mode:'multiplication',activityId:'exploration-math-multiplication'"),'탐험의 덧셈·곱셈 도전 횟수는 서로 분리되어야 합니다.');
 assert.ok(!building.includes("action:'explore'"),'학습 건물을 탐험 허브로 강제 라우팅하면 안 됩니다.');
 assert.ok(!building.includes('문제 탐험 열기'),'건물 내부에 중복 탐험 진입 버튼을 다시 만들면 안 됩니다.');
 assert.ok(hub.includes("id:'math-addition-cave'")&&hub.includes("id:'math-multiplication-dungeon'"),'상단 탐험 메뉴는 별도의 수학 모험 항목도 계속 제공해야 합니다.');

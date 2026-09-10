@@ -6,7 +6,7 @@ const html=fs.readFileSync('index.html','utf8');
 
 assert.ok(server.includes("id:'bookmaru',activityIds:['vocabulary']"),'daily mission must include Bookmaru completion');
 assert.ok(server.includes("id:'math',activityIds:['math-arithmetic']"),'daily mission must include village math playground completion');
-assert.ok(server.includes("id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random']"),'daily mission must include any consolidated exploration completion');
+assert.ok(server.includes("id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-math-addition','exploration-math-multiplication','exploration-social','exploration-science','exploration-random']"),'daily mission must include legacy and split math exploration completions');
 assert.ok(server.includes('DAILY_REWARD=2'),'all three daily activities together must award exactly two stars');
 assert.match(server,/timeZone:'Asia\/Seoul'/,'mission day must follow the classroom timezone');
 assert.match(server,/FROM activity_records WHERE player_name=\? AND activity_id IN/,'the server must verify real completion from stored activity records');

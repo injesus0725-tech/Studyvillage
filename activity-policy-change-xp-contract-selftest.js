@@ -22,11 +22,11 @@ assert.ok(writeAt>gainAt,'XP amount must be decided before player XP write');
 
 // Every active core learning completion that the teacher authorizes must remain reward-bearing.
 // Retired standalone riddle/social/science exploration policies must not be normalized back into the admin UI.
-for(const activityId of ['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math','exploration-random']){
+for(const activityId of ['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math-addition','exploration-math-multiplication','exploration-random']){
   assert.ok(settings.includes(`'${activityId}'`),`core reward activity missing: ${activityId}`);
 }
 assert.match(settings,/REPEAT_XP_ACTIVITIES=new Set\(\['library-vocabulary','math-arithmetic'/,'active repeat-XP activities must be protected from legacy first-completion saves');
-assert.match(settings,/RETIRED_ACTIVITY_IDS=new Set\(\['riddle-demo','exploration-social','exploration-science'\]\)/,'retired standalone and subject explorations must stay filtered from saved policies');
+assert.match(settings,/RETIRED_ACTIVITY_IDS=new Set\(\['riddle-demo','exploration-social','exploration-science','exploration-math'\]\)/,'retired standalone, subject, and legacy combined math explorations must stay filtered from saved policies');
 for(const retired of ["'riddle-demo':Object.freeze","'exploration-social':Object.freeze","'exploration-science':Object.freeze"])assert.ok(!settings.includes(retired),`retired active policy returned: ${retired}`);
 assert.match(settings,/REPEAT_XP_ACTIVITIES\.has\(id\)\?\{\.\.\.normalized,xpMode:'every-attempt'\}/,'saved core policies must be normalized to every-attempt rewards');
 assert.match(settings,/'curriculum-integrated':Object\.freeze\(\{mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'\}\)/,'integrated curriculum must never fall back to first-completion-only XP');

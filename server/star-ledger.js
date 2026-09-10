@@ -75,7 +75,7 @@ function recoverFromMirror(db,name){
   tx();return true;
 }
 
-const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle','exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts']);
+const EXPEDITION_REWARD_IDS=new Set(['exploration-forest-riddle','exploration-mountain-riddle','exploration-korean','exploration-math','exploration-math-addition','exploration-math-multiplication','exploration-social','exploration-science','exploration-random']),STANDARD_REWARD_IDS=new Set(['math-arithmetic','vocabulary','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts']);
 function expeditionStarsFor(activityId,score){
   const value=Math.max(0,Math.min(100,Math.round(Number(score)||0)));
   if(activityId.startsWith('exploration-'))return value>=100?2:value>=60?1:0;
@@ -141,7 +141,7 @@ export function classroomExplorationCollections(){let db;try{db=openLiveDb();ret
 const DAILY_MISSIONS=Object.freeze([
   {id:'bookmaru',activityIds:['vocabulary'],icon:'📚',title:'책마루 완료',detail:'책마루 활동을 1회 완료해요.'},
   {id:'math',activityIds:['math-arithmetic'],icon:'➕',title:'수학 놀이터 완료',detail:'수학 놀이터에서 랜덤 복습을 1회 완료해요.'},
-  {id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-social','exploration-science','exploration-random'],icon:'🗺️',title:'탐험 완료',detail:'탐험 동굴에서 원하는 탐험을 1회 완료해요.'}
+  {id:'exploration',activityIds:['exploration-korean','exploration-math','exploration-math-addition','exploration-math-multiplication','exploration-social','exploration-science','exploration-random'],icon:'🗺️',title:'탐험 완료',detail:'탐험 동굴에서 원하는 탐험을 1회 완료해요.'}
 ]);
 const DAILY_REWARD=2;
 const classroomDay=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});

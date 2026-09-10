@@ -10,8 +10,8 @@
 
   const EXPS=[
     {id:'korean',icon:'📖',name:'국어의 숲',subject:'국어',kind:'catalog',activityId:'exploration-korean',count:5,theme:'forest'},
-    {id:'math-add',icon:'➕',name:'랜덤 덧셈 동굴',subject:'수학',kind:'math',mode:'addition',activityId:'exploration-math',count:5,theme:'cave'},
-    {id:'math-mul',icon:'✖️',name:'곱셈 던전',subject:'수학',kind:'math',mode:'multiplication',activityId:'exploration-math',count:5,theme:'dungeon'},
+    {id:'math-add',icon:'➕',name:'랜덤 덧셈 동굴',subject:'수학',kind:'math',mode:'addition',activityId:'exploration-math-addition',count:5,theme:'cave'},
+    {id:'math-mul',icon:'✖️',name:'곱셈 던전',subject:'수학',kind:'math',mode:'multiplication',activityId:'exploration-math-multiplication',count:5,theme:'dungeon'},
     {id:'integrated',icon:'🌏',name:'사회·과학·예체능 탐험',subject:'통합',kind:'catalog',activityId:'exploration-random',count:5,theme:'ruins'}
   ];
   const NPCS=[

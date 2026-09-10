@@ -41,5 +41,5 @@
       cell.insertBefore(button,cell.querySelector('button[data-action="password"]')||null);cell.insertBefore(document.createTextNode(' '),button.nextSibling)
     }
   }
-  const body=document.querySelector('#ranking-body');if(body)new MutationObserver(decorateStudentRows).observe(body,{childList:true,subtree:true});decorateStudentRows();
+  decorateStudentRows();setTimeout(decorateStudentRows,1200);
 })();

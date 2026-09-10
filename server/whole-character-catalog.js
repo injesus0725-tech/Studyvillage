@@ -37,7 +37,17 @@ export const wholeCharacterCatalog=Object.freeze([
   {id:'character-inventor',name:'발명가 캐릭터',gender:'girl',builtIn:false,price:52},
   {id:'character-strawberry-patissier',name:'딸기 파티시에 캐릭터',gender:'girl',builtIn:false,price:50},
   {id:'character-starlight-detective',name:'별빛 탐정 캐릭터',gender:'girl',builtIn:false,price:54},
-  {id:'character-roller-girl',name:'롤러스케이트 소녀 캐릭터',gender:'girl',builtIn:false,price:50}
+  {id:'character-roller-girl',name:'롤러스케이트 소녀 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-pororo-boy',name:'뽀로로 남자 캐릭터',gender:'boy',builtIn:false,price:50},
+  {id:'character-pororo-girl',name:'뽀로로 여자 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-crong-boy',name:'크롱 남자 캐릭터',gender:'boy',builtIn:false,price:50},
+  {id:'character-crong-girl',name:'크롱 여자 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-rody-boy',name:'로디 남자 캐릭터',gender:'boy',builtIn:false,price:50},
+  {id:'character-rody-girl',name:'로디 여자 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-patty-boy',name:'패티 남자 캐릭터',gender:'boy',builtIn:false,price:50},
+  {id:'character-patty-girl',name:'패티 여자 캐릭터',gender:'girl',builtIn:false,price:50},
+  {id:'character-loopy-boy',name:'루피 남자 캐릭터',gender:'boy',builtIn:false,price:50},
+  {id:'character-loopy-girl',name:'루피 여자 캐릭터',gender:'girl',builtIn:false,price:50}
 ]);
 
 export const purchasableWholeCharacters=Object.freeze(wholeCharacterCatalog.filter(character=>!character.builtIn));

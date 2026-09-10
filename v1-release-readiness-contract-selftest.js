@@ -23,7 +23,7 @@ for(const token of ["result?.code==='session-replaced'",'clearSession?.()','loca
 for(const token of ['studyvillage:open-library-game','studyvillage:open-curriculum-learning','#exploration-cave','api.refresh()'])assert.ok(liveCatalog.includes(token),`live catalog refresh missing ${token}`);
 assert.ok(overrides.includes('await Promise.all([guidePacksReady,supplementReady])'),'supplement and guide packs must register before first catalog snapshot');
 assert.ok(overrides.includes("fetchJson('/api/question-catalog/settings')"),'student catalog must fetch fresh teacher settings');
-for(const id of ['library-vocabulary','math-arithmetic','curriculum-integrated','exploration-korean','exploration-social','exploration-science','exploration-random','riddle-demo'])assert.ok(policy.includes(`'${id}'`)&&policy.includes('REPEAT_XP_ACTIVITIES'),`repeat-XP core activity missing ${id}`);
+for(const id of ['library-vocabulary','math-arithmetic','curriculum-integrated','exploration-korean','exploration-math-addition','exploration-math-multiplication','exploration-random'])assert.ok(policy.includes(`'${id}'`)&&policy.includes('REPEAT_XP_ACTIVITIES'),`repeat-XP core activity missing ${id}`);
 assert.ok(policy.includes("xpMode:'every-attempt'"),'core reward policy must preserve every-attempt XP');
 assert.ok(activityStudent.includes('submissionId')&&activityStudent.includes('deduplicated'),'fresh attempts must reward while duplicate submissions remain idempotent');
 assert.ok(library.includes("next.textContent='마을로 돌아가기 🏡';next.onclick=returnVillage"),'Bookmaru completion must return directly to village');

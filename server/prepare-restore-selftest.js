@@ -85,7 +85,7 @@ for(const characterId of ['character-desert-princess','character-brave-warrior',
   assert.equal(prepareStudyvillageRestore(newCharacterCustomization).ok,true,`${characterId} must remain valid through backup restore`);
 }
 
-for(const petId of ['pet-hamster','pet-baby-owl','pet-dolphin']){
+for(const petId of ['pet-hamster','pet-baby-owl','pet-baby-whale']){
   const newPetCustomization=structuredClone(currentCustomization);
   newPetCustomization.players[0].equipment_json=JSON.stringify({pet:petId});
   newPetCustomization.players[0].owned_items_json=JSON.stringify([petId]);

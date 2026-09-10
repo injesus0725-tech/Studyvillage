@@ -15,13 +15,14 @@ const DAILY_CORE_POLICIES=Object.freeze({
   'curriculum-arts':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'curriculum-integrated':Object.freeze({mode:'limited',limit:2,xpMode:'every-attempt',period:'daily'}),
   'exploration-korean':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
-  'exploration-math':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-math-addition':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
+  'exploration-math-multiplication':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'}),
   'exploration-random':Object.freeze({mode:'limited',limit:3,xpMode:'every-attempt',period:'daily'})
 });
 // Core learning activities always reward every teacher-authorized completion.
 // Attempt limits control whether another play is allowed; they must not silently become reward caps.
-const REPEAT_XP_ACTIVITIES=new Set(['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math','exploration-random']);
-const RETIRED_ACTIVITY_IDS=new Set(['riddle-demo','exploration-social','exploration-science']);
+const REPEAT_XP_ACTIVITIES=new Set(['library-vocabulary','math-arithmetic','curriculum-korean','curriculum-math','curriculum-social','curriculum-science','curriculum-arts','curriculum-integrated','exploration-korean','exploration-math-addition','exploration-math-multiplication','exploration-random']);
+const RETIRED_ACTIVITY_IDS=new Set(['riddle-demo','exploration-social','exploration-science','exploration-math']);
 const withDailyReset=policy=>{
   const normalized=normalizeAttemptPolicy(policy||{});
   return normalized.mode==='unlimited'?{...normalized,period:'all-time'}:{...normalized,period:'daily'};
@@ -31,7 +32,14 @@ export function readActivityAttemptPolicies(getSetting){
   try{
     const raw=JSON.parse(getSetting(STORE_KEY)||'{}');
     const checked=validateAttemptPolicyMap(raw);
+    const legacyMathPolicy=checked.ok&&checked.policies['exploration-math']?withDailyReset(checked.policies['exploration-math']):null;
     const saved=checked.ok?Object.fromEntries(Object.entries(checked.policies).filter(([id])=>!RETIRED_ACTIVITY_IDS.has(id)).map(([id,policy])=>{const normalized=withDailyReset(policy);return[id,REPEAT_XP_ACTIVITIES.has(id)?{...normalized,xpMode:'every-attempt'}:normalized]})):{};
+    // Preserve the teacher's former combined 덧셈·곱셈 limit when the two counters are first split.
+    // Historical student attempts stay on the legacy id because their original mode cannot be proven.
+    if(legacyMathPolicy){
+      if(!saved['exploration-math-addition'])saved['exploration-math-addition']={...legacyMathPolicy,xpMode:'every-attempt'};
+      if(!saved['exploration-math-multiplication'])saved['exploration-math-multiplication']={...legacyMathPolicy,xpMode:'every-attempt'};
+    }
     // Defaults fill only missing activities. Retired activities are filtered so old saved settings cannot reappear in admin.
     return{...DAILY_CORE_POLICIES,...saved};
   }catch{return{...DAILY_CORE_POLICIES}}
