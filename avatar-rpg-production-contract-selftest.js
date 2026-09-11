@@ -1,0 +1,14 @@
+const fs=require('fs'),assert=require('assert');
+const root='assets/avatar-rpg',manifest=JSON.parse(fs.readFileSync(`${root}/manifest.json`,'utf8'));
+assert.deepStrictEqual(manifest.canvas,{width:512,height:512},'RPG avatar layers must share a 512px square canvas');
+assert.deepStrictEqual(Object.keys(manifest.bases),['student-boy','student-girl'],'only boy and girl production bases may remain');
+assert.ok(!JSON.stringify(manifest).includes('student-default'),'duplicate default student must not return');
+for(const file of [...Object.values(manifest.bases),manifest.reference])assert.ok(fs.statSync(`${root}/${file}`).size>1000,`${file} must be a real production asset`);
+for(const file of Object.values(manifest.alignmentProof))assert.ok(fs.statSync(`${root}/${file}`).size>1000,`${file} alignment proof missing`);
+for(const [key,value] of Object.entries(manifest.productionExpansion||{}))for(const file of Array.isArray(value)?value:[value])assert.ok(fs.statSync(`${root}/${file}`).size>1000,`${key}: ${file} production expansion asset missing`);
+for(const slot of ['face','expression','hair','hat','glasses','outfit','bottom','shoes','bag','hand','pet'])assert.ok(manifest.slots.includes(slot),`${slot} slot missing`);
+assert.equal(manifest.rules.noLegacySvgMixing,true,'new RPG layers must switch as one coherent asset family');
+assert.equal(manifest.rules.oneAssetFitsBothBases,true,'one equipment layer must align with both bases');
+const renderer=fs.readFileSync('avatar-renderer.js','utf8');
+for(const file of ['hair-ponytail-rpg-v4.png','hair-blue-rpg-v4.png','hat-wizard-rpg-v4.png','hat-pirate-rpg-v4.png','outfit-armor-rpg-v4.png','hat-crown-rpg-v5.png','hat-leaf-rpg-v5.png','hat-flower-rpg-v5.png','outfit-hoodie-rpg-v5.png','outfit-wizard-rpg-v5.png','bottom-adventurer-rpg-v6.png','shoes-adventurer-boots-rpg-v7.png','hand-star-sword-rpg-v7.png','bag-star-rocket-rpg-v7.png','glasses-heart-star-rpg-v8.png','shoes-wing-rpg-v8.png','hand-starlight-wand-rpg-v8.png','pet-star-dragon-rpg-v8.png'])assert.ok(renderer.includes(file),`${file} must be wired to the live renderer`);
+console.log('RPG avatar production foundation contract self-test passed');

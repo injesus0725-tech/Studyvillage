@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const server=fs.readFileSync('server/server.js','utf8'),game=fs.readFileSync('game.js','utf8'),admin=fs.readFileSync('assets/admin-stability-bundle.js','utf8'),pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+assert.ok(server.includes("STUDENT_REGISTRATION_KEY='student-registration-enabled:v1'")&&server.includes("getSetting(STUDENT_REGISTRATION_KEY)!=='false'"),'new classrooms must allow registration unless the teacher explicitly locks it');
+assert.ok(server.includes("if(!row){if(!studentRegistrationEnabled())return res.status(403).json({ok:false,code:'student-registration-closed'"),'registration lock must run only when the submitted student name does not already exist');
+for(const route of ["app.get('/api/admin/student-registration',requireAdmin","app.put('/api/admin/student-registration',requireAdmin"])assert.ok(server.includes(route),`teacher registration route missing: ${route}`);
+assert.ok(server.includes("typeof req.body?.enabled!=='boolean'")&&server.includes("setSetting(STUDENT_REGISTRATION_KEY,req.body.enabled?'true':'false')"),'registration setting must accept only a boolean and persist in backed-up settings');
+assert.ok(game.includes("auth.code==='student-registration-closed'")&&game.includes('이름을 다시 확인하거나 선생님께 알려 주세요.'),'students need a clear locked-registration message instead of a generic login error');
+for(const token of ['student-registration-panel','student-registration-toggle','가입 허용 중 · 잠그기','가입 잠김 · 다시 허용','기존 학생 로그인은 계속 가능합니다.'])assert.ok(admin.includes(token),`teacher registration UI missing: ${token}`);
+assert.ok(admin.includes("method:'PUT'")&&admin.includes("body:JSON.stringify({enabled:next})"),'teacher toggle must save the requested registration state');
+assert.ok(pkg.build.files.includes('assets/**/*'),'registration UI must remain included in the portable package');
+console.log('student registration lock contract self-test passed');

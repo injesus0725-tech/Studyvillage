@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { installItemShopRoutes,configureShop,purchaseItem,adminShopState,resolveDeliveryRequest } from './item-shop.js';
+import { installItemShopRoutes,configureShop,purchaseItem,playerShopState,adminShopState,resolveDeliveryRequest } from './item-shop.js';
 
 function fakeApp(){
   const routes=[];
@@ -41,8 +41,11 @@ const shopSource=fs.readFileSync(new URL('./item-shop.js',import.meta.url),'utf8
 for(const prefix of ['compat:stars:','compat:base-character:','compat:owned-items:'])assert.ok(shopSource.includes(prefix),`student delete cleanup must cover ${prefix}`);
 assert.match(shopSource,/res\.on\('finish',[\s\S]*res\.statusCode>=200&&res\.statusCode<300[\s\S]*cleanupDeletedPlayerCompatibility/,'compatibility cleanup must run only after successful student deletion');
 assert.ok(shopSource.includes("'candy':5")&&shopSource.includes("'stationery':15"),'physical shop defaults must include candy and stationery');
+for(const id of ['jeti','chupa-chups'])assert.ok(shopSource.includes(`'${id}'`),'requested physical products must use teacher delivery fulfillment');
 assert.ok(shopSource.includes("fulfillment:'teacher-delivery'"),'physical purchase must be identified as teacher delivery');
 assert.ok(shopSource.includes("'physical-item-refund'"),'teacher cancellation must create an auditable star refund');
+assert.ok(shopSource.includes("status IN ('pending','delivered')"),'purchase limits must count pending and delivered requests but exclude refunds');
+assert.ok(shopSource.includes("'purchase-limit-reached'"),'server must reject physical purchases beyond the per-student limit');
 assert.ok(shopSource.includes("if(!cols.includes('level'))db.exec('ALTER TABLE players ADD COLUMN level INTEGER NOT NULL DEFAULT 1')"),'shop must migrate the real XP-based player schema before querying level');
 assert.ok(shopSource.includes("if(cols.includes('xp'))"),'shop must synchronize compatibility level from XP when XP exists');
 
@@ -61,12 +64,28 @@ process.env.STUDYVILLAGE_DATA_DIR=tempDir;
 try{
   const db=new Database(path.join(tempDir,'studyvillage.db'));
   db.exec(`CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);CREATE TABLE players(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL UNIQUE,xp INTEGER NOT NULL DEFAULT 0,stars INTEGER NOT NULL DEFAULT 0,owned_items_json TEXT NOT NULL DEFAULT '[]',equipment_json TEXT NOT NULL DEFAULT '{}',updated_at TEXT NOT NULL);`);
-  db.prepare('INSERT INTO players(name,xp,stars,owned_items_json,equipment_json,updated_at) VALUES(?,?,?,?,?,?)').run('테스트학생',0,100,'[]','{}',new Date().toISOString());
+  db.prepare('INSERT INTO players(name,xp,stars,owned_items_json,equipment_json,updated_at) VALUES(?,?,?,?,?,?)').run('테스트학생',240,100,JSON.stringify(['old-test-outfit']),JSON.stringify({outfit:'old-test-outfit'}),new Date().toISOString());
+  db.prepare('INSERT INTO players(name,xp,stars,owned_items_json,equipment_json,updated_at) VALUES(?,?,?,?,?,?)').run('펫정리학생',0,100,JSON.stringify(['pet-penguin','pet-dog','pet-maltese-production']),JSON.stringify({pet:'pet-penguin'}),new Date().toISOString());
+  db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run('avatar:four-slot-production-reset:v2',new Date().toISOString());
+  db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run('avatar:removed-legacy-slots:v3',new Date().toISOString());
+  db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run('avatar:new-art-reset:v2',new Date().toISOString());
+  db.prepare('INSERT INTO settings(key,value) VALUES(?,?)').run(`compat:owned-items:${encodeURIComponent('펫정리학생')}`,JSON.stringify(['pet-penguin','pet-dog','pet-maltese-production']));
   db.close();
-  assert.equal(configureShop({enabled:true}).ok,true,'test shop should enable against the real XP-based player schema');
+  assert.equal(configureShop({enabled:true,purchaseLimits:{jeti:3,candy:0}}).ok,true,'test shop should enable with per-item physical purchase limits');
+  const cleanupDb=new Database(path.join(tempDir,'studyvillage.db'),{readonly:true});
+  const cleaned=cleanupDb.prepare('SELECT owned_items_json,equipment_json FROM players WHERE name=?').get('펫정리학생');
+  assert.deepEqual(JSON.parse(cleaned.owned_items_json),[],'complete-character migration must clear every tester purchase');
+  assert.deepEqual(JSON.parse(cleaned.equipment_json),{},'complete-character migration must clear every equipped tester item');
+  assert.equal(cleanupDb.prepare('SELECT value FROM settings WHERE key=?').get(`compat:owned-items:${encodeURIComponent('펫정리학생')}`),undefined,'legacy wardrobe mirror must be removed');
+  assert.equal(cleanupDb.prepare('SELECT stars FROM players WHERE name=?').get('펫정리학생').stars,100,'complete-character cleanup must preserve earned stars');
+  cleanupDb.close();
   const migratedDb=new Database(path.join(tempDir,'studyvillage.db'),{readonly:true});
-  assert.equal(migratedDb.prepare('SELECT level FROM players WHERE name=?').get('테스트학생').level,1,'shop compatibility level should be derived from XP');
+  assert.equal(migratedDb.prepare('SELECT xp FROM players WHERE name=?').get('테스트학생').xp,240,'new art migration must preserve learning XP');
+  assert.equal(migratedDb.prepare('SELECT level FROM players WHERE name=?').get('테스트학생').level,2,'shop compatibility level should be derived from preserved XP');
   migratedDb.close();
+  const refillDb=new Database(path.join(tempDir,'studyvillage.db'));
+  refillDb.prepare('UPDATE players SET stars=100 WHERE name=?').run('테스트학생');
+  refillDb.close();
   const purchase=purchaseItem('테스트학생','candy');
   assert.equal(purchase.ok,true,'physical purchase should succeed');
   assert.equal(purchase.fulfillment,'teacher-delivery');
@@ -81,9 +100,23 @@ try{
   assert.equal(second.ok,true,'stationery delivery request should succeed');
   const delivered=resolveDeliveryRequest(second.deliveryRequestId,'delivered');
   assert.equal(delivered.ok,true,'teacher should mark delivery complete');
+  const jeti=purchaseItem('테스트학생','jeti');
+  assert.equal(jeti.ok,true,'제티 delivery request should succeed');
+  assert.equal(jeti.itemName,'제티');
+  assert.equal(purchaseItem('테스트학생','jeti').ok,true,'second 제티 purchase should be allowed');
+  assert.equal(purchaseItem('테스트학생','jeti').ok,true,'third 제티 purchase should be allowed');
+  const limited=purchaseItem('테스트학생','jeti');
+  assert.equal(limited.ok,false,'fourth 제티 purchase must be blocked');
+  assert.equal(limited.code,'purchase-limit-reached');
+  assert.equal(playerShopState('테스트학생').items.find(item=>item.id==='jeti')?.remainingPurchases,0,'student state must show no remaining 제티 purchases');
+  assert.equal(resolveDeliveryRequest(jeti.deliveryRequestId,'refund').ok,true,'refunded physical requests must release one purchase slot');
+  assert.equal(purchaseItem('테스트학생','jeti').ok,true,'제티 purchase should reopen after a refund');
+  const lollipop=purchaseItem('테스트학생','chupa-chups');
+  assert.equal(lollipop.ok,true,'츄파춥스 delivery request should succeed');
+  assert.equal(lollipop.itemName,'츄파춥스');
   const verifyDb=new Database(path.join(tempDir,'studyvillage.db'),{readonly:true});
-  assert.equal(verifyDb.prepare('SELECT stars FROM players WHERE name=?').get('테스트학생').stars,85,'delivery completion must not refund stars');
-  assert.equal(verifyDb.prepare("SELECT COUNT(*) AS count FROM star_ledger WHERE player_name=? AND kind='physical-item-refund'").get('테스트학생').count,1,'refund must be written once to star ledger');
+  assert.equal(verifyDb.prepare('SELECT stars FROM players WHERE name=?').get('테스트학생').stars,65,'physical delivery requests must deduct the configured stars');
+  assert.equal(verifyDb.prepare("SELECT COUNT(*) AS count FROM star_ledger WHERE player_name=? AND kind='physical-item-refund'").get('테스트학생').count,2,'each refund must be written once to star ledger');
   verifyDb.close();
 }finally{
   if(previousDataDir===undefined)delete process.env.STUDYVILLAGE_DATA_DIR;else process.env.STUDYVILLAGE_DATA_DIR=previousDataDir;

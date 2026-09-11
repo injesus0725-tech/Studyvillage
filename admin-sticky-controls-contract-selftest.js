@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const nav=fs.readFileSync('assets/admin-quick-navigation.js','utf8');
+const delivery=fs.readFileSync('assets/admin-delivery-notifications.js','utf8');
+const html=fs.readFileSync('admin.html','utf8');
+assert.ok(nav.includes('.admin-sticky-controls{position:fixed;top:8px'),'main admin controls must remain visible from the top while scrolling');
+assert.ok(nav.includes('sticky.appendChild(actions)')&&nav.includes('sticky.appendChild(nav)'),'actions and quick navigation must share one sticky stack');
+assert.ok(nav.includes("app.classList.add('admin-has-fixed-controls');app.appendChild(sticky)"),'fixed controls must be available immediately without changing document flow');
+assert.ok(nav.includes('let anchor=header||sticky')&&!nav.includes('let anchor=nav'),'admin panels must remain outside the sticky controls');
+assert.ok(delivery.includes("document.querySelector('#refresh-button')?.click()"),'new delivery requests must refresh visible admin data');
+assert.ok(html.includes('admin-delivery-notifications.js?v=20260909sticky1')&&html.includes('admin-quick-navigation.js?v=20260910fixed7'),'admin sticky controls must use fresh cache keys');
+console.log('admin sticky controls contract self-test passed');

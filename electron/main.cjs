@@ -3,9 +3,16 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 
+// Classroom PCs often use older integrated graphics drivers.  A renderer can
+// turn completely white after navigating from the launcher even though the
+// embedded server is still healthy.  StudyVillage does not need GPU rendering,
+// so prefer the stable software path.
+app.disableHardwareAcceleration();
+
 let mainWindow;
 let classroomServer;
 let runtimeLogFile='';
+let rendererRecoveryCount=0;
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 
 function safeRuntimeText(value,limit=5000){let text=String(value??'');try{text=text.split(app.getPath('userData')).join('[USER_DATA]')}catch{}text=text.split(path.resolve(__dirname,'..')).join('[APP]');return text.replace(/Bearer\s+[A-Za-z0-9._-]+/gi,'Bearer [REDACTED]').slice(0,limit)}
@@ -34,8 +41,25 @@ async function startServer() {
   await import(pathToFileURL(hookPath).href);
   const serverPath = path.join(__dirname, '..', 'server', 'server.js');
   const serverModule = await import(pathToFileURL(serverPath).href);
-  classroomServer = serverModule.startClassroomServer();
-  classroomServer?.on?.('error',error=>writeRuntimeError('server-error',error));
+  const server = serverModule.startClassroomServer();
+  classroomServer = await new Promise((resolve,reject) => {
+    let settled = false;
+    const timeout = setTimeout(() => finish(new Error('Studyvillage server listen timed out.')), 10000);
+    const finish = error => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      server.removeListener('listening', onListening);
+      server.removeListener('error', onError);
+      if (error) reject(error); else resolve(server);
+    };
+    const onListening = () => finish();
+    const onError = error => finish(error);
+    server.once('listening', onListening);
+    server.once('error', onError);
+    if (server.listening) finish();
+  });
+  classroomServer.on('error',error=>writeRuntimeError('server-error',error));
 }
 
 async function createWindow() {
@@ -58,6 +82,27 @@ async function createWindow() {
   });
 
   await mainWindow.loadURL('http://127.0.0.1:3000/connect.html');
+  mainWindow.webContents.on('render-process-gone',(_event,details)=>{
+    writeRuntimeError('renderer-gone',new Error(`reason=${details?.reason||'unknown'} exitCode=${details?.exitCode??'unknown'}`));
+    if(rendererRecoveryCount>=2)return;
+    rendererRecoveryCount++;
+    setTimeout(()=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.loadURL('http://127.0.0.1:3000/connect.html?recovered='+Date.now()).catch(error=>writeRuntimeError('renderer-reload-failed',error))},500);
+  });
+  mainWindow.webContents.on('unresponsive',()=>{
+    writeRuntimeError('renderer-unresponsive',new Error('The classroom window stopped responding.'));
+    if(rendererRecoveryCount>=2)return;
+    rendererRecoveryCount++;
+    setTimeout(()=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.reloadIgnoringCache()},500);
+  });
+  mainWindow.webContents.on('did-fail-load',(_event,errorCode,errorDescription,validatedURL,isMainFrame)=>{
+    if(!isMainFrame||errorCode===-3)return;
+    writeRuntimeError('page-load-failed',new Error(`${errorCode} ${errorDescription} ${validatedURL}`));
+    setTimeout(async()=>{
+      if(!mainWindow||mainWindow.isDestroyed())return;
+      const healthy=await waitForServer('http://127.0.0.1:3000/api/health',5000);
+      if(healthy)mainWindow.loadURL('http://127.0.0.1:3000/connect.html?loadRecovered='+Date.now()).catch(error=>writeRuntimeError('page-recovery-failed',error));
+    },700);
+  });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http://127.0.0.1:3000') || url.startsWith('http://localhost:3000')) return { action: 'allow' };
     shell.openExternal(url);

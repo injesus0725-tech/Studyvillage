@@ -7,5 +7,5 @@ assert.ok(server.includes("logActivity(name,'xp-correction'"),'XP correction mus
 assert.ok(server.includes("const result=db.transaction(()=>{const now=new Date().toISOString();db.prepare('UPDATE players SET xp=?"),'XP change and audit event must commit atomically');
 assert.ok(admin.includes('현재 값이 아니라 변경 후 최종 XP입니다.')&&admin.includes('교정 이유를 3자 이상'),'teacher UI must distinguish target XP and require a reason');
 assert.ok(admin.includes('response.status===401')&&admin.includes("sessionStorage.removeItem('studyvillage-admin-token')"),'expired administrator authentication must fail closed');
-assert.ok(html.includes('<script src="admin-student-edit.js"></script>'),'administrator student edit module must be loaded');
+assert.ok(/<script src="admin-student-edit\.js(?:\?[^\"]*)?"><\/script>/.test(html),'administrator student edit module must be loaded');
 console.log('admin student XP correction contract selftest passed');
