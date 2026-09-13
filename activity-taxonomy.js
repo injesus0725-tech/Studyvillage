@@ -19,8 +19,8 @@
     'exploration-mountain-riddle':{subject:'창의적 사고',topic:'도전 수수께끼',name:'도전의 산 · 수수께끼',icon:'⛰️'},
     'exploration-korean':{subject:'국어',topic:'전체 문제은행',name:'탐험 · 국어의 숲',icon:'📖'},
     'exploration-math':{subject:'수학',topic:'덧셈·곱셈',name:'탐험 · 덧셈·곱셈 이전 통합 기록',icon:'➕'},
-    'exploration-math-addition':{subject:'수학',topic:'덧셈',name:'탐험 · 랜덤 덧셈 동굴',icon:'➕'},
-    'exploration-math-multiplication':{subject:'수학',topic:'곱셈',name:'탐험 · 곱셈 던전',icon:'✖️'},
+    'exploration-math-addition':{subject:'수학',topic:'전체 문제',name:'탐험 · 전체 문제',icon:'➕'},
+    'exploration-math-multiplication':{subject:'수학',topic:'곱셈·나눗셈',name:'탐험 · 곱셈·나눗셈',icon:'✖️'},
     'exploration-social':{subject:'사회',topic:'전체 문제은행',name:'탐험 · 사회의 숲',icon:'🌏'},
     'exploration-science':{subject:'과학',topic:'전체 문제은행',name:'탐험 · 과학의 숲',icon:'🔬'},
     'exploration-random':{subject:'통합',topic:'사회·과학·예체능',name:'탐험 · 사회·과학·예체능 통합',icon:'🌏'}

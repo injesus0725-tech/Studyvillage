@@ -17,8 +17,8 @@ const META=Object.freeze({
   'exploration-mountain-riddle':{subject:'창의적 사고',topic:'도전 수수께끼',name:'도전의 산 · 수수께끼'},
   'exploration-korean':{subject:'국어',topic:'전체 문제은행',name:'탐험 · 국어의 숲'},
   'exploration-math':{subject:'수학',topic:'덧셈·곱셈',name:'탐험 · 덧셈·곱셈 이전 통합 기록'},
-  'exploration-math-addition':{subject:'수학',topic:'덧셈',name:'탐험 · 랜덤 덧셈 동굴'},
-  'exploration-math-multiplication':{subject:'수학',topic:'곱셈',name:'탐험 · 곱셈 던전'},
+  'exploration-math-addition':{subject:'수학',topic:'전체 문제',name:'탐험 · 전체 문제'},
+  'exploration-math-multiplication':{subject:'수학',topic:'곱셈·나눗셈',name:'탐험 · 곱셈·나눗셈'},
   'exploration-social':{subject:'사회',topic:'전체 문제은행',name:'탐험 · 사회의 숲'},
   'exploration-science':{subject:'과학',topic:'전체 문제은행',name:'탐험 · 과학의 숲'},
   'exploration-random':{subject:'통합',topic:'사회·과학·예체능',name:'탐험 · 사회·과학·예체능 통합'}

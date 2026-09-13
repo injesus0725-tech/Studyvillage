@@ -12,9 +12,9 @@ assert.match(server,/extra=readExtraAttempts\([^;]+name,policyId\)/,'status must
 assert.match(server,/decision=evaluateWithExtra\(policy,attemptRecord,extra\)/,'status must include teacher-granted extra attempts in the authoritative decision');
 assert.match(server,/allowed:decision\.allowed,remaining:decision\.remaining,extraAttempts:extra/,'status must expose the authoritative allowance and extra attempts');
 for(const id of ['exploration-korean','exploration-math-addition','exploration-math-multiplication','exploration-random'])assert.ok(admin.includes(`'${id}'`)||admin.includes(id),`${id} must appear in teacher attempt settings`);
-assert.ok(exploration.includes("mode:'addition',activityId:'exploration-math-addition'")&&exploration.includes("mode:'multiplication',activityId:'exploration-math-multiplication'"),'addition and multiplication must use independent attempt records');
+assert.ok(exploration.includes("mode:'mixed',activityId:'exploration-math-addition'")&&exploration.includes("mode:'multiplication-division',activityId:'exploration-math-multiplication'"),'all-math and multiplication/division must use independent existing attempt records');
 for(const retired of ['exploration-social','exploration-science'])assert.ok(!admin.includes(`'${retired}'`),`${retired} must not reappear as a teacher attempt setting`);
-for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(exploration.includes(`name:'${name}'`),`${name} must remain in the four-type exploration hub`);
+for(const name of ['국어의 숲','전체 문제','곱셈·나눗셈','사회·과학·예체능 탐험'])assert.ok(exploration.includes(`name:'${name}'`),`${name} must remain in the four-type exploration hub`);
 assert.match(exploration,/json\(`\/api\/player\/me\/activity-attempt-status\/\$\{encodeURIComponent\(exp\.activityId\)\}`/,'exploration V2 must own the single allowance check');
 assert.match(exploration,/if\(!s\.allowed\)/,'an exhausted expedition must be blocked before play');
 assert.match(exploration,/탐험 참여 횟수를 확인하지 못했어요/,'failure to verify a controlled attempt must fail closed');

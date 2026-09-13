@@ -9,8 +9,8 @@
   async function fetchJson(url,options={}){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),REQUEST_TIMEOUT_MS);try{const response=await fetch(url,{...options,headers:{...auth(),...(options.headers||{})},signal:controller.signal}),data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw Object.assign(new Error(data.code||'request-failed'),{code:data.code,status:response.status});return data}finally{clearTimeout(timer)}}
 
   const EXPEDITIONS=[
-    {id:'math-addition-cave',icon:'➕',name:'랜덤 덧셈 동굴',subject:'수학',kind:'math',mode:'addition',activityId:'math-arithmetic',count:5,theme:'cave',note:'랜덤 5문제 · 수학 랜덤 도전 하루 3회 공통'},
-    {id:'math-multiplication-dungeon',icon:'✖️',name:'곱셈 던전',subject:'수학',kind:'math',mode:'multiplication',activityId:'math-arithmetic',count:5,theme:'dungeon',note:'랜덤 5문제 · 수학 랜덤 도전 하루 3회 공통'},
+    {id:'math-all-cave',icon:'➕',name:'전체 문제',subject:'수학',kind:'math',mode:'mixed',activityId:'math-arithmetic',count:5,theme:'cave',note:'수학 전체에서 랜덤 5문제 · 수학 랜덤 도전 하루 3회 공통'},
+    {id:'math-multiplication-division-dungeon',icon:'✖️',name:'곱셈·나눗셈',subject:'수학',kind:'math',mode:'multiplication-division',activityId:'math-arithmetic',count:5,theme:'dungeon',note:'곱셈·나눗셈 랜덤 5문제 · 수학 랜덤 도전 하루 3회 공통'},
     {id:'riddle-forest',icon:'🌲',name:'수수께끼 숲',subject:'수수께끼',kind:'riddle',difficulty:'easy',activityId:'exploration-forest-riddle',count:5,theme:'forest',note:'쉬운 문제 5개 · 문제와 길이 매번 달라져요'},
     {id:'riddle-dungeon',icon:'🏰',name:'수수께끼 던전',subject:'수수께끼',kind:'riddle',difficulty:'challenge',activityId:'exploration-mountain-riddle',count:7,theme:'ruins',note:'중간·어려운 문제 7개 · 도전 보상 강화'},
     {id:'korean-unit1-cave',icon:'📖',name:'국어 1단원 동굴',subject:'국어',ready:false,theme:'cave',note:'지도안 문제은행을 넣으면 열려요'},

@@ -10,7 +10,7 @@ assert.ok(ui.indexOf('await window.StudyVillageStudentQuestionOverrides?.refresh
 assert.ok(live.includes("'#student-explore-panel button[data-exp]'"),'exploration must refresh again at the actual expedition start, not only when the cave opens');
 assert.ok(live.includes('selected?.click()')&&live.includes('if(!fresh||fresh.disabled)return'),'exploration start refresh must redraw fresh availability and refuse a newly closed expedition');
 assert.ok(building.includes("action:'curriculum'")&&building.includes("title:'수학 놀이터'"),'village learning buildings must use the new structure');
-for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
+for(const name of ['국어의 숲','전체 문제','곱셈·나눗셈','사회·과학·예체능 탐험'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
 for(const retired of ['사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(!explore.includes(`name:'${retired}'`),`retired exploration returned: ${retired}`);
 assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('Math.random()<.1')&&explore.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddlePool)[0]'),'catalog riddles must be rare, replace at most one subject question, and keep five total');
 assert.ok(math.includes('withExplorationRiddle')&&math.includes('Math.random()>=.1'),'math exploration riddle insertion must be decided by the server at the same low probability');

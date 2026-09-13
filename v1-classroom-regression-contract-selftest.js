@@ -40,7 +40,7 @@ assert.ok(css.includes('One fixed full-body canvas'),'fixed full-body accessory 
 assert.ok(css.includes('.avatar-bag')&&css.includes('.avatar-glasses')&&css.includes('.avatar-hat'),'wearable slots must have body-relative positioning');
 
 // Keep the proven V2 engine internals available while exposing only the four current exploration choices.
-for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(explorer.includes(name),`exploration V2 engine missing entry ${name}`);
+for(const name of ['국어의 숲','전체 문제','곱셈·나눗셈','사회·과학·예체능 탐험'])assert.ok(explorer.includes(name),`exploration V2 engine missing entry ${name}`);
 for(const retired of ['사회의 숲','과학의 숲','랜덤의 숲','수수께끼 숲','도전의 산'])assert.ok(!explorer.includes(`name:'${retired}'`),`retired exploration entry remains: ${retired}`);
 assert.ok(explorer.includes("document.querySelector('.sv-quick-button.explore')?.remove()"),'obsolete top-menu exploration entry must stay removed');
 assert.ok(explorer.includes("explore=document.querySelector('#exploration-cave')"),'exploration V2 must enter from the village cave');
