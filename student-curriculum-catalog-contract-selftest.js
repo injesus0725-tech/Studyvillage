@@ -12,7 +12,7 @@ assert.ok(live.includes('selected?.click()')&&live.includes('if(!fresh||fresh.di
 assert.ok(building.includes("action:'curriculum'")&&building.includes("title:'수학 놀이터'"),'village learning buildings must use the new structure');
 for(const name of ['국어의 숲','랜덤 덧셈 동굴','곱셈 던전','사회·과학·예체능 탐험'])assert.ok(explore.includes(name),`exploration catalog missing ${name}`);
 for(const retired of ['사회의 숲','과학의 숲','랜덤의 숲'])assert.ok(!explore.includes(`name:'${retired}'`),`retired exploration returned: ${retired}`);
-assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('Math.random()<.1')&&explore.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddles)[0]'),'catalog riddles must be rare, replace at most one subject question, and keep five total');
+assert.ok(explore.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')")&&explore.includes('Math.random()<.1')&&explore.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddlePool)[0]'),'catalog riddles must be rare, replace at most one subject question, and keep five total');
 assert.ok(math.includes('withExplorationRiddle')&&math.includes('Math.random()>=.1'),'math exploration riddle insertion must be decided by the server at the same low probability');
 assert.ok(reward.includes("id.startsWith('curriculum-')"),'curriculum activities must share regular XP/star balance');
 assert.ok(stars.includes("'curriculum-korean'")&&stars.includes("'exploration-random'"),'curriculum and catalog exploration stars must be server-confirmed');

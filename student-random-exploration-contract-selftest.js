@@ -16,7 +16,7 @@ for(const retired of ["name:'사회의 숲'","name:'과학의 숲'","name:'랜�
 assert.strictEqual((hub.match(/\{id:'(?:korean|math-add|math-mul|integrated)'/g)||[]).length,4,'exploration hub must expose exactly the four requested exploration cards');
 assert.match(hub,/riddles=eligible\.filter\(q=>q\.subject==='창의적 사고'\)/,'catalog explorations must keep using the shared riddle bank');
 assert.match(hub,/Math\.random\(\)<\.1/,'catalog exploration riddle chance must be about ten percent');
-assert.match(hub,/picked\[Math\.floor\(Math\.random\(\)\*picked\.length\)\]=shuffle\(riddles\)\[0\]/,'a rare riddle must replace one subject question so the total stays five');
+assert.match(hub,/picked\[Math\.floor\(Math\.random\(\)\*picked\.length\)\]=shuffle\(riddlePool\)\[0\]/,'a rare riddle must replace one subject question so the total stays five');
 assert.ok(!/\.\.\.riddles/.test(hub),'riddles must not be mixed into every catalog exploration by default');
 assert.match(mathServer,/withExplorationRiddle\(makeProblemSet\(req\.session\.name,mode,settings,5\)/,'math explorations must decide riddle insertion after a non-repeating server problem set is issued');
 assert.match(mathServer,/Math\.random\(\)>=\.1/,'math exploration riddle chance must stay low');

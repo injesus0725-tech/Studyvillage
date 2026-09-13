@@ -4,6 +4,7 @@ const server=fs.readFileSync('server/math-practice.js','utf8'),activity=fs.readF
 assert.ok(server.includes("ACTIVITY_ID='math-arithmetic'"),'math practice needs a stable activity id');
 assert.ok(server.includes("EXPLORATION_ACTIVITY_IDS=Object.freeze({addition:'exploration-math-addition',multiplication:'exploration-math-multiplication'})"),'addition and multiplication exploration completions need distinct server activity ids');
 assert.ok(server.includes('problems:problems.map(publicProblem)'),'server must issue sanitized student-visible math problem fields');
+assert.ok(server.includes('.map(randomizeChoiceProblem)')&&server.includes('answer:options.indexOf(correct)'),'server-issued multiple-choice math must shuffle options together with the correct answer index');
 assert.ok(server.includes('function publicProblem(problem,index)')&&!server.match(/publicProblem\([^)]*\).*answer:problem\.answer/),'issued math problems must never expose answers');
 assert.ok(server.includes('gradeProblem(row.problems[index],req.body?.answer)'),'intermediate check must use the shared server grader');
 assert.ok(server.includes('answers.map((value,index)=>gradeProblem(row.problems[index],value))'),'final batch grading must use the same shared server grader');

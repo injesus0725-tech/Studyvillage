@@ -4,7 +4,7 @@ const server=fs.readFileSync('server/math-practice.js','utf8');
 const stability=fs.readFileSync('assets/student-stability-fixes.js','utf8');
 assert.ok(hub.includes("riddles=eligible.filter(q=>q.subject==='창의적 사고')"),'exploration must still read the shared riddle bank');
 assert.ok(hub.includes('Math.random()<.1'),'catalog explorations should receive a riddle only at a low probability');
-assert.ok(hub.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddles)[0]'),'at most one catalog question should be replaced by a riddle');
+assert.ok(hub.includes('picked[Math.floor(Math.random()*picked.length)]=shuffle(riddlePool)[0]'),'at most one catalog question should be replaced by a riddle');
 assert.ok(server.includes('withExplorationRiddle')&&server.includes('Math.random()>=.1'),'math explorations must make the same low-probability decision on the server');
 assert.ok(server.includes("answerFormat:'choice'")&&server.includes('gradeProblem(row.problems[index],req.body?.answer)'),'math-exploration riddles must be server scored');
 assert.ok(!stability.includes('수수께끼 도전 시작')&&stability.includes('legacyQuizHall'),'the retired standalone riddle launcher must not be restored');
