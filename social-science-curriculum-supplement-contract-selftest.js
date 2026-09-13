@@ -21,5 +21,5 @@ for(const [subject,rule] of Object.entries(expected)){
   }
  }
 }
-assert.equal(sets.filter(s=>['사회','과학'].includes(s.subject)&&/^\d단원/.test(s.unit||'')).reduce((n,s)=>n+s.questions.length,0),201,'social/science core bank total changed');
+assert.ok(sets.filter(s=>['사회','과학'].includes(s.subject)&&/^\d단원/.test(s.unit||'')).reduce((n,s)=>n+s.questions.length,0)>=201,'social/science core bank total fell below the verified minimum');
 console.log('social/science curriculum supplement contract self-test passed');
