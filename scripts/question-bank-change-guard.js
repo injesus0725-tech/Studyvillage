@@ -8,7 +8,12 @@ const {execFileSync}=require('child_process');
 
 const ROOT=path.resolve(__dirname,'..');
 const DEFAULT_BASE='origin/stabilize-touch-buildings-20260820';
-const ALLOWED_FILES=Object.freeze(['curriculum-question-bank.js','question-data.js']);
+const BANK_FILES=Object.freeze([
+  'question-data.js',
+  'curriculum-question-bank.js',
+  'assets/curriculum-content-expansion.js'
+]);
+const ALLOWED_FILES=new Set(BANK_FILES);
 
 const git=(args)=>execFileSync('git',args,{cwd:ROOT,encoding:'utf8'}).trim();
 const stable=(value)=>JSON.stringify(value);
@@ -17,7 +22,7 @@ const normalize=(value)=>String(value||'').replace(/\s+/g,' ').trim().toLowerCas
 function loadBank(readFile){
   const sandbox={window:{}};
   vm.createContext(sandbox);
-  for(const file of ['question-data.js','curriculum-question-bank.js']){
+  for(const file of BANK_FILES){
     vm.runInContext(readFile(file),sandbox,{filename:file,timeout:3000});
   }
   return JSON.parse(JSON.stringify(sandbox.window.StudyVillageQuestionSets||{}));
@@ -87,7 +92,7 @@ function main(){
   if(!rows.length)throw new Error('기준 브랜치 이후 변경 파일이 없습니다.');
   for(const row of rows){
     const [status,...parts]=row.split('\t'),file=parts.at(-1);
-    if(status!=='M'||!ALLOWED_FILES.includes(file))throw new Error(`허용되지 않은 변경: ${row}`);
+    if(status!=='M'||!ALLOWED_FILES.has(file))throw new Error(`허용되지 않은 변경: ${row}`);
   }
   const before=loadBank(file=>git(['show',`${base}:${file}`]));
   const after=loadBank(file=>fs.readFileSync(path.join(ROOT,file),'utf8'));
