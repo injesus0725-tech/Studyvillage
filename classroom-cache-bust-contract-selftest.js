@@ -6,8 +6,10 @@ assert.ok(game.includes(`replaceChildren('StudyVillage v${pkg.version}')`),'stud
 assert.ok(admin.includes("marker.textContent='입력초점 R8 · 20260825'"),'teacher screen must show the unique recovery build marker');
 assert.ok(pkg.build.files.includes('assets/**/*'),'portable build must include runtime supplemental assets');
 for(const asset of ['curriculum-content-supplement.js','bookmaru-variety-supplement.js','math-curriculum-supplement.js']){
- assert.ok(student.includes(`assets/${asset}?v=20260828v1`),`student supplemental asset needs a cache-versioned path: ${asset}`);
- if(asset!=='curriculum-content-supplement.js')assert.ok(adminPage.includes(`assets/${asset}?v=20260828v1`),`admin supplemental asset needs a cache-versioned path: ${asset}`);
+ const studentVersion=asset==='math-curriculum-supplement.js'?'20260828v1':'20260913choicebalance1';
+ assert.ok(student.includes(`assets/${asset}?v=${studentVersion}`),`student supplemental asset needs a cache-versioned path: ${asset}`);
+ if(asset==='bookmaru-variety-supplement.js')assert.ok(adminPage.includes(`assets/${asset}?v=20260913choicebalance1`),`admin supplemental asset needs a cache-versioned path: ${asset}`);
+ else if(asset!=='curriculum-content-supplement.js')assert.ok(adminPage.includes(`assets/${asset}?v=20260828v1`),`admin supplemental asset needs a cache-versioned path: ${asset}`);
 }
 assert.ok(student.includes('assets/social-science-curriculum-supplement.js?v=20260828v1'),'student social/science supplement needs a cache-versioned path');
 console.log('classroom cache bust and visible build contract self-test passed');

@@ -76,6 +76,7 @@ const tests=[
   'login-input-password-safety-contract-selftest.js',
   'student-registration-lock-contract-selftest.js',
   'question-content-selftest.js',
+  'question-choice-length-balance-contract-selftest.js',
   'curriculum-question-bank-packaging-contract-selftest.js',
   'question-catalog-settings-contract-selftest.js',
   'student-curriculum-catalog-contract-selftest.js',

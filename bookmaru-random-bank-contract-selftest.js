@@ -12,7 +12,7 @@ assert.ok(game.includes('<h2>일일 책마루 도전</h2>'),'Bookmaru title must
 assert.ok(game.includes('const allSets=()=>Object.values(window.StudyVillageQuestionSets||{}).filter(')&&game.includes('set.bookmaru===true')&&game.includes("(set.spaces||[]).includes('bookmaru')")&&game.includes("(q.spaces||[]).includes('bookmaru')"),'Bookmaru must aggregate only sets or questions explicitly approved for Bookmaru');
 assert.ok(game.includes("((q.spaces||set.spaces||[]).includes('bookmaru')||set.bookmaru===true)"),'Bookmaru must exclude questions not tagged for Bookmaru from mixed sets');
 assert.ok(game.includes('_sourceActivityId:set.activityId,_sourceNumber:i+1'),'Bookmaru questions must retain source identity for teacher overrides');
-assert.ok(game.includes('const buildRound=bank=>shuffle(bank).slice(0,Math.min(ROUND_SIZE,bank.length)).map(randomizeQuestion)'),'Bookmaru must draw a random bounded round');
+assert.ok(game.includes('StudyVillageQuestionResponse?.balancedSample?.(bank,Math.min(ROUND_SIZE,bank.length))')&&game.includes('.map(randomizeQuestion)'),'Bookmaru must draw a random bounded, length-balanced round');
 assert.ok(game.includes('const correct=item.options[Number(item.answer)],options=shuffle(item.options)'),'choice options must be shuffled with their answer preserved');
 assert.ok(game.includes('const percentScore=(correct,total)=>'),'seven-question scoring must normalize to a 0-100 percentage');
 assert.ok(game.includes('score=percentScore(correctCount,questions.length)'),'Bookmaru must avoid fixed twenty-point scoring assumptions');
@@ -24,8 +24,8 @@ assert.ok(game.includes('questions=buildRound(questionBank)'),'a new challenge m
 assert.ok(game.includes('/api/question-overrides'),'Bookmaru must load teacher question overrides');
 assert.ok(game.includes('if(!row||!validQuestion(row))return base'),'invalid teacher overrides must fail safely');
 assert.ok(data.includes('bookmaru:true')&&data.includes('bookmaru:false'),'question sets must explicitly opt in or out of Bookmaru');
-assert.ok(response.includes("import('./assets/bookmaru-variety-supplement.js?v=20260828v1')"),'student readiness must load the Bookmaru variety supplement');
-assert.ok(admin.includes('assets/bookmaru-variety-supplement.js?v=20260828v1'),'admin catalog must load the Bookmaru variety supplement');
+assert.ok(response.includes("import('./assets/bookmaru-variety-supplement.js?v=20260913choicebalance1')"),'student readiness must load the Bookmaru variety supplement');
+assert.ok(admin.includes('assets/bookmaru-variety-supplement.js?v=20260913choicebalance1'),'admin catalog must load the Bookmaru variety supplement');
 assert.ok(!game.includes('score+=20'),'Bookmaru scoring must not retain fixed five-question increments');
 assert.ok(!game.includes('score/20'),'Bookmaru result counts must not depend on five-question scoring');
 assert.ok(!game.includes('AUTO_NEXT_MS')&&!game.includes('advanceTimer=setTimeout'),'Bookmaru feedback must remain visible until the student presses next');

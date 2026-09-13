@@ -1,11 +1,11 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-for(const page of ['index.html','admin.html'])assert.ok(fs.readFileSync(page,'utf8').includes('assets/curriculum-content-expansion.js?v=20260828v1'),`${page} must load the same expanded question pack`);
+for(const page of ['index.html','admin.html'])assert.ok(fs.readFileSync(page,'utf8').includes('assets/curriculum-content-expansion.js?v=20260913choicebalance1'),`${page} must load the same expanded question pack`);
 const studentLoader=fs.readFileSync('question-response.js','utf8'),adminLoader=fs.readFileSync('admin-question-review.js','utf8'),adminPage=fs.readFileSync('admin.html','utf8');
-assert.ok(studentLoader.includes("import('./assets/curriculum-content-supplement.js?v=20260828v1')"),'student runtime must start the supplemental question pack');
-assert.ok(studentLoader.includes("import('./assets/bookmaru-variety-supplement.js?v=20260828v1')"),'student runtime must start the Bookmaru variety pack');
+assert.ok(studentLoader.includes("import('./assets/curriculum-content-supplement.js?v=20260913choicebalance1')"),'student runtime must start the supplemental question pack');
+assert.ok(studentLoader.includes("import('./assets/bookmaru-variety-supplement.js?v=20260913choicebalance1')"),'student runtime must start the Bookmaru variety pack');
 assert.ok(studentLoader.includes("import('./assets/math-curriculum-supplement.js?v=20260828v1')"),'student runtime must start the math supplement');
-assert.ok(adminLoader.includes("import('./assets/curriculum-content-supplement.js?v=20260828v1')"),'admin runtime must load the main supplemental question pack');
-assert.ok(adminPage.includes('assets/bookmaru-variety-supplement.js?v=20260828v1'),'admin runtime must load the Bookmaru variety pack before catalog review');
+assert.ok(adminLoader.includes("import('./assets/curriculum-content-supplement.js?v=20260913choicebalance1')"),'admin runtime must load the main supplemental question pack');
+assert.ok(adminPage.includes('assets/bookmaru-variety-supplement.js?v=20260913choicebalance1'),'admin runtime must load the Bookmaru variety pack before catalog review');
 assert.ok(adminPage.includes('assets/math-curriculum-supplement.js?v=20260828v1'),'admin runtime must load the math supplement before catalog review');
 assert.ok(adminLoader.includes('adminQuestionSupplementReady.then(()=>import(\'./assets/admin-question-catalog.js\'))'),'admin catalog must wait for supplemental questions');
 const context={window:{}};vm.createContext(context);

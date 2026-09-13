@@ -20,4 +20,7 @@ for(const mutate of [
   mutate(bad);
   assert.throws(()=>validateBanks(before,bad));
 }
+const longCorrect=JSON.parse(JSON.stringify(after));
+longCorrect.unit.questions.push({id:'u-003',question:'길이 편향 문제',options:['정답만 유난히 긴 설명입니다','짧은 오답','다른 오답','틀린 보기'],answer:0,explanation:'해설'});
+assert.throws(()=>validateBanks(before,longCorrect),/정답만 가장 긴 보기/);
 console.log('question bank change guard self-test passed');

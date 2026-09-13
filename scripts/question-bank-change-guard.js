@@ -32,6 +32,10 @@ function validateQuestion(question,label){
   const options=question.options.map(normalize);
   if(new Set(options).size!==options.length)throw new Error(`${label}: 중복 보기가 있습니다.`);
   if(!Number.isInteger(question.answer)||question.answer<0||question.answer>=question.options.length)throw new Error(`${label}: 정답 번호가 보기 범위를 벗어났습니다.`);
+  const visibleLength=value=>[...String(value||'').replace(/\s/g,'')].length;
+  const correctLength=visibleLength(question.options[question.answer]);
+  const longestWrong=Math.max(...question.options.filter((_,index)=>index!==question.answer).map(visibleLength));
+  if(correctLength>longestWrong)throw new Error(`${label}: 정답만 가장 긴 보기 구성입니다.`);
   if(!String(question.explanation||'').trim())throw new Error(`${label}: 해설이 없습니다.`);
 }
 

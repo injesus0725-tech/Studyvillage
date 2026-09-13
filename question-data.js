@@ -48,7 +48,7 @@
         {id:'r05',difficulty:'easy',question:'깨뜨려야만 사용할 수 있는 것은?',options:['달걀','유리컵','의자','연필'],answer:0,explanation:'달걀은 껍데기를 깨야 요리에 쓸 수 있어요.'},
         {id:'r06',difficulty:'easy',question:'아무리 달려도 제자리인 것은?',options:['시계','자동차','기차','자전거'],answer:0,explanation:'시계의 바늘은 계속 달리지만 시계 안에 있어요.'},
         {id:'r07',difficulty:'easy',question:'물속에 들어가도 젖지 않는 것은?',options:['그림자','수건','종이','모래'],answer:0,explanation:'그림자는 물에 비쳐도 젖지 않아요.'},
-        {id:'r08',difficulty:'easy',question:'오를 때는 두 발, 내려올 때는 세 발인 것은?',options:['계단을 내려오는 사람과 지팡이','고양이','의자','자동차'],answer:0,explanation:'지팡이를 짚으면 내려올 때 세 발처럼 보여요.'},
+        {id:'r08',difficulty:'easy',question:'오를 때 두 발, 내려올 때 세 발처럼 보이는 까닭은?',options:['지팡이를 짚고 내려오기 때문에','고양이와 함께 내려오기 때문에','의자를 들고 내려오기 때문에','자동차를 타고 내려오기 때문에'],answer:0,explanation:'지팡이를 짚으면 내려올 때 세 발처럼 보여요.'},
         {id:'r09',difficulty:'easy',question:'가득 차면 오히려 가벼워지는 것은?',options:['풍선','책가방','물병','상자'],answer:0,explanation:'풍선은 공기로 가득 차면 위로 떠오를 수 있어요.'},
         {id:'r10',difficulty:'easy',question:'눈이 하나인데 볼 수 없는 것은?',options:['바늘','망원경','사람','카메라'],answer:0,explanation:'바늘에는 실을 끼우는 바늘귀가 있어요.'},
         {id:'r11',difficulty:'easy',question:'입이 하나인데 먹지 못하고 물만 뱉는 것은?',options:['분수','하마','컵','우산'],answer:0,explanation:'분수의 물 나오는 곳을 입처럼 볼 수 있어요.'},
