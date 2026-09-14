@@ -2,6 +2,8 @@ const fs=require('fs');
 const assert=require('assert');
 
 const src=fs.readFileSync('admin-question-editor.js','utf8');
+assert.ok(src.includes("details.className='question-editor-unit'")&&src.includes("subjectDetails.className='question-editor-subject'"),'large question banks must open by subject and unit instead of rendering one long list');
+assert.ok(src.includes("details.addEventListener('toggle'")&&src.includes("details.dataset.rendered==='1'"),'question cards must render only when their unit is opened');
 
 assert.ok(src.includes('saving=false'),'문제 편집 저장 상태 잠금이 필요합니다.');
 assert.ok((src.match(/if\(saving\)return alert\('문제 저장이 끝난 뒤 다시 시도해 주세요\.'/g)||[]).length>=2,'수정과 원본 복귀 모두 중복 저장을 막아야 합니다.');

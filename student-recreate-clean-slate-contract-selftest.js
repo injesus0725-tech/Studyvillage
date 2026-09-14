@@ -24,7 +24,7 @@ assert.ok(!star.includes('cleanupExtraAttemptsBeforeStudentDelete')&&!star.inclu
 const loginStart=src.indexOf("app.post('/api/login'");
 const loginEnd=src.indexOf("app.get('/api/player/me'",loginStart);
 const login=src.slice(loginStart,loginEnd);
-assert.ok(login.includes("if(!row){const salt=crypto.randomBytes(16).toString('hex')"),'recreated student must receive fresh password salt');
+assert.ok(/if\(!row\)\{[\s\S]*?const salt=crypto\.randomBytes\(16\)\.toString\('hex'\)/.test(login),'recreated student must receive fresh password salt after the registration gate allows creation');
 assert.ok(login.includes("INSERT INTO players(name,password_hash,password_salt,login_count,last_login_at,created_at,updated_at)"),'recreated student must be inserted as a fresh player row');
 assert.ok(login.includes('isNew=true'),'recreated student must be treated as a new account');
 assert.ok(src.includes('clearStudentSessions(name)'),'deletion must invalidate old sessions before same-name recreation can continue safely');

@@ -1,0 +1,62 @@
+{
+  "version": 8,
+  "status": "production-foundation",
+  "canvas": { "width": 512, "height": 512 },
+  "pose": "front-neutral-fixed",
+  "bases": {
+    "student-boy": "base-boy-v2.png",
+    "student-girl": "base-girl-v2.png"
+  },
+  "reference": "approved-rpg-style-reference.png",
+  "alignmentProof": {
+    "hat": "hat-academy-v2.png",
+    "outfit": "outfit-academy-v2.png",
+    "boyPreview": "proof-boy-academy.png",
+    "girlPreview": "proof-girl-academy.png",
+    "boyHairPreview": "proof-boy-default-hair.png",
+    "girlHairPreview": "proof-girl-default-hair.png",
+    "boyHairSwapPreview": "proof-boy-bob-hair.png",
+    "girlHairSwapPreview": "proof-girl-short-hair.png"
+  },
+  "internalBases": {
+    "student-boy": "base-boy-hairless-v3.png",
+    "student-girl": "base-girl-hairless-v3.png"
+  },
+  "defaultHair": {
+    "student-boy": "hair-short-rpg-v3.png",
+    "student-girl": "hair-bob-rpg-v3.png"
+  },
+  "productionExpansion": {
+    "hairPonytail": "hair-ponytail-rpg-v4.png",
+    "hairBlue": "hair-blue-rpg-v4.png",
+    "hatWizard": "hat-wizard-rpg-v4.png",
+    "hatPirate": "hat-pirate-rpg-v4.png",
+    "outfitArmor": "outfit-armor-rpg-v4.png",
+    "hatCrown": "hat-crown-rpg-v5.png",
+    "hatLeaf": "hat-leaf-rpg-v5.png",
+    "hatFlower": "hat-flower-rpg-v5.png",
+    "outfitHoodie": "outfit-hoodie-rpg-v5.png",
+    "outfitWizard": "outfit-wizard-rpg-v5.png",
+    "bottomAdventurer": "bottom-adventurer-rpg-v6.png",
+    "shoesAdventurerBoots": "shoes-adventurer-boots-rpg-v7.png",
+    "handStarSword": "hand-star-sword-rpg-v7.png",
+    "bagStarRocket": "bag-star-rocket-rpg-v7.png",
+    "glassesHeartStar": "glasses-heart-star-rpg-v8.png",
+    "shoesWing": "shoes-wing-rpg-v8.png",
+    "handStarlightWand": "hand-starlight-wand-rpg-v8.png",
+    "petStarDragon": "pet-star-dragon-rpg-v8.png",
+    "proofs": ["proof-girl-ponytail-v4.png", "proof-boy-wizard-v4.png", "proof-girl-pirate-v4.png", "proof-boy-armor-v4.png", "proof-boy-crown-v5.png", "proof-girl-flower-v5.png", "proof-boy-hoodie-v5.png", "proof-girl-wizard-outfit-v5.png", "proof-boy-adventurer-bottom-v6.png", "proof-girl-adventurer-bottom-v6.png", "proof-boy-adventurer-gear-v7.png", "proof-girl-adventurer-gear-v7.png", "proof-boy-magic-gear-v8.png", "proof-girl-magic-gear-v8-final.png"]
+  },
+  "slots": ["face", "expression", "hair", "hat", "glasses", "outfit", "bottom", "shoes", "bag", "hand", "pet"],
+  "rules": {
+    "sameCanvasForEveryLayer": true,
+    "samePoseForBothBases": true,
+    "transparentBackground": true,
+    "storePreviewUsesEquippedAsset": true,
+    "noLegacySvgMixing": true
+    ,"oneAssetFitsBothBases": true,
+    "hairIsIndependentLayer": true,
+    "defaultHairAlwaysAutoEquipped": true,
+    "hairlessBaseNeverShownAlone": true
+  }
+}

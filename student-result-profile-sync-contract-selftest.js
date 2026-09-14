@@ -14,6 +14,9 @@ assert.ok(sync.includes('event.stopImmediatePropagation()'),'결과 재저장 �
 assert.ok(sync.includes('retryingRiddleResult'),'결과 재저장 진행 상태를 추적해야 합니다.');
 assert.ok(sync.includes('quizNext.disabled=true'),'결과 재저장 중 버튼 연타를 막아야 합니다.');
 assert.ok(sync.includes('Promise.resolve(retry.call(quizNext,event)).finally'),'재저장 처리가 끝난 뒤에만 잠금을 해제해야 합니다.');
+assert.ok(sync.includes("hasOwnProperty.call(player,'rewardStars')"),'수수께끼 저장은 서버 확인 응답과 오프라인 임시 저장을 구분해야 합니다.');
+for(const event of ['studyvillage:activity-record-refresh','studyvillage:ranking-refresh','studyvillage:stars-refresh'])assert.ok(sync.includes(`new Event('${event}')`),`수수께끼 저장 성공 후 ${event} 갱신이 필요합니다.`);
+assert.ok(sync.includes('__riddleRefreshWrapped'),'수수께끼 저장 래퍼가 중복 설치되면 안 됩니다.');
 assert.ok(index.includes('<script src="student-result-profile-sync.js"></script>'),'학생 화면에서 프로필 갱신 모듈을 불러와야 합니다.');
 assert.ok((pkg.build?.files||[]).includes('student-result-profile-sync.js'),'배포 파일에 프로필 갱신 모듈이 포함되어야 합니다.');
 

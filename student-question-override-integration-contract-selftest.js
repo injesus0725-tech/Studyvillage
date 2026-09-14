@@ -15,4 +15,9 @@ assert.match(library,/const allSets=\(\)=>Object\.values\(window\.StudyVillageQu
 assert.match(library,/_sourceActivityId:set\.activityId/,'Bookmaru must retain source activity ids for teacher edits');
 assert.match(expedition,/StudyVillageQuestionSets\?\.explorationRiddles/,'riddle expeditions must use the shared registered question set');
 assert((data.match(/id:'r\d{2}'/g)||[]).length===30,'riddle bank must keep 30 starter questions');
+assert.match(data,/const extraRiddles=\[/,'riddle bank must include the expanded classroom pool');
+const vm=require('vm'),context={window:{}};vm.createContext(context);vm.runInContext(data,context);
+const riddles=context.window.StudyVillageQuestionSets.explorationRiddles.questions;
+assert(riddles.length>=150,'shared riddle bank must provide at least 150 questions');
+assert(new Set(riddles.map(q=>q.question)).size===riddles.length,'shared riddle questions must not repeat');
 console.log('student shared question override integration contract selftest passed');

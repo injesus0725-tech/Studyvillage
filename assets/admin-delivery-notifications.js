@@ -14,6 +14,7 @@
     const latest=fresh[0],message=fresh.length===1?`📦 ${latest.playerName} 학생이 ${latest.itemName} 전달을 요청했습니다.`:`📦 새 전달 요청이 ${fresh.length}건 들어왔습니다.`;
     const badge=document.querySelector('#shop-delivery-status');if(badge){badge.textContent=`새 요청 ${fresh.length}건 · 확인 필요`;badge.classList.add('warning')}
     try{window.alert(`${message}\n교사용 상점의 ‘전달 요청’에서 확인해 주세요.`)}catch{}
+    document.querySelector('#refresh-button')?.click();
   }
   async function poll(){if(busy||!adminVisible())return;busy=true;try{const response=await request();if(response.status===401){initialized=false;knownPending.clear();return}const data=await response.json().catch(()=>({}));if(response.ok&&data.ok)announce(data.deliveryRequests)}catch{}finally{busy=false}}
   function start(){if(timer)return;poll();timer=setInterval(poll,POLL_MS)}

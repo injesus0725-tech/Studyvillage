@@ -18,8 +18,16 @@
   const reason=label=>{const value=prompt(`${label} 이유를 3자 이상 입력하세요.`,'교사 확인 후 수정');if(value===null)return null;const text=value.trim();if(text.length<3){alert('이유를 3자 이상 입력해 주세요.');return null}return text}
   async function run(button,job){if(button.disabled)return;button.disabled=true;try{await job();refresh()}catch(error){alert(`처리하지 못했습니다.\n${error?.message||error}`);if(error?.auth)location.reload()}finally{button.disabled=false}}
 
-  document.addEventListener('click',event=>{
+  // Register on window, not document: the legacy admin handler uses a document
+  // capture listener and can otherwise stop these teacher actions first.
+  window.addEventListener('click',event=>{
     const button=event.target.closest('button');if(!button)return;
+    // Problem cards are rendered by an extension panel.  Route them through a
+    // window event before the legacy document handler can swallow the click.
+    if(button.hasAttribute('data-edit-question')){
+      event.preventDefault();event.stopImmediatePropagation();
+      window.dispatchEvent(new CustomEvent('studyvillage:edit-question',{detail:{activityId:button.dataset.activityId,questionNumber:Number(button.dataset.editQuestion)}}));return;
+    }
     const name=button.dataset.name||button.dataset.xpName||button.dataset.titleName||button.dataset.renameName||button.dataset.equipmentName;
     const password=button.dataset.action==='password';
     const xp=button.hasAttribute('data-xp-name'),title=button.hasAttribute('data-title-name'),rename=button.hasAttribute('data-rename-name'),equipment=button.hasAttribute('data-equipment-name');

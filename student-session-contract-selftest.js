@@ -17,7 +17,7 @@ const required=[
 ];
 for(const text of required){if(!session.includes(text))throw new Error(`student switch safety missing: ${text}`)}
 if(!session.includes('if(!confirm('))throw new Error('student switch must require confirmation');
-if(!index.includes('<script src="student-session.js"></script>'))throw new Error('student-session.js must be loaded by index.html');
+if(!/<script src="student-session\.js(?:\?v=[^"]+)?"><\/script>/.test(index))throw new Error('student-session.js must be loaded by index.html');
 const files=pkg.build?.files||[];
 if(!files.includes('student-session.js'))throw new Error('student-session.js must be packaged');
 if(/clearCheckpoint|localStorage\.clear|sessionStorage\.clear/.test(session))throw new Error('student switch must not clear saved activity checkpoints or all browser storage');

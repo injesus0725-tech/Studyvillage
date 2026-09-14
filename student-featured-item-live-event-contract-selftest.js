@@ -1,10 +1,11 @@
 const fs=require('fs'),assert=require('assert');
 const shop=fs.readFileSync('server/item-shop.js','utf8'),ledger=fs.readFileSync('server/star-ledger.js','utf8');
-assert.ok(shop.includes("const FEATURED_ITEM_IDS=new Set(['crown-gold','star-monocle','pet-fox'])"),'only a small explicit featured-item set may broadcast');
+assert.ok(shop.includes("const FEATURED_ITEM_IDS=new Set(['crown-gold','star-monocle','pet-fox'])"),'featured items must retain their distinct celebration message');
 assert.ok(ledger.includes('installItemShopRoutes(app,{requireSession,requireAdmin,publishLiveEvent})'),'the bounded publisher must reach student shop routes');
 const route=shop.slice(shop.indexOf("app.post('/api/shop/purchase'"),shop.indexOf("app.put('/api/shop/equipment'"));
 assert.ok(route.indexOf('purchaseItem(req.session.name')<route.indexOf('FEATURED_ITEM_IDS.has(result.itemId)'),'the atomic purchase must succeed before checking announcement eligibility');
-assert.ok(route.includes("publishLiveEvent?.('🎁',`${req.session.name} 학생이 특별 아이템 “${result.itemName}”을 획득했습니다!`,'featured-item')"),'featured purchase announcements must use server-verified identity and item name');
+assert.ok(route.includes("`${req.session.name} 학생이 특별 아이템 “${result.itemName}”을 획득했습니다!`")&&route.includes("featured?'featured-item':'shop-item-purchase'"),'featured purchase announcements must use server-verified identity and item name');
+assert.ok(route.includes("학생이 상점에서 “${result.itemName}”을 구매했습니다!")&&route.includes("'shop-item-purchase'"),'every digital shop purchase must broadcast the verified student and item name');
 assert.ok(route.includes('try{publishLiveEvent?.(')&&route.includes('catch{}')&&route.indexOf('catch{}')<route.indexOf('res.json(result)'),'announcement failure must not make a committed purchase look failed');
 assert.ok(shop.includes("if(owned.includes(id))return{ok:false,code:'already-owned'}"),'repeat purchase attempts must remain rejected before any announcement');
 console.log('student featured item live event contract self-test passed');

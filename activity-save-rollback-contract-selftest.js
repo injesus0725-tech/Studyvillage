@@ -1,9 +1,11 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('server/activity-attempt-student.js','utf8');
-const txStart=src.indexOf('const tx=db.transaction(()=>{');
+const routeStart=src.indexOf("app.post('/api/player/me/activity'");
+const txMatch=src.slice(routeStart).match(/(?:const\s+)?tx\s*=\s*db\.transaction\(\(\)=>\{/);
+const txStart=txMatch?routeStart+txMatch.index:-1;
 const txEnd=src.indexOf('const result=tx();',txStart);
-assert.ok(txStart>=0&&txEnd>txStart,'activity save transaction must exist');
+assert.ok(routeStart>=0&&txStart>=0&&txEnd>txStart,'activity save transaction must exist');
 const body=src.slice(txStart,txEnd);
 for(const token of [
   'INSERT INTO activity_records',

@@ -2,18 +2,20 @@
 import { validateStudyvillageBackup } from './backup-validator.js';
 import { validateStarMirrorValue } from './star-backup-validator.js';
 import { parseOwnedItems } from './item-ownership.js';
+import { avatarShopPackV3 } from './avatar-shop-pack-v3.js';
 
 const STAR_SETTING_PREFIX='compat:stars:';
 const EXTRA_ATTEMPT_PREFIX='activity-attempt-extra:v1:';
 const EXTRA_ATTEMPT_HISTORY_KEY='activity-attempt-extra-history:v1';
 const SAFE_ACTIVITY=/^[a-z0-9-]{1,40}$/;
 const MAX_STARS=1000000;
-const SHOP_ITEM_IDS=new Set(['cap-blue','crown-gold','glasses-round','backpack','pet-chick','pet-cat','leaf-cap','scholar-cap','explorer-goggles','star-monocle','field-satchel','book-pack','pet-owl','pet-fox','aurora-effect']);
+const ACTIVE_DIGITAL_ITEM_IDS=new Set(Object.keys(avatarShopPackV3));
+const SAFE_ITEM_REFERENCE=/^[a-z0-9][a-z0-9-]{0,79}$/;
 const validStars=value=>Number.isInteger(Number(value))&&Number(value)>=0&&Number(value)<=MAX_STARS;
 const normalizePlayerName=value=>String(value??'').trim();
 const validCanonicalPlayerName=value=>{const raw=String(value??''),name=normalizePlayerName(raw);return !!name&&name.length<=12&&name===raw};
 function equippedItemIds(value){
-  try{const equipment=JSON.parse(value||'{}');return Object.values(equipment||{}).filter(v=>typeof v==='string'&&v)}catch{return[]}
+  try{const equipment=JSON.parse(value||'{}');return Object.entries(equipment||{}).filter(([slot,v])=>!['face','expression'].includes(slot)&&typeof v==='string'&&v).map(([,v])=>v)}catch{return[]}
 }
 function validateExtraAttemptHistory(value,players){
   let rows;try{rows=JSON.parse(value)}catch{return{ok:false,code:'invalid-extra-attempt-history-json',message:'추가 도전권 사용 기록 JSON이 손상되었습니다.'}}
@@ -94,9 +96,9 @@ export function validateStudyvillageBackupWithStars(backup){
     for(const entry of mirror.entries||[]){
       if(String(entry?.kind||'')!=='item-purchase')continue;
       const itemId=String(entry?.referenceId||'');
-      if(!SHOP_ITEM_IDS.has(itemId))return{ok:false,code:'invalid-item-purchase-reference',message:'아이템 구매 별 원장이 존재하지 않는 상점 아이템을 참조합니다.',playerName,itemId,settingKey:key};
+      if(!SAFE_ITEM_REFERENCE.test(itemId))return{ok:false,code:'invalid-item-purchase-reference',message:'아이템 구매 별 원장의 상품 식별자 형식이 올바르지 않습니다.',playerName,itemId,settingKey:key};
       if(Number(entry?.delta)>=0)return{ok:false,code:'invalid-item-purchase-delta',message:'아이템 구매 별 원장의 변화량이 차감 값이 아닙니다.',playerName,itemId,settingKey:key};
-      if(!owned.has(itemId))return{ok:false,code:'item-purchase-ownership-mismatch',message:'아이템 구매 별 원장이 있지만 현재 보유 아이템 목록에 해당 아이템이 없습니다.',playerName,itemId,settingKey:key};
+      if(ACTIVE_DIGITAL_ITEM_IDS.has(itemId)&&!owned.has(itemId))return{ok:false,code:'item-purchase-ownership-mismatch',message:'현재 판매 아이템의 구매 별 원장이 있지만 현재 보유 아이템 목록에 해당 아이템이 없습니다.',playerName,itemId,settingKey:key};
     }
     if(Object.prototype.hasOwnProperty.call(player,'stars')&&Number(player.stars)!==Number(mirror.balance))return{ok:false,code:'star-balance-mismatch',message:'학생 별 잔액과 별 장부 백업 잔액이 서로 다릅니다.',playerName,settingKey:key};
   }

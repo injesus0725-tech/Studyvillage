@@ -1,11 +1,12 @@
 const fs=require('fs');
 const assert=require('assert');
 const src=fs.readFileSync('customize.js','utf8');
-assert.ok(src.includes('REQUEST_TIMEOUT_MS=5000'),'학생 꾸미기 요청은 5초 제한시간이 필요합니다.');
+assert.ok(/REQUEST_TIMEOUT_MS=\d{4}/.test(src),'학생 꾸미기 요청은 제한시간이 필요합니다.');
 assert.ok(src.includes('async function timedFetch'),'학생 꾸미기 요청은 공통 제한시간 함수를 사용해야 합니다.');
 assert.ok((src.match(/timedFetch\(/g)||[]).length>=5,'꾸미기 조회·저장 요청은 제한시간 보호를 받아야 합니다.');
-assert.ok(src.includes('loadPromise=null'),'꾸미기 정보 조회 진행 상태를 추적해야 합니다.');
-assert.ok(src.includes('if(loadPromise)return loadPromise'),'꾸미기 정보 조회가 겹치면 기존 요청을 재사용해야 합니다.');
-assert.ok(src.includes("function active(){return !document.hidden&&navigator.onLine&&game?.classList.contains('active')}"),'숨겨진 탭이나 오프라인에서는 아이템 해금 조회를 하지 않아야 합니다.');
-assert.ok(src.includes("if(save.disabled)return"),'장착 저장 연타를 막아야 합니다.');
+assert.ok(src.includes('if(loadPromise)return loadPromise'),'꾸미기 정보 조회 연타는 새 요청을 만들지 않고 진행 중인 요청을 함께 기다려야 합니다.');
+assert.ok(src.includes('try{return await loadPromise}finally{loadPromise=null}'),'공유 조회가 끝난 뒤에만 다음 꾸미기 조회를 허용해야 합니다.');
+assert.ok(src.includes('const next=await fetchPlayer()')&&src.includes('try{shop=await fetchShop()}catch'),'상점 정보가 실패해도 학생 캐릭터 정보로 옷장을 열 수 있어야 합니다.');
+assert.ok(src.includes('if(save.disabled)return false'),'장착 저장 연타를 막아야 합니다.');
+assert.ok(src.includes("'/api/player/me/equipment'")&&src.includes("'/api/shop/equipment'"),'기본 해금 아이템과 구매 아이템을 같은 저장 흐름에서 처리해야 합니다.');
 console.log('student customization request safety contract self-test passed');

@@ -1,6 +1,6 @@
 const fs=require('fs'),assert=require('assert');
 const ledger=fs.readFileSync('server/star-ledger.js','utf8'),riddle=fs.readFileSync('server/riddle-attempt-student.js','utf8'),data=fs.readFileSync('data-service.js','utf8'),game=fs.readFileSync('game.js','utf8');
-assert.ok(ledger.includes('function riddleStarsFor(score)')&&ledger.includes('value>=1000?3:value>=700?2:value>0?1:0'),'riddle reward must use the bounded 0/1/2/3-star score tiers');
+assert.ok(ledger.includes('function riddleStarsFor(score)')&&ledger.includes('value>=1000?2:value>=600?1:0'),'riddle reward must use the shared perfect/60-percent/under-60 star tiers');
 assert.ok(ledger.includes("referenceId=`riddle-demo:${Math.max(1,Number(attempt)||1)}`")&&ledger.includes("kind='riddle-completion' AND reference_id=?"),'each recorded attempt must have one idempotent ledger reference');
 assert.ok(ledger.includes("'riddle-completion',referenceId")&&ledger.includes('writeMirror(db,name)'),'a reward must be recorded in the ledger and compatibility mirror');
 assert.ok(ledger.includes('installRiddleAttemptStudentRoutes(app,{requireSession,publishLiveEvent,commitRiddleReward})'),'the ledger writer must be injected into the intercepted riddle route');

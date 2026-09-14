@@ -3,6 +3,7 @@
 import { auditQuestionSet, summarizeQuestionAudits } from './question-audit.js';
 import { installQuestionHistoryRoutes } from './question-history.js';
 import { installQuestionOverrideRoutes } from './question-overrides.js';
+import { installQuestionCatalogSettingRoutes } from './question-catalog-settings.js';
 import { changeStars, starBalanceFor, starLedgerFor } from './star-ledger.js';
 import { installItemShopRoutes } from './item-shop.js';
 import { installActivityAttemptSettingRoutes } from './activity-attempt-settings.js';
@@ -32,6 +33,7 @@ function updateReview({getSetting,setSetting,key,status,note}){
 export function installQuestionReviewRoutes(app,{requireAdmin,getSetting,setSetting}){
   installQuestionHistoryRoutes(app,{requireAdmin,getSetting,setSetting});
   installQuestionOverrideRoutes(app,{requireAdmin,getSetting,setSetting});
+  installQuestionCatalogSettingRoutes(app,{requireAdmin,getSetting,setSetting});
   installItemShopRoutes(app,{requireAdmin});
   installActivityAttemptSettingRoutes(app,{requireAdmin,getSetting,setSetting});
   installActivityAttemptOverviewRoutes(app,{requireAdmin});

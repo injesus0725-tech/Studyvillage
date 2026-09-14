@@ -1,0 +1,55 @@
+name: Bake Avatar Outfit V2
+
+on:
+  push:
+    branches: [stabilize-touch-buildings-20260820]
+    paths:
+      - 'scripts/bake-avatar-outfit-v2.py'
+      - '.github/workflows/avatar-outfit-bake.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bake-outfits:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: stabilize-touch-buildings-20260820
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow==11.3.0
+
+      - name: Bake nine outfits to fixed neck-foot canvas
+        run: python scripts/bake-avatar-outfit-v2.py
+
+      - name: Confirm runtime normalizer is not loaded
+        shell: bash
+        run: |
+          if grep -R "avatar-auto-normalize-v1.js" index.html assets/avatar-base-variants-v1.js; then
+            echo "Runtime avatar normalizer reference still exists"
+            exit 1
+          fi
+
+      - name: Confirm or commit deterministic baked PNG set
+        shell: bash
+        run: |
+          if git diff --quiet -- assets/avatar-runtime/production/outfits; then
+            echo "Baked PNGs already match the committed deterministic outputs"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/avatar-runtime/production/outfits/*.png
+          git commit -m "Bake nine outfits to fixed anchor spec"
+          git push origin HEAD:stabilize-touch-buildings-20260820
