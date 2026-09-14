@@ -117,6 +117,7 @@ const tests=[
   'star-ledger-balance-integrity-contract-selftest.js',
   'student-admin-action-boundary-contract-selftest.js',
   'student-accessory-benchmark-contract-selftest.js',
+  'pet-scale-standardization-contract-selftest.js',
   'student-v1-wardrobe-expansion-contract-selftest.js',
   'student-full-wardrobe-reload-contract-selftest.js',
   'student-2d-exploration-map-contract-selftest.js',

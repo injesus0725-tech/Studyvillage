@@ -4,13 +4,21 @@
 /* FINAL LIGHTWEIGHT RUNTIME CONTRACT
    Production PNGs are authored on the shared 256x256 master canvas.
    Runtime never scans pixels, creates canvases, or rewrites PNGs.
-   Every wearable is a plain 0,0 overlay. */
+   Wearables stay at 0,0; pets alone use one shared bottom-anchored display scale. */
 [data-avatar-item^="hair-"],[data-avatar-item^="outfit-"],[data-avatar-item^="pet-"]{overflow:visible!important}
-[data-avatar-item^="hair-"]>img,[data-avatar-item^="outfit-"]>img,[data-avatar-item^="pet-"]>img{
+[data-avatar-item^="hair-"]>img,[data-avatar-item^="outfit-"]>img{
   width:100%!important;
   height:100%!important;
   object-fit:contain!important;
   transform:none!important;
+  transform-origin:center bottom!important;
+}
+[data-avatar-item^="pet-"]{--sv-pet-scale:1.25}
+[data-avatar-item^="pet-"]>img,[data-avatar-item^="pet-"]>svg{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  transform:scale(var(--sv-pet-scale))!important;
   transform-origin:center bottom!important;
 }
 

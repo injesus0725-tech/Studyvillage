@@ -259,14 +259,22 @@
   transform: none !important;
 }
 
-/* Pet PNG contract: 256x256 canvas, artwork <=116x116, right 10px, bottom 8px. */
-[data-avatar-item^="pet-"] img {
+/* Pet scale contract, 2026-09-14.
+   Every pet stays on the shared 256x256 canvas and the authored common ground line.
+   One uniform scale is used in the village, wardrobe, shop, ranking and admin previews;
+   species such as whales and dachshunds keep only their intentional aspect difference. */
+[data-avatar-item^="pet-"] {
+  --sv-pet-scale: 1.25;
+}
+[data-avatar-item^="pet-"] img,
+[data-avatar-item^="pet-"] svg {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
   object-fit: contain !important;
-  transform: none !important;
+  transform: scale(var(--sv-pet-scale)) !important;
+  transform-origin: center bottom !important;
 }
 .avatar-pet,
 .preview-pet,
